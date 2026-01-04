@@ -22,15 +22,19 @@ const heroMedia: MediaItem[] = [
 const HeroSection = () => {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
+  const handleVideoEnd = () => {
+    setCurrentMediaIndex((prev) => (prev + 1) % heroMedia.length);
+  };
+
   useEffect(() => {
     const currentItem = heroMedia[currentMediaIndex];
-    // Videos have longer display time
-    const duration = currentItem.type === "video" ? 12000 : 6000;
-    
-    const interval = setInterval(() => {
-      setCurrentMediaIndex((prev) => (prev + 1) % heroMedia.length);
-    }, duration);
-    return () => clearInterval(interval);
+    // Only auto-advance for images, videos advance on end
+    if (currentItem.type === "image") {
+      const interval = setInterval(() => {
+        setCurrentMediaIndex((prev) => (prev + 1) % heroMedia.length);
+      }, 6000);
+      return () => clearInterval(interval);
+    }
   }, [currentMediaIndex]);
 
   const currentItem = heroMedia[currentMediaIndex];
@@ -46,8 +50,8 @@ const HeroSection = () => {
               src={currentItem.src}
               autoPlay
               muted
-              loop
               playsInline
+              onEnded={handleVideoEnd}
               initial={{ opacity: 0, scale: 1.05 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
