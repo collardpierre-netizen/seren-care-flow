@@ -1,42 +1,40 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Check } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 
-const videoUrls = [
-  "https://videos.pexels.com/video-files/3209211/3209211-uhd_2560_1440_25fps.mp4",
-  "https://videos.pexels.com/video-files/3195440/3195440-uhd_2560_1440_25fps.mp4",
-  "https://videos.pexels.com/video-files/3192584/3192584-uhd_2560_1440_25fps.mp4",
-];
+import heroImage1 from "@/assets/hero-1.jpeg";
+import heroImage2 from "@/assets/hero-2.jpeg";
+
+const heroImages = [heroImage1, heroImage2];
 
 const HeroSection = () => {
-  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentVideoIndex((prev) => (prev + 1) % videoUrls.length);
-    }, 8000);
+      setCurrentImageIndex((prev) => (prev + 1) % heroImages.length);
+    }, 6000);
     return () => clearInterval(interval);
   }, []);
 
   return (
     <section className="relative overflow-hidden min-h-[90vh] flex items-center">
-      {/* Video Background Gallery */}
+      {/* Image Background Gallery */}
       <div className="absolute inset-0 z-0">
-        {videoUrls.map((url, index) => (
-          <video
-            key={url}
-            src={url}
-            autoPlay
-            muted
-            loop
-            playsInline
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
-              index === currentVideoIndex ? "opacity-100" : "opacity-0"
-            }`}
+        <AnimatePresence mode="wait">
+          <motion.img
+            key={currentImageIndex}
+            src={heroImages[currentImageIndex]}
+            alt="SerenCare"
+            initial={{ opacity: 0, scale: 1.1 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.2, ease: "easeInOut" }}
+            className="absolute inset-0 w-full h-full object-cover"
           />
-        ))}
+        </AnimatePresence>
         {/* Color Overlay #0058A0 at 12% */}
         <div 
           className="absolute inset-0" 
@@ -46,18 +44,18 @@ const HeroSection = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent" />
       </div>
 
-      {/* Video indicators */}
+      {/* Image indicators */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-        {videoUrls.map((_, index) => (
+        {heroImages.map((_, index) => (
           <button
             key={index}
-            onClick={() => setCurrentVideoIndex(index)}
+            onClick={() => setCurrentImageIndex(index)}
             className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              index === currentVideoIndex 
+              index === currentImageIndex 
                 ? "bg-white w-8" 
                 : "bg-white/50 hover:bg-white/70"
             }`}
-            aria-label={`Vidéo ${index + 1}`}
+            aria-label={`Image ${index + 1}`}
           />
         ))}
       </div>
