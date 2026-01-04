@@ -19,8 +19,9 @@ import {
 import prescriberImage1 from "@/assets/prescriber-1.jpeg";
 import prescriberImage2 from "@/assets/prescriber-2.jpeg";
 import prescriberImage3 from "@/assets/prescriber-3.jpeg";
+import prescriberImage4 from "@/assets/prescriber-4.jpeg";
 
-const heroImages = [prescriberImage1, prescriberImage2, prescriberImage3];
+const heroImages = [prescriberImage1, prescriberImage2, prescriberImage3, prescriberImage4];
 
 const prescriberTypes = [
   {
