@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Layout from "@/components/Layout";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
 import { 
   ArrowRight, 
   Clock, 
@@ -14,6 +15,12 @@ import {
   Building2,
   Pill
 } from "lucide-react";
+
+import prescriberImage1 from "@/assets/prescriber-1.jpeg";
+import prescriberImage2 from "@/assets/prescriber-2.jpeg";
+import prescriberImage3 from "@/assets/prescriber-3.jpeg";
+
+const heroImages = [prescriberImage1, prescriberImage2, prescriberImage3];
 
 const prescriberTypes = [
   {
@@ -47,6 +54,15 @@ const benefits = [
 ];
 
 const Prescribers = () => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % heroImages.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <>
       <Helmet>
@@ -57,33 +73,81 @@ const Prescribers = () => {
         {/* Hero */}
         <section className="bg-background py-16 md:py-24 border-b border-border">
           <div className="container-main">
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="max-w-3xl mx-auto text-center"
-            >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-highlight text-sm font-medium text-primary mb-6">
-                <Users className="w-4 h-4" />
-                Programme Partenaires
-              </div>
-              
-              <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6 leading-tight">
-                Concentrez-vous sur les soins.
-                <span className="text-primary"> On s'occupe du reste.</span>
-              </h1>
-              
-              <p className="text-lg text-muted-foreground mb-8">
-                Recommandez SerenCare à vos patients. Ils reçoivent automatiquement leurs protections. 
-                Vous gagnez du temps et percevez une commission.
-              </p>
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              {/* Text content */}
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-highlight text-sm font-medium text-primary mb-6">
+                  <Users className="w-4 h-4" />
+                  Programme Partenaires
+                </div>
+                
+                <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6 leading-tight">
+                  Concentrez-vous sur les soins.
+                  <br />
+                  <span className="text-primary">On s'occupe du reste.</span>
+                </h1>
+                
+                <p className="text-lg text-muted-foreground mb-8">
+                  Recommandez SerenCare à vos patients. Ils reçoivent automatiquement leurs protections. 
+                  Vous gagnez du temps et percevez une commission.
+                </p>
 
-              <Button asChild size="lg" className="gap-2">
-                <a href="#contact">
-                  Devenir partenaire
-                  <ArrowRight className="w-5 h-5" />
-                </a>
-              </Button>
-            </motion.div>
+                <Button asChild size="lg" className="gap-2">
+                  <a href="#contact">
+                    Devenir partenaire
+                    <ArrowRight className="w-5 h-5" />
+                  </a>
+                </Button>
+              </motion.div>
+
+              {/* Media zone with slideshow */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+                className="relative"
+              >
+                <div className="relative rounded-3xl overflow-hidden shadow-2xl aspect-[4/3]">
+                  <AnimatePresence mode="wait">
+                    <motion.img
+                      key={currentImageIndex}
+                      src={heroImages[currentImageIndex]}
+                      alt="Professionnel de santé accompagnant un patient"
+                      className="w-full h-full object-cover"
+                      initial={{ opacity: 0, scale: 1.05 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.7 }}
+                    />
+                  </AnimatePresence>
+                  {/* Overlay gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent pointer-events-none" />
+                </div>
+                
+                {/* Slideshow indicators */}
+                <div className="flex justify-center gap-2 mt-4">
+                  {heroImages.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentImageIndex(index)}
+                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                        index === currentImageIndex
+                          ? "bg-primary w-6"
+                          : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                      }`}
+                      aria-label={`Aller à l'image ${index + 1}`}
+                    />
+                  ))}
+                </div>
+
+                {/* Decorative elements */}
+                <div className="absolute -top-4 -right-4 w-24 h-24 bg-secondary/20 rounded-full blur-2xl" />
+                <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-primary/10 rounded-full blur-2xl" />
+              </motion.div>
+            </div>
           </div>
         </section>
 
