@@ -255,14 +255,14 @@ const GuidedChoice = () => {
                     variant="white"
                     className="w-full"
                   >
-                    <a href="tel:0123456789" className="gap-2">
+                    <a href="tel:+3202648422" className="gap-2">
                       <Phone className="w-5 h-5" />
-                      01 23 45 67 89
+                      +32 02 648 42 22
                     </a>
                   </Button>
 
                   <p className="text-center text-xs text-primary-foreground/60 mt-4">
-                    Lun-Ven, 9h-18h
+                    Lun-Dim, 8h-20h
                   </p>
                 </motion.div>
               </div>
