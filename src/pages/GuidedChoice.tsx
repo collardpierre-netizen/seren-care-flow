@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Heart, Phone, ClipboardList, ArrowRight, Clock } from "lucide-react";
 
+import guidedChoiceVideo from "@/assets/guided-choice-video.mov";
+
 const GuidedChoice = () => {
   return (
     <>
@@ -13,29 +15,56 @@ const GuidedChoice = () => {
         <meta name="description" content="Pas sûr de ce dont vous avez besoin ? Répondez à quelques questions ou appelez-nous. Nous vous aidons à trouver la protection adaptée." />
       </Helmet>
       <Layout>
-        {/* Hero */}
-        <section className="bg-background py-16 md:py-24 border-b border-border">
+        {/* Hero with Media Zone */}
+        <section className="bg-muted/30 py-16 md:py-24">
           <div className="container-main">
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="max-w-3xl mx-auto text-center"
-            >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-highlight text-sm font-medium text-primary mb-6">
-                <Heart className="w-4 h-4" />
-                Nous sommes là pour vous
-              </div>
-              
-              <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6 leading-tight">
-                Choisir pour un proche,
-                <span className="text-primary"> c'est normal d'hésiter.</span>
-              </h1>
-              
-              <p className="text-lg text-muted-foreground leading-relaxed">
-                Vous n'êtes pas seul. Notre équipe vous guide pour trouver la protection adaptée, 
-                sans pression, sans jargon médical.
-              </p>
-            </motion.div>
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+              {/* Left: Text Content */}
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-highlight text-sm font-medium text-primary mb-6">
+                  <Heart className="w-4 h-4" />
+                  Nous sommes là pour vous
+                </div>
+                
+                <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6 leading-tight">
+                  Choisir pour un proche,
+                  <span className="text-primary"> c'est normal d'hésiter.</span>
+                </h1>
+                
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  Vous n'êtes pas seul. Notre équipe vous guide pour trouver la protection adaptée, 
+                  sans pression, sans jargon médical.
+                </p>
+              </motion.div>
+
+              {/* Right: Video Media Zone */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2, duration: 0.6 }}
+                className="relative"
+              >
+                <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+                  <video
+                    src={guidedChoiceVideo}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="w-full h-auto aspect-[4/3] object-cover"
+                  />
+                  {/* Subtle overlay gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent pointer-events-none" />
+                </div>
+                
+                {/* Decorative elements */}
+                <div className="absolute -top-4 -right-4 w-24 h-24 bg-secondary/20 rounded-full blur-2xl" />
+                <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
+              </motion.div>
+            </div>
           </div>
         </section>
 
