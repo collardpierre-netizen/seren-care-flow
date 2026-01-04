@@ -2,6 +2,7 @@ import { Helmet } from "react-helmet-async";
 import Layout from "@/components/Layout";
 import { motion } from "framer-motion";
 import { Heart, Users, Shield, Sparkles, Phone, Mail, MapPin, Clock } from "lucide-react";
+import foundersImage from "@/assets/founders.png";
 import {
   Accordion,
   AccordionContent,
@@ -105,12 +106,19 @@ const About = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.1 }}
-                className="bg-muted/50 rounded-2xl p-10"
+                className="space-y-6"
               >
-                <blockquote className="text-xl font-display font-semibold text-foreground mb-4 leading-relaxed">
-                  "Nous croyons que le soin d'un proche ne devrait pas être une source d'anxiété supplémentaire."
-                </blockquote>
-                <p className="text-sm text-muted-foreground">— L'équipe SerenCare</p>
+                <div className="rounded-2xl overflow-hidden">
+                  <img 
+                    src={foundersImage} 
+                    alt="Olivier & Pierre, fondateurs de SerenCare" 
+                    className="w-full h-auto"
+                  />
+                </div>
+                <div className="text-center">
+                  <p className="font-display font-semibold text-foreground text-lg">Olivier & Pierre</p>
+                  <p className="text-sm text-muted-foreground">Fondateurs de SerenCare</p>
+                </div>
               </motion.div>
             </div>
           </div>
