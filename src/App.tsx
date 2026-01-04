@@ -7,7 +7,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import CartDrawer from "./components/shop/CartDrawer";
-
+import ScrollToTop from "./components/ScrollToTop";
 // Public pages
 import Index from "./pages/Index";
 import Shop from "./pages/Shop";
@@ -42,6 +42,7 @@ const App = () => (
           <Sonner />
           <CartDrawer />
           <BrowserRouter>
+            <ScrollToTop />
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<Index />} />
@@ -49,7 +50,6 @@ const App = () => (
               <Route path="/aide-au-choix" element={<GuidedChoice />} />
               <Route path="/questionnaire" element={<Questionnaire />} />
               <Route path="/prescripteurs" element={<Prescribers />} />
-              <Route path="/prescripteurs/:type" element={<Prescribers />} />
               <Route path="/a-propos" element={<About />} />
               <Route path="/connexion" element={<LoginPage />} />
               <Route path="/inscription" element={<RegisterPage />} />

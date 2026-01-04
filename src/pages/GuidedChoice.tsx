@@ -23,21 +23,30 @@ const heroMedia: MediaItem[] = [
 
 const GuidedChoice = () => {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+  const [videoPlayed, setVideoPlayed] = useState(false);
 
   const handleVideoEnd = () => {
-    setCurrentMediaIndex((prev) => (prev + 1) % heroMedia.length);
+    setVideoPlayed(true);
+    setCurrentMediaIndex(1); // Move to first image after video
   };
 
   useEffect(() => {
     const currentItem = heroMedia[currentMediaIndex];
-    // Only auto-advance for images, videos advance on end
+    // Only auto-advance for images (skip video index 0 if already played)
     if (currentItem.type === "image") {
       const interval = setInterval(() => {
-        setCurrentMediaIndex((prev) => (prev + 1) % heroMedia.length);
+        setCurrentMediaIndex((prev) => {
+          const next = prev + 1;
+          // Skip video (index 0) if already played
+          if (next >= heroMedia.length) {
+            return videoPlayed ? 1 : 0;
+          }
+          return next;
+        });
       }, 5000);
       return () => clearInterval(interval);
     }
-  }, [currentMediaIndex]);
+  }, [currentMediaIndex, videoPlayed]);
 
   const currentItem = heroMedia[currentMediaIndex];
 
