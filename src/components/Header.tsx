@@ -154,7 +154,15 @@ const Header = () => {
                   <Link
                     key={item.name}
                     to={item.href}
-                    onClick={() => setIsOpen(false)}
+                    onClick={() => {
+                      setIsOpen(false);
+                      // Ensure scroll to top on mobile navigation
+                      setTimeout(() => {
+                        window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+                        document.documentElement.scrollTop = 0;
+                        document.body.scrollTop = 0;
+                      }, 100);
+                    }}
                     className={`block px-4 py-3 rounded-xl text-base font-medium transition-colors ${
                       isActive(item.href)
                         ? "bg-highlight text-primary"
