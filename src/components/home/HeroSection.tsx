@@ -6,34 +6,66 @@ import { useState, useEffect } from "react";
 
 import heroImage1 from "@/assets/hero-1.jpeg";
 import heroImage2 from "@/assets/hero-2.jpeg";
+import heroVideo from "@/assets/hero-video.mov";
 
-const heroImages = [heroImage1, heroImage2];
+type MediaItem = {
+  type: "image" | "video";
+  src: string;
+};
+
+const heroMedia: MediaItem[] = [
+  { type: "video", src: heroVideo },
+  { type: "image", src: heroImage1 },
+  { type: "image", src: heroImage2 },
+];
 
 const HeroSection = () => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
   useEffect(() => {
+    const currentItem = heroMedia[currentMediaIndex];
+    // Videos have longer display time
+    const duration = currentItem.type === "video" ? 12000 : 6000;
+    
     const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % heroImages.length);
-    }, 6000);
+      setCurrentMediaIndex((prev) => (prev + 1) % heroMedia.length);
+    }, duration);
     return () => clearInterval(interval);
-  }, []);
+  }, [currentMediaIndex]);
+
+  const currentItem = heroMedia[currentMediaIndex];
 
   return (
     <section className="relative overflow-hidden min-h-[90vh] flex items-center">
-      {/* Image Background Gallery */}
+      {/* Media Background Gallery */}
       <div className="absolute inset-0 z-0">
         <AnimatePresence mode="wait">
-          <motion.img
-            key={currentImageIndex}
-            src={heroImages[currentImageIndex]}
-            alt="SerenCare"
-            initial={{ opacity: 0, scale: 1.1 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.2, ease: "easeInOut" }}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
+          {currentItem.type === "video" ? (
+            <motion.video
+              key={`video-${currentMediaIndex}`}
+              src={currentItem.src}
+              autoPlay
+              muted
+              loop
+              playsInline
+              initial={{ opacity: 0, scale: 1.05 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1.2, ease: "easeInOut" }}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          ) : (
+            <motion.img
+              key={`image-${currentMediaIndex}`}
+              src={currentItem.src}
+              alt="SerenCare"
+              initial={{ opacity: 0, scale: 1.1 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1.2, ease: "easeInOut" }}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          )}
         </AnimatePresence>
         {/* Color Overlay #0058A0 at 12% */}
         <div 
@@ -44,18 +76,18 @@ const HeroSection = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent" />
       </div>
 
-      {/* Image indicators */}
+      {/* Media indicators */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-        {heroImages.map((_, index) => (
+        {heroMedia.map((_, index) => (
           <button
             key={index}
-            onClick={() => setCurrentImageIndex(index)}
+            onClick={() => setCurrentMediaIndex(index)}
             className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              index === currentImageIndex 
+              index === currentMediaIndex 
                 ? "bg-white w-8" 
                 : "bg-white/50 hover:bg-white/70"
             }`}
-            aria-label={`Image ${index + 1}`}
+            aria-label={`Media ${index + 1}`}
           />
         ))}
       </div>
