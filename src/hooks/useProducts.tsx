@@ -1,0 +1,184 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+
+export interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  brand_id: string | null;
+  category_id: string | null;
+  short_description: string | null;
+  description: string | null;
+  incontinence_level: 'light' | 'moderate' | 'heavy' | 'very_heavy' | null;
+  mobility: 'mobile' | 'reduced' | 'bedridden' | null;
+  usage_time: 'day' | 'night' | 'day_night' | null;
+  price: number;
+  subscription_price: number | null;
+  subscription_discount_percent: number | null;
+  min_order_quantity: number | null;
+  stock_quantity: number | null;
+  sku: string | null;
+  is_active: boolean | null;
+  is_featured: boolean | null;
+  created_at: string;
+  updated_at: string;
+  brand?: { id: string; name: string; slug: string } | null;
+  category?: { id: string; name: string; slug: string } | null;
+  images?: ProductImage[];
+  sizes?: ProductSize[];
+}
+
+export interface ProductImage {
+  id: string;
+  product_id: string;
+  image_url: string;
+  alt_text: string | null;
+  sort_order: number | null;
+  is_primary: boolean | null;
+}
+
+export interface ProductSize {
+  id: string;
+  product_id: string;
+  size: string;
+  price_adjustment: number | null;
+  stock_quantity: number | null;
+  sku: string | null;
+  is_active: boolean | null;
+}
+
+export interface Brand {
+  id: string;
+  name: string;
+  slug: string;
+  logo_url: string | null;
+  description: string | null;
+  is_active: boolean | null;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  image_url: string | null;
+  parent_id: string | null;
+  sort_order: number | null;
+  is_active: boolean | null;
+}
+
+export const useProducts = (filters?: { 
+  categoryId?: string; 
+  brandId?: string; 
+  featured?: boolean;
+  search?: string;
+}) => {
+  return useQuery({
+    queryKey: ['products', filters],
+    queryFn: async () => {
+      let query = supabase
+        .from('products')
+        .select(`
+          *,
+          brand:brands(*),
+          category:categories(*),
+          images:product_images(*),
+          sizes:product_sizes(*)
+        `)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (filters?.categoryId) {
+        query = query.eq('category_id', filters.categoryId);
+      }
+      if (filters?.brandId) {
+        query = query.eq('brand_id', filters.brandId);
+      }
+      if (filters?.featured) {
+        query = query.eq('is_featured', true);
+      }
+      if (filters?.search) {
+        query = query.ilike('name', `%${filters.search}%`);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return data as Product[];
+    },
+  });
+};
+
+export const useProduct = (slug: string) => {
+  return useQuery({
+    queryKey: ['product', slug],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          brand:brands(*),
+          category:categories(*),
+          images:product_images(*),
+          sizes:product_sizes(*)
+        `)
+        .eq('slug', slug)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data as Product | null;
+    },
+    enabled: !!slug,
+  });
+};
+
+export const useBrands = () => {
+  return useQuery({
+    queryKey: ['brands'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('brands')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
+
+      if (error) throw error;
+      return data as Brand[];
+    },
+  });
+};
+
+export const useCategories = () => {
+  return useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order');
+
+      if (error) throw error;
+      return data as Category[];
+    },
+  });
+};
+
+export const useStoreSettings = () => {
+  return useQuery({
+    queryKey: ['store-settings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('store_settings')
+        .select('*');
+
+      if (error) throw error;
+      
+      const settings: Record<string, any> = {};
+      data?.forEach(item => {
+        settings[item.key] = item.value;
+      });
+      
+      return settings;
+    },
+  });
+};
