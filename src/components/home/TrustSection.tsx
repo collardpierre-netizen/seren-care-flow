@@ -1,21 +1,21 @@
 import { motion } from "framer-motion";
-import { Shield, Award, Leaf } from "lucide-react";
+import { Shield, Check } from "lucide-react";
 
 const brands = [
   {
     name: "TENA",
-    description: "Leader mondial, plus de 50 ans d'expertise",
-    features: ["Confort optimal", "Absorption performante"],
+    tagline: "Leader mondial",
+    description: "Plus de 50 ans d'expertise dans le soin et le confort.",
   },
   {
     name: "Hartmann",
-    description: "Qualité allemande, innovation continue",
-    features: ["Technologie avancée", "Peau saine"],
+    tagline: "Qualité allemande",
+    description: "Innovation et rigueur au service de votre bien-être.",
   },
   {
     name: "Lille Healthcare",
-    description: "Excellence française, proximité",
-    features: ["Made in France", "Éco-responsable"],
+    tagline: "Excellence française",
+    description: "Savoir-faire local, engagement éco-responsable.",
   },
 ];
 
@@ -23,80 +23,75 @@ const TrustSection = () => {
   return (
     <section className="section-padding bg-background">
       <div className="container-main">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent mb-6">
-            <Shield className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-foreground">Marques de confiance</span>
-          </div>
-          <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-            Uniquement des marques reconnues
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Nous travaillons exclusivement avec les leaders du marché. Qualité garantie, efficacité prouvée.
-          </p>
-        </motion.div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {brands.map((brand, index) => (
-            <motion.div
-              key={brand.name}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="bg-card rounded-3xl p-8 shadow-card border border-border/50 hover:shadow-elevated transition-all duration-300 hover:-translate-y-1"
-            >
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
-                  <Award className="w-6 h-6 text-primary-foreground" />
-                </div>
-                <h3 className="font-display text-2xl font-bold text-foreground">{brand.name}</h3>
-              </div>
-
-              <p className="text-muted-foreground mb-6">{brand.description}</p>
-
-              <div className="space-y-3">
-                {brand.features.map((feature) => (
-                  <div key={feature} className="flex items-center gap-3">
-                    <div className="w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center">
-                      <Leaf className="w-3 h-3 text-secondary" />
-                    </div>
-                    <span className="text-sm text-foreground">{feature}</span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Values */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-6"
-        >
-          {[
-            { label: "Accompagnement", value: "Humain" },
-            { label: "Livraison", value: "Gratuite" },
-            { label: "Engagement", value: "Zéro" },
-            { label: "Flexibilité", value: "Totale" },
-          ].map((item) => (
-            <div key={item.label} className="text-center p-6 rounded-2xl bg-accent/50">
-              <div className="font-display text-2xl md:text-3xl font-bold text-primary mb-1">
-                {item.value}
-              </div>
-              <div className="text-sm text-muted-foreground">{item.label}</div>
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
+          {/* Left Content */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/10 text-sm font-medium text-secondary mb-6">
+              <Shield className="w-4 h-4" />
+              Marques de confiance
             </div>
-          ))}
-        </motion.div>
+
+            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
+              Uniquement les meilleures marques.
+            </h2>
+
+            <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+              Nous avons sélectionné trois marques leaders pour leur qualité, leur efficacité et leur engagement. 
+              Pas de compromis sur ce qui compte.
+            </p>
+
+            <div className="grid grid-cols-2 gap-4">
+              {["Qualité médicale", "Confort optimal", "Discrétion", "Absorption éprouvée"].map((item) => (
+                <div key={item} className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Check className="w-3.5 h-3.5 text-primary" />
+                  </div>
+                  <span className="text-sm font-medium text-foreground">{item}</span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Right - Brand Cards */}
+          <div className="space-y-4">
+            {brands.map((brand, index) => (
+              <motion.div
+                key={brand.name}
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="bg-card rounded-2xl p-6 border border-border/60 shadow-md hover:shadow-lg transition-all duration-300 group"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-primary flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                    <span className="text-primary-foreground font-display font-bold text-lg">
+                      {brand.name.charAt(0)}
+                    </span>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-3 mb-1">
+                      <h3 className="font-display text-lg font-bold text-foreground">
+                        {brand.name}
+                      </h3>
+                      <span className="text-xs font-medium text-secondary bg-secondary/10 px-2 py-0.5 rounded-full">
+                        {brand.tagline}
+                      </span>
+                    </div>
+                    <p className="text-muted-foreground text-sm">
+                      {brand.description}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
