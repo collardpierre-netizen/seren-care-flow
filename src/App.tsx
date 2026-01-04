@@ -18,6 +18,7 @@ import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/Login";
 import RegisterPage from "./pages/Register";
+import Checkout from "./pages/Checkout";
 
 // Admin pages
 import AdminLayout from "./components/admin/AdminLayout";
@@ -52,6 +53,7 @@ const App = () => (
               <Route path="/a-propos" element={<About />} />
               <Route path="/connexion" element={<LoginPage />} />
               <Route path="/inscription" element={<RegisterPage />} />
+              <Route path="/checkout" element={<Checkout />} />
 
               {/* Admin routes */}
               <Route path="/admin" element={
