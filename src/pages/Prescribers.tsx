@@ -62,12 +62,12 @@ const prescriberTypes = [
     icon: Pill,
     badge: "Partenaires",
     title: "Infirmières partenaires",
-    description: "Développez votre activité en accompagnant nos clients.",
+    description: "Double avantage : commissions + revenus complémentaires.",
     benefits: [
-      "Rémunération fixe par consultation visio/téléphonique",
-      "Flexibilité totale des horaires",
-      "Formation spécialisée incontinence incluse",
-      "Plateforme technique moderne fournie"
+      "Commission récurrente sur chaque abonnement souscrit",
+      "Revenus additionnels pour consultations vidéo ou sur place",
+      "Accompagnement au choix produits & démonstration de mise en place",
+      "Formation spécialisée incontinence incluse"
     ],
   },
 ];
@@ -247,7 +247,7 @@ const Prescribers = () => {
                     {type.description}
                   </p>
 
-                  <ul className="space-y-3 mb-6 flex-1">
+                  <ul className="space-y-3 flex-1">
                     {type.benefits.map((benefit) => (
                       <li key={benefit} className="flex items-start gap-2 text-sm text-foreground">
                         <CheckCircle className="w-4 h-4 text-secondary mt-0.5 flex-shrink-0" />
@@ -255,10 +255,6 @@ const Prescribers = () => {
                       </li>
                     ))}
                   </ul>
-
-                  <Button asChild variant="outline" className="w-full">
-                    <a href="#contact">En savoir plus</a>
-                  </Button>
                 </motion.div>
               ))}
             </div>
