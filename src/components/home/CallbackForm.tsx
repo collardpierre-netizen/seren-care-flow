@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import type { Database } from "@/integrations/supabase/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Phone, Check } from "lucide-react";
@@ -26,8 +27,8 @@ const CallbackForm = () => {
     setIsSubmitting(true);
 
     try {
-      // Store the callback request in the database
-      const { error } = await supabase.from("callback_requests").insert({
+      // Store the callback request in the database using type assertion for new table
+      const { error } = await (supabase.from("callback_requests" as any) as any).insert({
         first_name: formData.firstName,
         last_name: formData.lastName,
         phone: formData.phone,
