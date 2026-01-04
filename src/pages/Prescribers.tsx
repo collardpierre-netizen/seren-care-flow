@@ -29,21 +29,18 @@ const prescriberTypes = [
     title: "Infirmiers & Médecins",
     description: "Libérez du temps pour les soins. Vos patients sont livrés automatiquement.",
     benefits: ["Moins de logistique", "Continuité des soins", "Commission récurrente"],
-    href: "/prescripteurs/professionnels",
   },
   {
     icon: Pill,
     title: "Pharmaciens",
     description: "Un service complémentaire sans stock à gérer.",
     benefits: ["Pas de stock", "Fidélisation client", "Revenus additionnels"],
-    href: "/prescripteurs/pharmaciens",
   },
   {
     icon: Building2,
     title: "EHPAD & Résidences",
     description: "Approvisionnement automatique, gestion simplifiée.",
     benefits: ["Livraison planifiée", "Gestion centralisée", "Tarifs préférentiels"],
-    href: "/prescripteurs/etablissements",
   },
 ];
 
@@ -187,7 +184,7 @@ const Prescribers = () => {
                   </ul>
 
                   <Button asChild variant="outline" className="w-full">
-                    <Link to={type.href}>En savoir plus</Link>
+                    <a href="#contact">Nous contacter</a>
                   </Button>
                 </motion.div>
               ))}
