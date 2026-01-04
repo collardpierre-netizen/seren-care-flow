@@ -1,17 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useCart } from '@/hooks/useCart';
 import { useStoreSettings } from '@/hooks/useProducts';
+import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
-import { ShoppingBag, ArrowLeft, CreditCard, Truck, RefreshCw } from 'lucide-react';
+import { ShoppingBag, ArrowLeft, CreditCard, Truck, RefreshCw, Tag, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 const Checkout = () => {
   const { items, getSubtotal, getSubscriptionSavings } = useCart();
   const { data: settings } = useStoreSettings();
+  const [referralCode, setReferralCode] = useState('');
+  const [referralValid, setReferralValid] = useState<boolean | null>(null);
+  const [isValidating, setIsValidating] = useState(false);
   
   const subtotal = getSubtotal();
   const savings = getSubscriptionSavings();
@@ -23,6 +30,32 @@ const Checkout = () => {
   const total = subtotal + shippingCost;
   const isMinimumMet = subtotal >= minimumOrderAmount;
   const remainingForMinimum = Math.max(0, minimumOrderAmount - subtotal);
+
+  const validateReferralCode = async () => {
+    if (!referralCode.trim()) return;
+    
+    setIsValidating(true);
+    try {
+      const { data, error } = await (supabase.from('prescribers' as any) as any)
+        .select('id, name')
+        .eq('referral_code', referralCode.toUpperCase().trim())
+        .eq('is_active', true)
+        .single();
+
+      if (data) {
+        setReferralValid(true);
+        toast.success(`Code valide ! Recommandé par ${data.name}`);
+      } else {
+        setReferralValid(false);
+        toast.error('Code parrainage invalide');
+      }
+    } catch {
+      setReferralValid(false);
+      toast.error('Code parrainage invalide');
+    } finally {
+      setIsValidating(false);
+    }
+  };
 
   if (items.length === 0) {
     return (
@@ -98,6 +131,48 @@ const Checkout = () => {
                       </div>
                     </div>
                   ))}
+                </CardContent>
+              </Card>
+
+              {/* Referral Code */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Tag className="h-5 w-5" />
+                    Code parrainage
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <Input
+                        placeholder="Entrez votre code"
+                        value={referralCode}
+                        onChange={(e) => {
+                          setReferralCode(e.target.value.toUpperCase());
+                          setReferralValid(null);
+                        }}
+                        className={cn(
+                          referralValid === true && "border-secondary",
+                          referralValid === false && "border-destructive"
+                        )}
+                      />
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      onClick={validateReferralCode}
+                      disabled={isValidating || !referralCode.trim()}
+                    >
+                      {referralValid === true ? (
+                        <Check className="h-4 w-4 text-secondary" />
+                      ) : (
+                        'Valider'
+                      )}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Si vous avez été recommandé par un professionnel de santé
+                  </p>
                 </CardContent>
               </Card>
 

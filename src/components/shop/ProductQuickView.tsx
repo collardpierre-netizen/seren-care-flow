@@ -59,23 +59,46 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
   const remainingForFreeShipping = Math.max(0, freeShippingThreshold - subtotal);
 
   const incontinenceLevelLabels: Record<string, string> = {
-    light: 'Légère',
-    moderate: 'Modérée',
-    heavy: 'Forte',
-    very_heavy: 'Très forte'
+    light: 'légère',
+    moderate: 'modérée',
+    heavy: 'forte',
+    very_heavy: 'très forte'
   };
 
   const mobilityLabels: Record<string, string> = {
-    mobile: 'Mobile',
-    reduced: 'Mobilité réduite',
-    bedridden: 'Alité'
+    mobile: 'mobile',
+    reduced: 'à mobilité réduite',
+    bedridden: 'alitée'
   };
 
-  const usageTimeLabels: Record<string, { label: string; icon: React.ReactNode }> = {
-    day: { label: 'Jour', icon: <Sun className="h-4 w-4" /> },
-    night: { label: 'Nuit', icon: <Moon className="h-4 w-4" /> },
-    day_night: { label: 'Jour & Nuit', icon: <Activity className="h-4 w-4" /> }
+  const usageTimeLabels: Record<string, { label: string; icon: React.ReactNode; phrase: string }> = {
+    day: { label: 'Jour', icon: <Sun className="h-4 w-4" />, phrase: 'la journée' },
+    night: { label: 'Nuit', icon: <Moon className="h-4 w-4" />, phrase: 'la nuit' },
+    day_night: { label: 'Jour & Nuit', icon: <Activity className="h-4 w-4" />, phrase: 'jour et nuit' }
   };
+
+  // Generate situation sentence
+  const generateSituationSentence = () => {
+    const parts: string[] = [];
+    
+    if (product.incontinence_level) {
+      parts.push(`incontinence ${incontinenceLevelLabels[product.incontinence_level]}`);
+    }
+    
+    if (product.mobility) {
+      parts.push(`personne ${mobilityLabels[product.mobility]}`);
+    }
+    
+    if (product.usage_time) {
+      parts.push(`usage ${usageTimeLabels[product.usage_time]?.phrase}`);
+    }
+    
+    if (parts.length === 0) return null;
+    
+    return `Idéal pour ${parts.join(', ')}.`;
+  };
+
+  const situationSentence = generateSituationSentence();
 
   const handleAddToCart = () => {
     if (sizes.length > 0 && !selectedSize) {
@@ -174,17 +197,20 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
               {product.short_description && (
                 <p className="text-muted-foreground mt-2">{product.short_description}</p>
               )}
+              {situationSentence && (
+                <p className="text-sm text-secondary mt-2 italic">{situationSentence}</p>
+              )}
             </div>
 
             {/* Product attributes */}
             <div className="flex flex-wrap gap-2">
               {product.incontinence_level && (
-                <Badge variant="outline">
+                <Badge variant="outline" className="capitalize">
                   {incontinenceLevelLabels[product.incontinence_level]}
                 </Badge>
               )}
               {product.mobility && (
-                <Badge variant="outline">
+                <Badge variant="outline" className="capitalize">
                   {mobilityLabels[product.mobility]}
                 </Badge>
               )}

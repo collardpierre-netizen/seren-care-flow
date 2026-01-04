@@ -32,6 +32,8 @@ import AdminCustomers from "./pages/admin/Customers";
 import AdminPages from "./pages/admin/Pages";
 import AdminMedia from "./pages/admin/Media";
 import AdminSettings from "./pages/admin/Settings";
+import AdminPrescribers from "./pages/admin/Prescribers";
+import AdminCommissions from "./pages/admin/Commissions";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +72,8 @@ const App = () => (
                 <Route path="commandes" element={<AdminOrders />} />
                 <Route path="abonnements" element={<AdminSubscriptions />} />
                 <Route path="clients" element={<AdminCustomers />} />
+                <Route path="prescripteurs" element={<AdminPrescribers />} />
+                <Route path="commissions" element={<AdminCommissions />} />
                 <Route path="pages" element={<AdminPages />} />
                 <Route path="medias" element={<AdminMedia />} />
                 <Route path="parametres" element={<AdminSettings />} />
