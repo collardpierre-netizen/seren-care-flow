@@ -1,13 +1,46 @@
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Layout from "@/components/Layout";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Heart, Phone, ClipboardList, ArrowRight, Clock } from "lucide-react";
+import { useState, useEffect } from "react";
 
 import guidedChoiceVideo from "@/assets/guided-choice-video.mov";
+import guidedChoiceImage1 from "@/assets/guided-choice-1.jpeg";
+import guidedChoiceImage2 from "@/assets/guided-choice-2.jpeg";
+
+type MediaItem = {
+  type: "video" | "image";
+  src: string;
+};
+
+const heroMedia: MediaItem[] = [
+  { type: "video", src: guidedChoiceVideo },
+  { type: "image", src: guidedChoiceImage1 },
+  { type: "image", src: guidedChoiceImage2 },
+];
 
 const GuidedChoice = () => {
+  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+
+  const handleVideoEnd = () => {
+    setCurrentMediaIndex((prev) => (prev + 1) % heroMedia.length);
+  };
+
+  useEffect(() => {
+    const currentItem = heroMedia[currentMediaIndex];
+    // Only auto-advance for images, videos advance on end
+    if (currentItem.type === "image") {
+      const interval = setInterval(() => {
+        setCurrentMediaIndex((prev) => (prev + 1) % heroMedia.length);
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [currentMediaIndex]);
+
+  const currentItem = heroMedia[currentMediaIndex];
+
   return (
     <>
       <Helmet>
@@ -40,26 +73,62 @@ const GuidedChoice = () => {
                 </p>
               </motion.div>
 
-              {/* Right: Video Media Zone */}
+              {/* Right: Media Zone with Slideshow */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.2, duration: 0.6 }}
                 className="relative"
               >
-                <div className="relative rounded-3xl overflow-hidden shadow-2xl">
-                  <video
-                    src={guidedChoiceVideo}
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    className="w-full h-auto aspect-[4/3] object-cover"
-                  />
+                <div className="relative rounded-3xl overflow-hidden shadow-2xl aspect-[4/3]">
+                  <AnimatePresence mode="wait">
+                    {currentItem.type === "video" ? (
+                      <motion.video
+                        key="video"
+                        src={currentItem.src}
+                        autoPlay
+                        muted
+                        playsInline
+                        onEnded={handleVideoEnd}
+                        className="w-full h-full object-cover"
+                        initial={{ opacity: 0, scale: 1.05 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.7 }}
+                      />
+                    ) : (
+                      <motion.img
+                        key={`image-${currentMediaIndex}`}
+                        src={currentItem.src}
+                        alt="Accompagnement personnalisé"
+                        className="w-full h-full object-cover"
+                        initial={{ opacity: 0, scale: 1.05 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.7 }}
+                      />
+                    )}
+                  </AnimatePresence>
                   {/* Subtle overlay gradient */}
                   <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent pointer-events-none" />
                 </div>
                 
+                {/* Slideshow indicators */}
+                <div className="flex justify-center gap-2 mt-4">
+                  {heroMedia.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentMediaIndex(index)}
+                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                        index === currentMediaIndex
+                          ? "bg-primary w-6"
+                          : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                      }`}
+                      aria-label={`Aller au média ${index + 1}`}
+                    />
+                  ))}
+                </div>
+
                 {/* Decorative elements */}
                 <div className="absolute -top-4 -right-4 w-24 h-24 bg-secondary/20 rounded-full blur-2xl" />
                 <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
