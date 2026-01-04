@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
-import { Menu, X, Phone } from "lucide-react";
+import { Menu, X, Phone, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -19,27 +19,27 @@ const Header = () => {
   const isActive = (href: string) => location.pathname === href;
 
   return (
-    <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
+    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/40">
       <nav className="container-main">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-[72px]">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-display font-bold text-xl">S</span>
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center transition-transform group-hover:scale-105">
+              <span className="text-primary-foreground font-display font-bold text-lg">S</span>
             </div>
-            <span className="font-display font-bold text-xl text-foreground">SerenCare</span>
+            <span className="font-display font-bold text-xl text-foreground tracking-tight">SerenCare</span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-1">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
-                className={`text-sm font-medium transition-colors duration-200 ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                   isActive(item.href)
-                    ? "text-primary"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "text-primary bg-highlight"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 }`}
               >
                 {item.name}
@@ -48,23 +48,29 @@ const Header = () => {
           </div>
 
           {/* CTA Buttons */}
-          <div className="hidden lg:flex items-center gap-4">
-            <Button variant="ghost" size="sm" className="gap-2">
+          <div className="hidden lg:flex items-center gap-3">
+            <a 
+              href="tel:0123456789" 
+              className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
               <Phone className="w-4 h-4" />
               <span>01 23 45 67 89</span>
-            </Button>
-            <Button asChild>
-              <Link to="/boutique">Commander</Link>
+            </a>
+            <Button asChild size="default">
+              <Link to="/boutique" className="gap-2">
+                Découvrir
+                <ChevronRight className="w-4 h-4" />
+              </Link>
             </Button>
           </div>
 
           {/* Mobile Menu Button */}
           <button
-            className="lg:hidden p-2 rounded-lg hover:bg-accent"
+            className="lg:hidden p-2.5 rounded-lg hover:bg-muted transition-colors"
             onClick={() => setIsOpen(!isOpen)}
             aria-label="Menu"
           >
-            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
 
@@ -75,9 +81,10 @@ const Header = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden overflow-hidden"
+              transition={{ duration: 0.2 }}
+              className="lg:hidden overflow-hidden border-t border-border/40"
             >
-              <div className="py-4 space-y-2">
+              <div className="py-4 space-y-1">
                 {navigation.map((item) => (
                   <Link
                     key={item.name}
@@ -85,20 +92,23 @@ const Header = () => {
                     onClick={() => setIsOpen(false)}
                     className={`block px-4 py-3 rounded-xl text-base font-medium transition-colors ${
                       isActive(item.href)
-                        ? "bg-primary/10 text-primary"
-                        : "text-foreground hover:bg-accent"
+                        ? "bg-highlight text-primary"
+                        : "text-foreground hover:bg-muted"
                     }`}
                   >
                     {item.name}
                   </Link>
                 ))}
-                <div className="pt-4 px-4 space-y-3">
-                  <Button variant="ghost" className="w-full justify-start gap-2">
+                <div className="pt-4 px-4 space-y-3 border-t border-border/40 mt-4">
+                  <a 
+                    href="tel:0123456789" 
+                    className="flex items-center gap-2 text-sm font-medium text-muted-foreground"
+                  >
                     <Phone className="w-4 h-4" />
-                    <span>01 23 45 67 89</span>
-                  </Button>
+                    01 23 45 67 89
+                  </a>
                   <Button asChild className="w-full">
-                    <Link to="/boutique">Commander</Link>
+                    <Link to="/boutique">Découvrir</Link>
                   </Button>
                 </div>
               </div>

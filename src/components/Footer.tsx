@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Phone, Mail, MapPin } from "lucide-react";
+import { Phone, Mail, ArrowUpRight } from "lucide-react";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -12,63 +12,54 @@ const Footer = () => {
       { name: "FAQ", href: "/faq" },
     ],
     prescripteurs: [
-      { name: "Infirmiers & Médecins", href: "/prescripteurs/professionnels" },
+      { name: "Professionnels de santé", href: "/prescripteurs/professionnels" },
       { name: "Pharmaciens", href: "/prescripteurs/pharmaciens" },
-      { name: "EHPAD & Résidences", href: "/prescripteurs/etablissements" },
+      { name: "Établissements", href: "/prescripteurs/etablissements" },
       { name: "Devenir partenaire", href: "/prescripteurs" },
     ],
     about: [
       { name: "Notre mission", href: "/a-propos" },
       { name: "Nos marques", href: "/marques" },
       { name: "Contact", href: "/contact" },
-      { name: "Blog", href: "/blog" },
-    ],
-    legal: [
-      { name: "Mentions légales", href: "/mentions-legales" },
-      { name: "CGV", href: "/cgv" },
-      { name: "Politique de confidentialité", href: "/confidentialite" },
-      { name: "Cookies", href: "/cookies" },
     ],
   };
 
   return (
-    <footer className="bg-card border-t border-border">
-      <div className="container-main py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
+    <footer className="bg-foreground text-background">
+      <div className="container-main py-16 md:py-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8">
           {/* Brand Column */}
-          <div className="lg:col-span-1">
-            <Link to="/" className="flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-display font-bold text-xl">S</span>
+          <div className="lg:col-span-2">
+            <Link to="/" className="flex items-center gap-3 mb-6">
+              <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
+                <span className="text-primary-foreground font-display font-bold text-lg">S</span>
               </div>
-              <span className="font-display font-bold text-xl text-foreground">SerenCare</span>
+              <span className="font-display font-bold text-xl text-background tracking-tight">SerenCare</span>
             </Link>
-            <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
-              La tranquillité d'esprit pour vous et vos proches. Des protections adaptées, livrées automatiquement.
+            <p className="text-background/70 text-sm mb-8 max-w-xs leading-relaxed">
+              La tranquillité d'esprit pour vous et vos proches. Des protections de qualité, livrées automatiquement.
             </p>
             <div className="space-y-3">
-              <a href="tel:0123456789" className="flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                <Phone className="w-4 h-4 text-primary" />
+              <a href="tel:0123456789" className="flex items-center gap-3 text-sm text-background/80 hover:text-background transition-colors group">
+                <Phone className="w-4 h-4" />
                 01 23 45 67 89
+                <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
               </a>
-              <a href="mailto:contact@serencare.fr" className="flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                <Mail className="w-4 h-4 text-primary" />
+              <a href="mailto:contact@serencare.fr" className="flex items-center gap-3 text-sm text-background/80 hover:text-background transition-colors group">
+                <Mail className="w-4 h-4" />
                 contact@serencare.fr
+                <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
               </a>
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <MapPin className="w-4 h-4 text-primary" />
-                Paris, France
-              </div>
             </div>
           </div>
 
           {/* Services */}
           <div>
-            <h4 className="font-display font-semibold text-foreground mb-4">Services</h4>
+            <h4 className="font-display font-semibold text-background text-sm uppercase tracking-wider mb-5">Services</h4>
             <ul className="space-y-3">
               {footerLinks.services.map((link) => (
                 <li key={link.name}>
-                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  <Link to={link.href} className="text-sm text-background/70 hover:text-background transition-colors">
                     {link.name}
                   </Link>
                 </li>
@@ -78,11 +69,11 @@ const Footer = () => {
 
           {/* Prescripteurs */}
           <div>
-            <h4 className="font-display font-semibold text-foreground mb-4">Prescripteurs</h4>
+            <h4 className="font-display font-semibold text-background text-sm uppercase tracking-wider mb-5">Prescripteurs</h4>
             <ul className="space-y-3">
               {footerLinks.prescripteurs.map((link) => (
                 <li key={link.name}>
-                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  <Link to={link.href} className="text-sm text-background/70 hover:text-background transition-colors">
                     {link.name}
                   </Link>
                 </li>
@@ -92,25 +83,11 @@ const Footer = () => {
 
           {/* À propos */}
           <div>
-            <h4 className="font-display font-semibold text-foreground mb-4">À propos</h4>
+            <h4 className="font-display font-semibold text-background text-sm uppercase tracking-wider mb-5">À propos</h4>
             <ul className="space-y-3">
               {footerLinks.about.map((link) => (
                 <li key={link.name}>
-                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Legal */}
-          <div>
-            <h4 className="font-display font-semibold text-foreground mb-4">Légal</h4>
-            <ul className="space-y-3">
-              {footerLinks.legal.map((link) => (
-                <li key={link.name}>
-                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  <Link to={link.href} className="text-sm text-background/70 hover:text-background transition-colors">
                     {link.name}
                   </Link>
                 </li>
@@ -120,20 +97,15 @@ const Footer = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-12 pt-8 border-t border-border">
+        <div className="mt-16 pt-8 border-t border-background/10">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-background/50">
               © {currentYear} SerenCare. Tous droits réservés.
             </p>
-            <div className="flex items-center gap-6">
-              <span className="text-xs text-muted-foreground">Marques partenaires :</span>
-              <div className="flex items-center gap-4 text-sm font-medium text-muted-foreground">
-                <span>TENA</span>
-                <span>•</span>
-                <span>Hartmann</span>
-                <span>•</span>
-                <span>Lille Healthcare</span>
-              </div>
+            <div className="flex items-center gap-6 text-xs text-background/50">
+              <Link to="/mentions-legales" className="hover:text-background/70 transition-colors">Mentions légales</Link>
+              <Link to="/cgv" className="hover:text-background/70 transition-colors">CGV</Link>
+              <Link to="/confidentialite" className="hover:text-background/70 transition-colors">Confidentialité</Link>
             </div>
           </div>
         </div>

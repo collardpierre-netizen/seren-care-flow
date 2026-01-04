@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,57 +6,52 @@
 
 @layer base {
   :root {
-    /* SerenCare Brand Colors */
-    --background: 40 33% 98%;
-    --foreground: 200 15% 20%;
+    /* SerenCare Premium Health-Tech Palette */
+    --background: 220 20% 98%;
+    --foreground: 220 30% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 200 15% 20%;
+    --card-foreground: 220 30% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 200 15% 20%;
+    --popover-foreground: 220 30% 12%;
 
-    /* Primary: Soft reassuring blue */
-    --primary: 195 22% 39%;
+    /* Primary: Confident deep blue */
+    --primary: 220 70% 45%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: Calm sage green */
-    --secondary: 153 25% 64%;
-    --secondary-foreground: 200 15% 20%;
+    /* Secondary: Soft sage for accents */
+    --secondary: 160 30% 50%;
+    --secondary-foreground: 0 0% 100%;
 
-    /* Muted */
-    --muted: 40 20% 94%;
-    --muted-foreground: 200 10% 45%;
+    /* Muted surfaces */
+    --muted: 220 15% 95%;
+    --muted-foreground: 220 15% 45%;
 
-    /* Accent: Warm sand */
-    --accent: 34 47% 91%;
-    --accent-foreground: 200 15% 20%;
+    /* Accent: Warm coral-peach for CTAs */
+    --accent: 15 80% 60%;
+    --accent-foreground: 0 0% 100%;
 
-    /* Warm peach for highlights */
-    --highlight: 20 75% 80%;
-    --highlight-foreground: 200 15% 20%;
+    /* Highlight: Light blue tint */
+    --highlight: 220 60% 95%;
+    --highlight-foreground: 220 70% 45%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 40 20% 88%;
-    --input: 40 20% 88%;
-    --ring: 195 22% 39%;
+    --border: 220 15% 90%;
+    --input: 220 15% 90%;
+    --ring: 220 70% 45%;
 
-    --radius: 1rem;
+    --radius: 0.75rem;
 
-    /* Custom gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(40 33% 98%) 0%, hsl(34 47% 95%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(40 20% 98%) 100%);
-    --gradient-primary: linear-gradient(135deg, hsl(195 22% 39%) 0%, hsl(195 30% 45%) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(153 25% 64%) 0%, hsl(153 30% 70%) 100%);
+    /* Premium shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(220 30% 12% / 0.03);
+    --shadow-md: 0 4px 6px -1px hsl(220 30% 12% / 0.05), 0 2px 4px -2px hsl(220 30% 12% / 0.05);
+    --shadow-lg: 0 10px 15px -3px hsl(220 30% 12% / 0.08), 0 4px 6px -4px hsl(220 30% 12% / 0.05);
+    --shadow-xl: 0 20px 25px -5px hsl(220 30% 12% / 0.1), 0 8px 10px -6px hsl(220 30% 12% / 0.05);
 
-    /* Shadows */
-    --shadow-soft: 0 4px 20px -4px hsl(200 15% 20% / 0.08);
-    --shadow-card: 0 8px 30px -8px hsl(200 15% 20% / 0.1);
-    --shadow-elevated: 0 12px 40px -12px hsl(200 15% 20% / 0.15);
-
-    /* Sidebar (keeping defaults) */
+    /* Sidebar defaults */
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -68,36 +63,36 @@
   }
 
   .dark {
-    --background: 200 20% 10%;
-    --foreground: 40 20% 95%;
+    --background: 220 25% 8%;
+    --foreground: 220 15% 95%;
 
-    --card: 200 18% 14%;
-    --card-foreground: 40 20% 95%;
+    --card: 220 25% 12%;
+    --card-foreground: 220 15% 95%;
 
-    --popover: 200 18% 14%;
-    --popover-foreground: 40 20% 95%;
+    --popover: 220 25% 12%;
+    --popover-foreground: 220 15% 95%;
 
-    --primary: 195 30% 55%;
-    --primary-foreground: 200 20% 10%;
+    --primary: 220 70% 55%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 153 25% 50%;
-    --secondary-foreground: 200 20% 10%;
+    --secondary: 160 30% 45%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 200 15% 18%;
-    --muted-foreground: 40 15% 65%;
+    --muted: 220 20% 18%;
+    --muted-foreground: 220 15% 60%;
 
-    --accent: 34 30% 25%;
-    --accent-foreground: 40 20% 95%;
+    --accent: 15 80% 55%;
+    --accent-foreground: 0 0% 100%;
 
-    --highlight: 20 50% 40%;
-    --highlight-foreground: 40 20% 95%;
+    --highlight: 220 40% 18%;
+    --highlight-foreground: 220 70% 70%;
 
     --destructive: 0 62% 30%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 200 15% 22%;
-    --input: 200 15% 22%;
-    --ring: 195 30% 55%;
+    --border: 220 20% 20%;
+    --input: 220 20% 20%;
+    --ring: 220 70% 55%;
 
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
@@ -115,56 +110,47 @@
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'DM Sans', sans-serif;
-    @apply font-semibold tracking-tight;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    @apply font-bold tracking-tight;
   }
 }
 
 @layer components {
   .container-main {
-    @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+    @apply mx-auto max-w-7xl px-5 sm:px-6 lg:px-8;
   }
 
   .section-padding {
-    @apply py-16 md:py-24;
+    @apply py-20 md:py-28 lg:py-32;
   }
 
-  .card-elevated {
-    @apply bg-card rounded-2xl shadow-card border border-border/50;
-    background: var(--gradient-card);
+  .card-premium {
+    @apply bg-card rounded-2xl border border-border/60;
+    box-shadow: var(--shadow-lg);
   }
 
-  .text-balance {
-    text-wrap: balance;
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary;
   }
 
-  .btn-primary {
-    @apply bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 rounded-xl px-6 py-3 font-medium;
-  }
-
-  .btn-secondary {
-    @apply bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-all duration-300 rounded-xl px-6 py-3 font-medium;
-  }
-
-  .btn-outline {
-    @apply border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300 rounded-xl px-6 py-3 font-medium;
+  .link-underline {
+    @apply relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full;
   }
 }
 
 @layer utilities {
-  .animation-delay-200 {
-    animation-delay: 200ms;
-  }
-  .animation-delay-400 {
-    animation-delay: 400ms;
-  }
-  .animation-delay-600 {
-    animation-delay: 600ms;
-  }
+  .animation-delay-100 { animation-delay: 100ms; }
+  .animation-delay-200 { animation-delay: 200ms; }
+  .animation-delay-300 { animation-delay: 300ms; }
+  .animation-delay-400 { animation-delay: 400ms; }
 }
