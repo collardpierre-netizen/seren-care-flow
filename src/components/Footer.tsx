@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Phone, Mail, ArrowUpRight } from "lucide-react";
+import { Phone, Mail, ArrowUpRight, MapPin, Clock } from "lucide-react";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -8,19 +8,19 @@ const Footer = () => {
     services: [
       { name: "Boutique", href: "/boutique" },
       { name: "Aide au choix", href: "/aide-au-choix" },
-      { name: "Abonnement", href: "/abonnement" },
-      { name: "FAQ", href: "/faq" },
+      { name: "Abonnement", href: "/boutique?mode=subscription" },
+      { name: "FAQ", href: "/a-propos#faq" },
     ],
     prescripteurs: [
-      { name: "Professionnels de santé", href: "/prescripteurs/professionnels" },
-      { name: "Pharmaciens", href: "/prescripteurs/pharmaciens" },
-      { name: "Établissements", href: "/prescripteurs/etablissements" },
-      { name: "Devenir partenaire", href: "/prescripteurs" },
+      { name: "Espace Pro", href: "/prescripteurs" },
+      { name: "Maisons de repos & EHPAD", href: "/prescripteurs#contact" },
+      { name: "Médecins & Spécialistes", href: "/prescripteurs#contact" },
+      { name: "Devenir partenaire", href: "/prescripteurs#contact" },
     ],
     about: [
       { name: "Notre mission", href: "/a-propos" },
       { name: "Nos marques", href: "/marques" },
-      { name: "Contact", href: "/contact" },
+      { name: "Contact", href: "/a-propos#faq" },
     ],
   };
 
@@ -36,20 +36,31 @@ const Footer = () => {
               </div>
               <span className="font-display font-bold text-xl text-background tracking-tight">SerenCare</span>
             </Link>
-            <p className="text-background/70 text-sm mb-8 max-w-xs leading-relaxed">
+            <p className="text-background/70 text-sm mb-6 max-w-xs leading-relaxed">
               La tranquillité d'esprit pour vous et vos proches. Des protections de qualité, livrées automatiquement.
             </p>
-            <div className="space-y-3">
-              <a href="tel:0123456789" className="flex items-center gap-3 text-sm text-background/80 hover:text-background transition-colors group">
+            
+            {/* Contact Info */}
+            <div className="space-y-3 mb-6">
+              <p className="text-sm font-medium text-background">Pharmacie Allard</p>
+              <a href="tel:+3202648422" className="flex items-center gap-3 text-sm text-background/80 hover:text-background transition-colors group">
                 <Phone className="w-4 h-4" />
-                01 23 45 67 89
+                +32 02 648 42 22
                 <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
               </a>
-              <a href="mailto:contact@serencare.fr" className="flex items-center gap-3 text-sm text-background/80 hover:text-background transition-colors group">
+              <a href="mailto:contact@pharmacie-allard.be" className="flex items-center gap-3 text-sm text-background/80 hover:text-background transition-colors group">
                 <Mail className="w-4 h-4" />
-                contact@serencare.fr
+                contact@pharmacie-allard.be
                 <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
               </a>
+              <div className="flex items-center gap-3 text-sm text-background/80">
+                <Clock className="w-4 h-4" />
+                Lun-Dim 8h-20h
+              </div>
+              <div className="flex items-start gap-3 text-sm text-background/80">
+                <MapPin className="w-4 h-4 mt-0.5" />
+                <span>Av. de l'Hippodrome 148<br />1050 Ixelles, Belgique</span>
+              </div>
             </div>
           </div>
 
