@@ -26,16 +26,38 @@ const AdminSubscriptions: React.FC = () => {
   const { data: subscriptions, isLoading } = useQuery({
     queryKey: ['admin-subscriptions'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: subsData, error } = await supabase
         .from('subscriptions')
-        .select(`
-          *,
-          profile:profiles(first_name, last_name, email),
-          items:subscription_items(*, product:products(name))
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data;
+      
+      // Fetch profiles separately
+      const userIds = [...new Set(subsData?.map(s => s.user_id).filter(Boolean))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, email')
+        .in('id', userIds);
+      
+      // Fetch subscription items
+      const subIds = subsData?.map(s => s.id) || [];
+      const { data: items } = await supabase
+        .from('subscription_items')
+        .select('*, product:products(name)')
+        .in('subscription_id', subIds);
+      
+      const profileMap = new Map(profiles?.map(p => [p.id, p]));
+      const itemsMap = new Map<string, any[]>();
+      items?.forEach(item => {
+        const existing = itemsMap.get(item.subscription_id) || [];
+        itemsMap.set(item.subscription_id, [...existing, item]);
+      });
+      
+      return subsData?.map(sub => ({
+        ...sub,
+        profile: profileMap.get(sub.user_id),
+        items: itemsMap.get(sub.id) || []
+      }));
     },
   });
 
