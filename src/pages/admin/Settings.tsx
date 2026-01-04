@@ -30,12 +30,14 @@ const AdminSettings: React.FC = () => {
   const [shippingThreshold, setShippingThreshold] = React.useState('');
   const [shippingFee, setShippingFee] = React.useState('');
   const [subscriptionDiscount, setSubscriptionDiscount] = React.useState('');
+  const [minimumOrderAmount, setMinimumOrderAmount] = React.useState('');
 
   React.useEffect(() => {
     if (settings) {
       setShippingThreshold(settings.shipping?.free_shipping_threshold?.toString() || '49');
       setShippingFee(settings.shipping?.standard_shipping_fee?.toString() || '4.90');
       setSubscriptionDiscount(settings.subscription?.discount_percent?.toString() || '10');
+      setMinimumOrderAmount(settings.checkout?.minimum_order_amount?.toString() || '25');
     }
   }, [settings]);
 
@@ -56,6 +58,12 @@ const AdminSettings: React.FC = () => {
             value: {
               discount_percent: parseInt(subscriptionDiscount),
               default_frequency_days: 30
+            }
+          },
+          {
+            key: 'checkout',
+            value: {
+              minimum_order_amount: parseFloat(minimumOrderAmount)
             }
           }
         ], { onConflict: 'key' });
@@ -112,6 +120,29 @@ const AdminSettings: React.FC = () => {
                   onChange={(e) => setShippingFee(e.target.value)}
                 />
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Commandes</CardTitle>
+            <CardDescription>Configurez les règles de commande</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="minOrder">Montant minimum de commande (€)</Label>
+              <Input
+                id="minOrder"
+                type="number"
+                step="0.01"
+                value={minimumOrderAmount}
+                onChange={(e) => setMinimumOrderAmount(e.target.value)}
+                className="max-w-[200px]"
+              />
+              <p className="text-xs text-muted-foreground">
+                Les clients ne pourront pas commander en dessous de ce montant.
+              </p>
             </div>
           </CardContent>
         </Card>
