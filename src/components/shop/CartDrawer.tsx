@@ -25,10 +25,13 @@ const CartDrawer: React.FC = () => {
   const savings = getSubscriptionSavings();
   const freeShippingThreshold = settings?.shipping?.free_shipping_threshold || 49;
   const shippingFee = settings?.shipping?.standard_shipping_fee || 4.90;
+  const minimumOrderAmount = settings?.checkout?.minimum_order_amount || 25;
   const remainingForFreeShipping = Math.max(0, freeShippingThreshold - subtotal);
   const isFreeShipping = subtotal >= freeShippingThreshold;
   const shippingCost = isFreeShipping ? 0 : shippingFee;
   const total = subtotal + shippingCost;
+  const isMinimumMet = subtotal >= minimumOrderAmount;
+  const remainingForMinimum = Math.max(0, minimumOrderAmount - subtotal);
 
   return (
     <Sheet open={isOpen} onOpenChange={closeCart}>
@@ -170,10 +173,37 @@ const CartDrawer: React.FC = () => {
                 <span>{total.toFixed(2)} €</span>
               </div>
               
-              <Button className="w-full h-12" size="lg" asChild>
-                <Link to="/checkout" onClick={closeCart}>
-                  Passer commande
-                </Link>
+              {/* Minimum order warning */}
+              {!isMinimumMet && (
+                <div className="p-3 bg-destructive/10 rounded-lg text-sm">
+                  <p className="text-destructive font-medium">
+                    Commande minimum: {minimumOrderAmount.toFixed(2)} €
+                  </p>
+                  <p className="text-muted-foreground mt-1">
+                    Ajoutez encore {remainingForMinimum.toFixed(2)} € pour commander.
+                  </p>
+                  <div className="w-full h-2 bg-muted rounded-full overflow-hidden mt-2">
+                    <div 
+                      className="h-full bg-destructive transition-all"
+                      style={{ width: `${Math.min(100, (subtotal / minimumOrderAmount) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+              
+              <Button 
+                className="w-full h-12" 
+                size="lg" 
+                asChild={isMinimumMet}
+                disabled={!isMinimumMet}
+              >
+                {isMinimumMet ? (
+                  <Link to="/checkout" onClick={closeCart}>
+                    Passer commande
+                  </Link>
+                ) : (
+                  <span>Passer commande</span>
+                )}
               </Button>
             </div>
           </>

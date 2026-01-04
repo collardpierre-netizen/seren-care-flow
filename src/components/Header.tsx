@@ -96,7 +96,7 @@ const Header = () => {
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem asChild>
-                    <Link to="/boutique">Mon compte</Link>
+                    <Link to="/mon-compte">Mon compte</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>

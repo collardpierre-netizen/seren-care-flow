@@ -1,8 +1,8 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Product } from '@/hooks/useProducts';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
 
 interface ProductCardProps {
   product: Product;
@@ -19,23 +19,29 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
       className="group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
       onClick={onClick}
     >
-      <div className="relative aspect-square bg-muted/30 overflow-hidden">
-        <img
-          src={primaryImage?.image_url || '/placeholder.svg'}
-          alt={primaryImage?.alt_text || product.name}
-          className="w-full h-full object-contain p-4 transition-transform duration-300 group-hover:scale-105"
-        />
-        {hasSubscription && (
-          <Badge className="absolute top-3 right-3 bg-secondary text-secondary-foreground">
-            -{discountPercent}% abo
-          </Badge>
-        )}
-        {product.is_featured && (
-          <Badge className="absolute top-3 left-3" variant="outline">
-            Recommandé
-          </Badge>
-        )}
-      </div>
+      <Link 
+        to={`/produit/${product.slug}`}
+        onClick={(e) => e.stopPropagation()}
+        className="block"
+      >
+        <div className="relative aspect-square bg-muted/30 overflow-hidden">
+          <img
+            src={primaryImage?.image_url || '/placeholder.svg'}
+            alt={primaryImage?.alt_text || product.name}
+            className="w-full h-full object-contain p-4 transition-transform duration-300 group-hover:scale-105"
+          />
+          {hasSubscription && (
+            <Badge className="absolute top-3 right-3 bg-secondary text-secondary-foreground">
+              -{discountPercent}% abo
+            </Badge>
+          )}
+          {product.is_featured && (
+            <Badge className="absolute top-3 left-3" variant="outline">
+              Recommandé
+            </Badge>
+          )}
+        </div>
+      </Link>
       <CardContent className="p-4">
         {product.brand && (
           <p className="text-xs text-muted-foreground mb-1">{product.brand.name}</p>
