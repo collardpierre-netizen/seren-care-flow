@@ -106,18 +106,18 @@ const About = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.1 }}
-                className="space-y-6"
+                className="flex flex-col items-center justify-center"
               >
-                <div className="rounded-2xl overflow-hidden">
+                <div className="w-32 md:w-40 rounded-xl overflow-hidden shadow-md">
                   <img 
                     src={foundersImage} 
                     alt="Olivier & Pierre, fondateurs de SerenCare" 
                     className="w-full h-auto"
                   />
                 </div>
-                <div className="text-center">
-                  <p className="font-display font-semibold text-foreground text-lg">Olivier & Pierre</p>
-                  <p className="text-sm text-muted-foreground">Fondateurs de SerenCare</p>
+                <div className="text-center mt-4">
+                  <p className="font-display font-semibold text-foreground">Olivier & Pierre</p>
+                  <p className="text-xs text-muted-foreground">Fondateurs</p>
                 </div>
               </motion.div>
             </div>
