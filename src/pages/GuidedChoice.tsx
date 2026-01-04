@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Heart, Phone, ClipboardList, ArrowRight, Clock } from "lucide-react";
 import { useState, useEffect } from "react";
+import CallbackFormCompact from "@/components/CallbackFormCompact";
 
 import guidedChoiceVideo from "@/assets/guided-choice-video.mov";
 import guidedChoiceImage1 from "@/assets/guided-choice-1.jpeg";
@@ -211,7 +212,7 @@ const GuidedChoice = () => {
                   </Button>
                 </motion.div>
 
-                {/* Call Option */}
+                {/* Callback Option */}
                 <motion.div
                   initial={{ opacity: 0, y: 16 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -227,43 +228,11 @@ const GuidedChoice = () => {
                     Parler à quelqu'un
                   </h3>
 
-                  <div className="flex items-center gap-2 text-sm text-primary-foreground/80 mb-4">
-                    <Clock className="w-4 h-4" />
-                    <span>10-15 minutes</span>
-                  </div>
-
-                  <p className="text-primary-foreground/80 mb-6 flex-1">
-                    Préférez discuter ? Notre équipe vous écoute et vous conseille.
+                  <p className="text-primary-foreground/80 mb-6">
+                    Préférez discuter ? Laissez-nous vos coordonnées, nous vous rappelons.
                   </p>
 
-                  <ul className="space-y-2.5 mb-8">
-                    {[
-                      "Écoute bienveillante",
-                      "Conseils personnalisés",
-                      "Sans engagement",
-                    ].map((item) => (
-                      <li key={item} className="flex items-center gap-3 text-sm text-primary-foreground">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground/50" />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-
-                  <Button
-                    asChild
-                    size="lg"
-                    variant="white"
-                    className="w-full"
-                  >
-                    <a href="tel:+3202648422" className="gap-2">
-                      <Phone className="w-5 h-5" />
-                      +32 02 648 42 22
-                    </a>
-                  </Button>
-
-                  <p className="text-center text-xs text-primary-foreground/60 mt-4">
-                    Lun-Dim, 8h-20h
-                  </p>
+                  <CallbackFormCompact variant="light" />
                 </motion.div>
               </div>
             </div>
