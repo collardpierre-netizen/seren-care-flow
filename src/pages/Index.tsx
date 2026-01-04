@@ -1,13 +1,29 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { Helmet } from "react-helmet-async";
+import Layout from "@/components/Layout";
+import HeroSection from "@/components/home/HeroSection";
+import HowItWorks from "@/components/home/HowItWorks";
+import TrustSection from "@/components/home/TrustSection";
+import BenefitsSection from "@/components/home/BenefitsSection";
+import CTASection from "@/components/home/CTASection";
 
 const Index = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <>
+      <Helmet>
+        <title>SerenCare - Protections pour seniors livrées automatiquement</title>
+        <meta 
+          name="description" 
+          content="SerenCare vous accompagne dans le choix des protections adaptées pour vos proches. Livraison automatique, accompagnement humain, sans engagement." 
+        />
+      </Helmet>
+      <Layout>
+        <HeroSection />
+        <HowItWorks />
+        <BenefitsSection />
+        <TrustSection />
+        <CTASection />
+      </Layout>
+    </>
   );
 };
 
