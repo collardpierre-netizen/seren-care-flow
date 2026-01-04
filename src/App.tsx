@@ -4,6 +4,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
+import { AuthProvider } from "./contexts/AuthContext";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+import CartDrawer from "./components/shop/CartDrawer";
+
+// Public pages
 import Index from "./pages/Index";
 import Shop from "./pages/Shop";
 import GuidedChoice from "./pages/GuidedChoice";
@@ -11,29 +16,65 @@ import Questionnaire from "./pages/Questionnaire";
 import Prescribers from "./pages/Prescribers";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
+import LoginPage from "./pages/Login";
+import RegisterPage from "./pages/Register";
+
+// Admin pages
+import AdminLayout from "./components/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/Dashboard";
+import AdminProducts from "./pages/admin/Products";
+import AdminOrders from "./pages/admin/Orders";
+import AdminSubscriptions from "./pages/admin/Subscriptions";
+import AdminCustomers from "./pages/admin/Customers";
+import AdminPages from "./pages/admin/Pages";
+import AdminMedia from "./pages/admin/Media";
+import AdminSettings from "./pages/admin/Settings";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/boutique" element={<Shop />} />
-            <Route path="/aide-au-choix" element={<GuidedChoice />} />
-            <Route path="/questionnaire" element={<Questionnaire />} />
-            <Route path="/prescripteurs" element={<Prescribers />} />
-            <Route path="/prescripteurs/:type" element={<Prescribers />} />
-            <Route path="/a-propos" element={<About />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <CartDrawer />
+          <BrowserRouter>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<Index />} />
+              <Route path="/boutique" element={<Shop />} />
+              <Route path="/aide-au-choix" element={<GuidedChoice />} />
+              <Route path="/questionnaire" element={<Questionnaire />} />
+              <Route path="/prescripteurs" element={<Prescribers />} />
+              <Route path="/prescripteurs/:type" element={<Prescribers />} />
+              <Route path="/a-propos" element={<About />} />
+              <Route path="/connexion" element={<LoginPage />} />
+              <Route path="/inscription" element={<RegisterPage />} />
+
+              {/* Admin routes */}
+              <Route path="/admin" element={
+                <ProtectedRoute requireAdmin>
+                  <AdminLayout />
+                </ProtectedRoute>
+              }>
+                <Route index element={<AdminDashboard />} />
+                <Route path="produits" element={<AdminProducts />} />
+                <Route path="commandes" element={<AdminOrders />} />
+                <Route path="abonnements" element={<AdminSubscriptions />} />
+                <Route path="clients" element={<AdminCustomers />} />
+                <Route path="pages" element={<AdminPages />} />
+                <Route path="medias" element={<AdminMedia />} />
+                <Route path="parametres" element={<AdminSettings />} />
+              </Route>
+
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
     </QueryClientProvider>
   </HelmetProvider>
 );

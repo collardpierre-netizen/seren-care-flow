@@ -28,12 +28,25 @@ const AdminOrders: React.FC = () => {
   const { data: orders, isLoading } = useQuery({
     queryKey: ['admin-orders'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: ordersData, error } = await supabase
         .from('orders')
-        .select(`*, profile:profiles(first_name, last_name, email)`)
+        .select('*')
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data;
+      
+      // Fetch profiles separately
+      const userIds = [...new Set(ordersData?.map(o => o.user_id).filter(Boolean))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, email')
+        .in('id', userIds);
+      
+      const profileMap = new Map(profiles?.map(p => [p.id, p]));
+      
+      return ordersData?.map(order => ({
+        ...order,
+        profile: order.user_id ? profileMap.get(order.user_id) : null
+      }));
     },
   });
 
