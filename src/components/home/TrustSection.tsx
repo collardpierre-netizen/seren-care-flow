@@ -1,21 +1,27 @@
 import { motion } from "framer-motion";
 import { Shield, Check } from "lucide-react";
+import tenaLogo from "@/assets/tena-logo.png";
+import hartmannLogo from "@/assets/hartmann-logo.png";
+import lilleLogo from "@/assets/lille-logo.png";
 
 const brands = [
   {
     name: "TENA",
     tagline: "Leader mondial",
     description: "Plus de 50 ans d'expertise dans le soin et le confort.",
+    logo: tenaLogo,
   },
   {
     name: "Hartmann",
     tagline: "Qualité allemande",
     description: "Innovation et rigueur au service de votre bien-être.",
+    logo: hartmannLogo,
   },
   {
     name: "Lille Healthcare",
     tagline: "Excellence française",
     description: "Savoir-faire local, engagement éco-responsable.",
+    logo: lilleLogo,
   },
 ];
 
@@ -69,10 +75,12 @@ const TrustSection = () => {
                 className="bg-card rounded-2xl p-6 border border-border/60 shadow-md hover:shadow-lg transition-all duration-300 group"
               >
                 <div className="flex items-start gap-4">
-                  <div className="w-14 h-14 rounded-xl bg-primary flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                    <span className="text-primary-foreground font-display font-bold text-lg">
-                      {brand.name.charAt(0)}
-                    </span>
+                  <div className="w-14 h-14 rounded-xl bg-white flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform overflow-hidden p-1.5 border border-border/40">
+                    <img 
+                      src={brand.logo} 
+                      alt={`Logo ${brand.name}`}
+                      className="w-full h-full object-contain"
+                    />
                   </div>
                   <div>
                     <div className="flex items-center gap-3 mb-1">
