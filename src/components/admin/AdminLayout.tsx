@@ -15,7 +15,8 @@ import {
   LogOut,
   Menu,
   X,
-  ChevronDown
+  UserCheck,
+  Euro
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -26,6 +27,8 @@ const navItems = [
   { label: 'Commandes', href: '/admin/commandes', icon: ShoppingCart },
   { label: 'Abonnements', href: '/admin/abonnements', icon: RefreshCw },
   { label: 'Clients', href: '/admin/clients', icon: Users },
+  { label: 'Prescripteurs', href: '/admin/prescripteurs', icon: UserCheck },
+  { label: 'Commissions', href: '/admin/commissions', icon: Euro },
   { label: 'Pages', href: '/admin/pages', icon: FileText },
   { label: 'Médias', href: '/admin/medias', icon: Image },
   { label: 'Paramètres', href: '/admin/parametres', icon: Settings },

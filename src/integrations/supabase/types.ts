@@ -177,6 +177,64 @@ export type Database = {
           },
         ]
       }
+      commissions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          notes: string | null
+          order_id: string | null
+          paid_at: string | null
+          prescriber_id: string
+          status: string
+          subscription_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          paid_at?: string | null
+          prescriber_id: string
+          status?: string
+          subscription_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          paid_at?: string | null
+          prescriber_id?: string
+          status?: string
+          subscription_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commissions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commissions_prescriber_id_fkey"
+            columns: ["prescriber_id"]
+            isOneToOne: false
+            referencedRelation: "prescribers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commissions_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       media: {
         Row: {
           alt_text: string | null
@@ -297,6 +355,8 @@ export type Database = {
           is_subscription_order: boolean | null
           notes: string | null
           order_number: string
+          prescriber_id: string | null
+          referral_code: string | null
           shipping_address: Json | null
           shipping_fee: number | null
           status: Database["public"]["Enums"]["order_status"]
@@ -315,6 +375,8 @@ export type Database = {
           is_subscription_order?: boolean | null
           notes?: string | null
           order_number: string
+          prescriber_id?: string | null
+          referral_code?: string | null
           shipping_address?: Json | null
           shipping_fee?: number | null
           status?: Database["public"]["Enums"]["order_status"]
@@ -333,6 +395,8 @@ export type Database = {
           is_subscription_order?: boolean | null
           notes?: string | null
           order_number?: string
+          prescriber_id?: string | null
+          referral_code?: string | null
           shipping_address?: Json | null
           shipping_fee?: number | null
           status?: Database["public"]["Enums"]["order_status"]
@@ -343,7 +407,15 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "orders_prescriber_id_fkey"
+            columns: ["prescriber_id"]
+            isOneToOne: false
+            referencedRelation: "prescribers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pages: {
         Row: {
@@ -381,6 +453,54 @@ export type Database = {
           slug?: string
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      prescribers: {
+        Row: {
+          address: string | null
+          commission_rate: number
+          created_at: string
+          email: string
+          id: string
+          is_active: boolean
+          name: string
+          organization: string | null
+          phone: string | null
+          referral_code: string
+          type: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          address?: string | null
+          commission_rate?: number
+          created_at?: string
+          email: string
+          id?: string
+          is_active?: boolean
+          name: string
+          organization?: string | null
+          phone?: string | null
+          referral_code: string
+          type: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          address?: string | null
+          commission_rate?: number
+          created_at?: string
+          email?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          organization?: string | null
+          phone?: string | null
+          referral_code?: string
+          type?: string
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -670,6 +790,8 @@ export type Database = {
           frequency_days: number | null
           id: string
           next_delivery_date: string | null
+          prescriber_id: string | null
+          referral_code: string | null
           shipping_address: Json | null
           status: Database["public"]["Enums"]["subscription_status"]
           stripe_subscription_id: string | null
@@ -682,6 +804,8 @@ export type Database = {
           frequency_days?: number | null
           id?: string
           next_delivery_date?: string | null
+          prescriber_id?: string | null
+          referral_code?: string | null
           shipping_address?: Json | null
           status?: Database["public"]["Enums"]["subscription_status"]
           stripe_subscription_id?: string | null
@@ -694,6 +818,8 @@ export type Database = {
           frequency_days?: number | null
           id?: string
           next_delivery_date?: string | null
+          prescriber_id?: string | null
+          referral_code?: string | null
           shipping_address?: Json | null
           status?: Database["public"]["Enums"]["subscription_status"]
           stripe_subscription_id?: string | null
@@ -701,7 +827,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_prescriber_id_fkey"
+            columns: ["prescriber_id"]
+            isOneToOne: false
+            referencedRelation: "prescribers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
