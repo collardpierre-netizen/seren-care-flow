@@ -2,7 +2,6 @@ import { Helmet } from "react-helmet-async";
 import Layout from "@/components/Layout";
 import { motion } from "framer-motion";
 import { Heart, Users, Shield, Sparkles, Phone, Mail, MapPin, Clock } from "lucide-react";
-import foundersImage from "@/assets/founders.png";
 import {
   Accordion,
   AccordionContent,
@@ -76,51 +75,30 @@ const About = () => {
         {/* Story */}
         <section className="section-padding">
           <div className="container-main">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-              >
-                <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-6">
-                  Pourquoi SerenCare ?
-                </h2>
-                <div className="space-y-4 text-muted-foreground leading-relaxed">
-                  <p>
-                    Quand on accompagne un parent âgé, les décisions s'accumulent. 
-                    Le choix des protections ne devrait pas être une source de stress.
-                  </p>
-                  <p>
-                    Face aux rayons de supermarché ou aux sites médicaux complexes, 
-                    beaucoup se sentent perdus. Quelle absorption ? Quelle taille ?
-                  </p>
-                  <p className="text-foreground font-medium">
-                    SerenCare est né de cette observation : les familles méritent un accompagnement humain, 
-                    des produits de qualité, et la certitude que tout arrivera sans y penser.
-                  </p>
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.1 }}
-                className="flex flex-col items-center justify-center"
-              >
-                <div className="w-32 md:w-40 rounded-xl overflow-hidden shadow-md">
-                  <img 
-                    src={foundersImage} 
-                    alt="Olivier & Pierre, fondateurs de SerenCare" 
-                    className="w-full h-auto"
-                  />
-                </div>
-                <div className="text-center mt-4">
-                  <p className="font-display font-semibold text-foreground">Olivier & Pierre</p>
-                  <p className="text-xs text-muted-foreground">Fondateurs</p>
-                </div>
-              </motion.div>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="max-w-2xl"
+            >
+              <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-6">
+                Pourquoi SerenCare ?
+              </h2>
+              <div className="space-y-4 text-muted-foreground leading-relaxed">
+                <p>
+                  Quand on accompagne un parent âgé, les décisions s'accumulent. 
+                  Le choix des protections ne devrait pas être une source de stress.
+                </p>
+                <p>
+                  Face aux rayons de supermarché ou aux sites médicaux complexes, 
+                  beaucoup se sentent perdus. Quelle absorption ? Quelle taille ?
+                </p>
+                <p className="text-foreground font-medium">
+                  SerenCare est né de cette observation : les familles méritent un accompagnement humain, 
+                  des produits de qualité, et la certitude que tout arrivera sans y penser.
+                </p>
+              </div>
+            </motion.div>
           </div>
         </section>
 
