@@ -1,6 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import Layout from "@/components/Layout";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
 import { Heart, Users, Shield, Sparkles, Phone, Mail, MapPin, Clock } from "lucide-react";
 import {
   Accordion,
@@ -8,6 +9,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+
+import aboutImage1 from "@/assets/about-1.jpeg";
+import aboutImage2 from "@/assets/about-2.jpeg";
+import aboutImage3 from "@/assets/about-3.jpeg";
+import aboutImage4 from "@/assets/about-4.jpeg";
+
+const aboutImages = [aboutImage1, aboutImage2, aboutImage3, aboutImage4];
 
 const faqItems = [
   {
@@ -45,6 +53,15 @@ const faqItems = [
 ];
 
 const About = () => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % aboutImages.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <>
       <Helmet>
@@ -72,33 +89,80 @@ const About = () => {
           </div>
         </section>
 
-        {/* Story */}
+        {/* Story with Media Zone */}
         <section className="section-padding">
           <div className="container-main">
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="max-w-2xl"
-            >
-              <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-6">
-                Pourquoi SerenCare ?
-              </h2>
-              <div className="space-y-4 text-muted-foreground leading-relaxed">
-                <p>
-                  Quand on accompagne un parent âgé, les décisions s'accumulent. 
-                  Le choix des protections ne devrait pas être une source de stress.
-                </p>
-                <p>
-                  Face aux rayons de supermarché ou aux sites médicaux complexes, 
-                  beaucoup se sentent perdus. Quelle absorption ? Quelle taille ?
-                </p>
-                <p className="text-foreground font-medium">
-                  SerenCare est né de cette observation : les familles méritent un accompagnement humain, 
-                  des produits de qualité, et la certitude que tout arrivera sans y penser.
-                </p>
-              </div>
-            </motion.div>
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              {/* Media zone à gauche */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                className="relative order-2 lg:order-1"
+              >
+                <div className="relative rounded-3xl overflow-hidden shadow-2xl aspect-[4/3]">
+                  <AnimatePresence mode="wait">
+                    <motion.img
+                      key={currentImageIndex}
+                      src={aboutImages[currentImageIndex]}
+                      alt="Personnes heureuses et actives"
+                      className="w-full h-full object-cover"
+                      initial={{ opacity: 0, scale: 1.05 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.7 }}
+                    />
+                  </AnimatePresence>
+                  <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent pointer-events-none" />
+                </div>
+                
+                {/* Slideshow indicators */}
+                <div className="flex justify-center gap-2 mt-4">
+                  {aboutImages.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentImageIndex(index)}
+                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                        index === currentImageIndex
+                          ? "bg-primary w-6"
+                          : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                      }`}
+                      aria-label={`Aller à l'image ${index + 1}`}
+                    />
+                  ))}
+                </div>
+
+                {/* Decorative elements */}
+                <div className="absolute -top-4 -left-4 w-24 h-24 bg-secondary/20 rounded-full blur-2xl" />
+                <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-primary/10 rounded-full blur-2xl" />
+              </motion.div>
+
+              {/* Text content à droite */}
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="order-1 lg:order-2"
+              >
+                <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-6">
+                  Pourquoi SerenCare ?
+                </h2>
+                <div className="space-y-4 text-muted-foreground leading-relaxed">
+                  <p>
+                    Quand on accompagne un parent âgé, les décisions s'accumulent. 
+                    Le choix des protections ne devrait pas être une source de stress.
+                  </p>
+                  <p>
+                    Face aux rayons de supermarché ou aux sites médicaux complexes, 
+                    beaucoup se sentent perdus. Quelle absorption ? Quelle taille ?
+                  </p>
+                  <p className="text-foreground font-medium">
+                    SerenCare est né de cette observation : les familles méritent un accompagnement humain, 
+                    des produits de qualité, et la certitude que tout arrivera sans y penser.
+                  </p>
+                </div>
+              </motion.div>
+            </div>
           </div>
         </section>
 
