@@ -34,6 +34,7 @@ import AdminSubscriptions from "./pages/admin/Subscriptions";
 import AdminCustomers from "./pages/admin/Customers";
 import AdminPages from "./pages/admin/Pages";
 import AdminMedia from "./pages/admin/Media";
+import AdminHeroMedia from "./pages/admin/HeroMedia";
 import AdminSettings from "./pages/admin/Settings";
 import AdminPrescribers from "./pages/admin/Prescribers";
 import AdminCommissions from "./pages/admin/Commissions";
@@ -84,6 +85,7 @@ const App = () => (
                 <Route path="commissions" element={<AdminCommissions />} />
                 <Route path="pages" element={<AdminPages />} />
                 <Route path="medias" element={<AdminMedia />} />
+                <Route path="hero-media" element={<AdminHeroMedia />} />
                 <Route path="parametres" element={<AdminSettings />} />
               </Route>
 

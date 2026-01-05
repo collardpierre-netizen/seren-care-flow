@@ -3,7 +3,9 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
+import { useHeroMedia, type HeroMedia } from "@/hooks/useHeroMedia";
 
+// Fallback static media for initial render or if DB is empty
 import heroImage1 from "@/assets/hero-1.jpeg";
 import heroImage2 from "@/assets/hero-2.jpeg";
 import heroVideo from "@/assets/hero-video.mov";
@@ -11,33 +13,87 @@ import heroVideo from "@/assets/hero-video.mov";
 type MediaItem = {
   type: "image" | "video";
   src: string;
+  duration: number | null;
+  transition: "fade" | "zoom" | "slide";
+  alt?: string | null;
 };
 
-const heroMedia: MediaItem[] = [
-  { type: "video", src: heroVideo },
-  { type: "image", src: heroImage1 },
-  { type: "image", src: heroImage2 },
+const fallbackMedia: MediaItem[] = [
+  { type: "video", src: heroVideo, duration: null, transition: "fade" },
+  { type: "image", src: heroImage1, duration: 6000, transition: "fade" },
+  { type: "image", src: heroImage2, duration: 6000, transition: "fade" },
 ];
+
+const getTransitionVariants = (effect: "fade" | "zoom" | "slide") => {
+  switch (effect) {
+    case "zoom":
+      return {
+        initial: { opacity: 0, scale: 1.2 },
+        animate: { opacity: 1, scale: 1 },
+        exit: { opacity: 0, scale: 0.95 },
+      };
+    case "slide":
+      return {
+        initial: { opacity: 0, x: 100 },
+        animate: { opacity: 1, x: 0 },
+        exit: { opacity: 0, x: -100 },
+      };
+    case "fade":
+    default:
+      return {
+        initial: { opacity: 0, scale: 1.05 },
+        animate: { opacity: 1, scale: 1 },
+        exit: { opacity: 0 },
+      };
+  }
+};
 
 const HeroSection = () => {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+  const { data: heroMediaFromDB } = useHeroMedia();
+
+  // Use DB media if available, otherwise fallback
+  const heroMedia: MediaItem[] = heroMediaFromDB && heroMediaFromDB.length > 0
+    ? heroMediaFromDB.map((m) => ({
+        type: m.type,
+        src: m.file_url,
+        duration: m.display_duration,
+        transition: m.transition_effect,
+        alt: m.alt_text,
+      }))
+    : fallbackMedia;
 
   const handleVideoEnd = () => {
     setCurrentMediaIndex((prev) => (prev + 1) % heroMedia.length);
   };
 
   useEffect(() => {
+    if (heroMedia.length === 0) return;
+    
     const currentItem = heroMedia[currentMediaIndex];
     // Only auto-advance for images, videos advance on end
     if (currentItem.type === "image") {
+      const duration = currentItem.duration || 6000;
       const interval = setInterval(() => {
         setCurrentMediaIndex((prev) => (prev + 1) % heroMedia.length);
-      }, 6000);
+      }, duration);
       return () => clearInterval(interval);
     }
-  }, [currentMediaIndex]);
+  }, [currentMediaIndex, heroMedia]);
+
+  // Reset index if media list changes
+  useEffect(() => {
+    if (currentMediaIndex >= heroMedia.length) {
+      setCurrentMediaIndex(0);
+    }
+  }, [heroMedia.length, currentMediaIndex]);
+
+  if (heroMedia.length === 0) {
+    return null;
+  }
 
   const currentItem = heroMedia[currentMediaIndex];
+  const variants = getTransitionVariants(currentItem.transition);
 
   return (
     <section className="relative overflow-hidden min-h-[90vh] flex items-center">
@@ -52,9 +108,9 @@ const HeroSection = () => {
               muted
               playsInline
               onEnded={handleVideoEnd}
-              initial={{ opacity: 0, scale: 1.05 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
+              initial={variants.initial}
+              animate={variants.animate}
+              exit={variants.exit}
               transition={{ duration: 1.2, ease: "easeInOut" }}
               className="absolute inset-0 w-full h-full object-cover"
             />
@@ -62,10 +118,10 @@ const HeroSection = () => {
             <motion.img
               key={`image-${currentMediaIndex}`}
               src={currentItem.src}
-              alt="SerenCare"
-              initial={{ opacity: 0, scale: 1.1 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
+              alt={currentItem.alt || "SerenCare"}
+              initial={variants.initial}
+              animate={variants.animate}
+              exit={variants.exit}
               transition={{ duration: 1.2, ease: "easeInOut" }}
               className="absolute inset-0 w-full h-full object-cover"
             />

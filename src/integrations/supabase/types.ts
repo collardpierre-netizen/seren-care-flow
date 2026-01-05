@@ -235,6 +235,45 @@ export type Database = {
           },
         ]
       }
+      hero_media: {
+        Row: {
+          alt_text: string | null
+          created_at: string
+          display_duration: number | null
+          file_url: string
+          id: string
+          is_active: boolean | null
+          sort_order: number
+          transition_effect: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          alt_text?: string | null
+          created_at?: string
+          display_duration?: number | null
+          file_url: string
+          id?: string
+          is_active?: boolean | null
+          sort_order?: number
+          transition_effect?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          alt_text?: string | null
+          created_at?: string
+          display_duration?: number | null
+          file_url?: string
+          id?: string
+          is_active?: boolean | null
+          sort_order?: number
+          transition_effect?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       media: {
         Row: {
           alt_text: string | null
