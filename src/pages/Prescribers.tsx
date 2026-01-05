@@ -134,7 +134,7 @@ const Prescribers = () => {
 
                 <div className="flex flex-col sm:flex-row gap-4 mb-10">
                   <Button asChild size="lg" className="gap-2">
-                    <a href="#contact">
+                    <a href="#candidature">
                       Devenir partenaire
                       <ArrowRight className="w-5 h-5" />
                     </a>
@@ -360,7 +360,7 @@ const Prescribers = () => {
         </section>
 
         {/* Application Form Section */}
-        <section id="contact" className="section-padding bg-muted/30">
+        <section id="candidature" className="section-padding bg-muted/30 scroll-mt-24">
           <div className="container-main">
             <div className="grid lg:grid-cols-2 gap-12 items-start">
               {/* Left: Info */}
