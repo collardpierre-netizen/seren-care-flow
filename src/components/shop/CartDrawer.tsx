@@ -6,6 +6,7 @@ import { useStoreSettings } from '@/hooks/useProducts';
 import { Link } from 'react-router-dom';
 import { Minus, Plus, Trash2, ShoppingBag, Truck, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SizeGuideDialog } from './SizeGuideDialog';
 
 const CartDrawer: React.FC = () => {
   const { 
@@ -95,7 +96,10 @@ const CartDrawer: React.FC = () => {
                       <div>
                         <h4 className="font-medium line-clamp-1">{item.productName}</h4>
                         {item.size && (
-                          <p className="text-sm text-muted-foreground">Taille: {item.size}</p>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <span>Taille: {item.size}</span>
+                            <SizeGuideDialog />
+                          </div>
                         )}
                         {item.isSubscription && (
                           <div className="flex items-center gap-1 text-sm text-secondary mt-1">
