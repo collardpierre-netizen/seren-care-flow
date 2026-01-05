@@ -84,9 +84,9 @@ const benefits = [
 ];
 
 const stats = [
-  { value: "500+", label: "Professionnels partenaires" },
+  { value: "40+", label: "Professionnels partenaires" },
   { value: "98%", label: "Satisfaction client" },
-  { value: "+150%", label: "Croissance annuelle" },
+  { value: "+18%", label: "Croissance mensuelle" },
 ];
 
 const Prescribers = () => {
