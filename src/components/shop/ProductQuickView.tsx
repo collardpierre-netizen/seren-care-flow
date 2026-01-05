@@ -45,6 +45,12 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
   const basePrice = product.price;
   const subscriptionPrice = product.subscription_price || basePrice * 0.9;
   const discountPercent = product.subscription_discount_percent || 10;
+  const recommendedPrice = product.recommended_price;
+  
+  // Calculate savings from recommended price
+  const hasRecommendedPrice = recommendedPrice && recommendedPrice > basePrice;
+  const savingsValue = hasRecommendedPrice ? recommendedPrice - basePrice : 0;
+  const savingsPercent = hasRecommendedPrice ? Math.round((savingsValue / recommendedPrice) * 100) : 0;
   
   const selectedSizeData = sizes.find(s => s.size === selectedSize);
   const priceAdjustment = selectedSizeData?.price_adjustment || 0;
@@ -194,6 +200,28 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
                 <p className="text-sm text-muted-foreground mb-1">{product.brand.name}</p>
               )}
               <h2 className="text-2xl font-display font-bold">{product.name}</h2>
+              
+              {/* Price display with recommended price */}
+              <div className="mt-3 space-y-1">
+                {hasRecommendedPrice && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground line-through">
+                      Prix public constaté : {recommendedPrice?.toFixed(2)} €
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-baseline gap-3">
+                  <span className="text-2xl font-bold text-primary">
+                    {basePrice.toFixed(2)} €
+                  </span>
+                  {hasRecommendedPrice && (
+                    <Badge variant="destructive" className="text-xs">
+                      -{savingsPercent}% | Économie {savingsValue.toFixed(2)} €
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              
               {product.short_description && (
                 <p className="text-muted-foreground mt-2">{product.short_description}</p>
               )}

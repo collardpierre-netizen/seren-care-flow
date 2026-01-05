@@ -76,6 +76,12 @@ const ProductPage = () => {
   const basePrice = product.price;
   const subscriptionPrice = product.subscription_price || basePrice * 0.9;
   const discountPercent = product.subscription_discount_percent || 10;
+  const recommendedPrice = product.recommended_price;
+  
+  // Calculate savings from recommended price
+  const hasRecommendedPrice = recommendedPrice && recommendedPrice > basePrice;
+  const savingsValue = hasRecommendedPrice ? recommendedPrice - basePrice : 0;
+  const savingsPercent = hasRecommendedPrice ? Math.round((savingsValue / recommendedPrice) * 100) : 0;
   
   const selectedSizeData = sizes.find(s => s.size === selectedSize);
   const priceAdjustment = selectedSizeData?.price_adjustment || 0;
@@ -225,6 +231,27 @@ const ProductPage = () => {
                   <p className="text-sm text-muted-foreground mb-1">{product.brand.name}</p>
                 )}
                 <h1 className="text-3xl lg:text-4xl font-display font-bold">{product.name}</h1>
+                
+                {/* Price display with recommended price */}
+                <div className="mt-4 space-y-2">
+                  {hasRecommendedPrice && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground line-through">
+                        Prix public constaté : {recommendedPrice?.toFixed(2)} €
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex items-baseline gap-3 flex-wrap">
+                    <span className="text-3xl font-bold text-primary">
+                      Prix SerenCare : {basePrice.toFixed(2)} €
+                    </span>
+                    {hasRecommendedPrice && (
+                      <Badge variant="destructive" className="text-sm px-3 py-1">
+                        -{savingsPercent}% | Vous économisez {savingsValue.toFixed(2)} €
+                      </Badge>
+                    )}
+                  </div>
+                </div>
               </div>
 
               {/* Product attributes */}

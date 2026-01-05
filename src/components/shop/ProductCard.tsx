@@ -13,6 +13,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
   const primaryImage = product.images?.find(img => img.is_primary) || product.images?.[0];
   const hasSubscription = product.subscription_price && product.subscription_price < product.price;
   const discountPercent = product.subscription_discount_percent || 10;
+  
+  // Calculate savings from recommended price
+  const hasRecommendedPrice = product.recommended_price && product.recommended_price > product.price;
+  const savingsValue = hasRecommendedPrice ? product.recommended_price! - product.price : 0;
+  const savingsPercent = hasRecommendedPrice ? Math.round((savingsValue / product.recommended_price!) * 100) : 0;
 
   return (
     <Card 
@@ -30,7 +35,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
             alt={primaryImage?.alt_text || product.name}
             className="w-full h-full object-contain p-4 transition-transform duration-300 group-hover:scale-105"
           />
-          {hasSubscription && (
+          {hasRecommendedPrice && (
+            <Badge className="absolute top-3 right-3 bg-destructive text-destructive-foreground">
+              -{savingsPercent}%
+            </Badge>
+          )}
+          {hasSubscription && !hasRecommendedPrice && (
             <Badge className="absolute top-3 right-3 bg-secondary text-secondary-foreground">
               -{discountPercent}% abo
             </Badge>
@@ -49,18 +59,28 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
         <h3 className="font-medium line-clamp-2 mb-2 group-hover:text-primary transition-colors">
           {product.name}
         </h3>
-        <div className="flex items-baseline gap-2">
-          {hasSubscription ? (
-            <>
-              <span className="text-lg font-bold text-secondary">
-                {product.subscription_price?.toFixed(2)} €
-              </span>
+        <div className="space-y-1">
+          {hasRecommendedPrice && (
+            <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground line-through">
-                {product.price.toFixed(2)} €
+                Prix public : {product.recommended_price?.toFixed(2)} €
               </span>
-            </>
-          ) : (
-            <span className="text-lg font-bold">{product.price.toFixed(2)} €</span>
+            </div>
+          )}
+          <div className="flex items-baseline gap-2">
+            <span className="text-lg font-bold text-primary">
+              {product.price.toFixed(2)} €
+            </span>
+            {hasRecommendedPrice && (
+              <span className="text-xs font-medium text-destructive">
+                Économisez {savingsValue.toFixed(2)} €
+              </span>
+            )}
+          </div>
+          {hasSubscription && (
+            <div className="text-xs text-secondary font-medium">
+              ou {product.subscription_price?.toFixed(2)} € en abonnement (-{discountPercent}%)
+            </div>
           )}
         </div>
       </CardContent>
