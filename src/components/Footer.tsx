@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Phone, Mail, ArrowUpRight, MapPin, Clock } from "lucide-react";
+import logo from "@/assets/logo.png";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -31,9 +32,7 @@ const Footer = () => {
           {/* Brand Column */}
           <div className="lg:col-span-2">
             <Link to="/" className="flex items-center gap-3 mb-6">
-              <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-display font-bold text-lg">S</span>
-              </div>
+              <img src={logo} alt="SerenCare" className="w-9 h-9 rounded-lg" />
               <span className="font-display font-bold text-xl text-background tracking-tight">SerenCare</span>
             </Link>
             <p className="text-background/70 text-sm mb-6 max-w-xs leading-relaxed">

@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => ({
         name: "SerenCare - Protections pour incontinence",
         short_name: "SerenCare",
         description: "Livraison discrète de protections pour incontinence. Accompagnement personnalisé.",
-        theme_color: "#1a7f64",
+        theme_color: "#3366FF",
         background_color: "#fcfaf8",
         display: "standalone",
         start_url: "/",
