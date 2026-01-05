@@ -326,14 +326,14 @@ const About = () => {
                   >
                     <div className="relative mb-4">
                       <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center border-4 border-primary/20 shadow-lg">
-                        <span className="font-display text-4xl md:text-5xl font-bold text-primary">AG</span>
+                        <span className="font-display text-4xl md:text-5xl font-bold text-primary">PC</span>
                       </div>
                       {/* Badge conseiller */}
                       <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap shadow-md">
                         Expert e-santé
                       </div>
                     </div>
-                    <h3 className="font-display font-bold text-foreground text-lg mt-4">Arnaud Grégoire</h3>
+                    <h3 className="font-display font-bold text-foreground text-lg mt-4">Pierre Collard</h3>
                     <p className="text-sm text-muted-foreground">Co-fondateur</p>
                   </motion.div>
                 </div>
