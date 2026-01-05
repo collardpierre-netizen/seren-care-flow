@@ -456,6 +456,66 @@ export type Database = {
         }
         Relationships: []
       }
+      prescriber_applications: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          job_title: string | null
+          last_name: string
+          message: string | null
+          notes: string | null
+          organization_name: string | null
+          organization_type: string
+          patient_count: string | null
+          phone: string
+          postal_code: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          email: string
+          first_name: string
+          id?: string
+          job_title?: string | null
+          last_name: string
+          message?: string | null
+          notes?: string | null
+          organization_name?: string | null
+          organization_type: string
+          patient_count?: string | null
+          phone: string
+          postal_code?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string
+          first_name?: string
+          id?: string
+          job_title?: string | null
+          last_name?: string
+          message?: string | null
+          notes?: string | null
+          organization_name?: string | null
+          organization_type?: string
+          patient_count?: string | null
+          phone?: string
+          postal_code?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       prescribers: {
         Row: {
           address: string | null
