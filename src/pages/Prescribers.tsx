@@ -50,7 +50,7 @@ const prescriberTypes = [
   {
     icon: Stethoscope,
     badge: "Prescripteurs",
-    title: "Médecins & Spécialistes",
+    title: "Médecins & Pharmaciens",
     description: "Enrichissez votre offre de soins avec une solution complète pour vos patients.",
     benefits: [
       "Continuité de soins optimale pour vos patients",
