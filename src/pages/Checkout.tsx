@@ -4,7 +4,6 @@ import Layout from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useCart } from '@/hooks/useCart';
 import { useStoreSettings } from '@/hooks/useProducts';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,9 +12,10 @@ import { ShoppingBag, ArrowLeft, CreditCard, Truck, RefreshCw, Tag, Check } from
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { SizeGuideDialog } from '@/components/shop/SizeGuideDialog';
+import { CartSizeSelector } from '@/components/shop/CartSizeSelector';
 
 const Checkout = () => {
-  const { items, getSubtotal, getSubscriptionSavings } = useCart();
+  const { items, getSubtotal, getSubscriptionSavings, updateSize } = useCart();
   const { data: settings } = useStoreSettings();
   const [referralCode, setReferralCode] = useState('');
   const [referralValid, setReferralValid] = useState<boolean | null>(null);
@@ -118,8 +118,15 @@ const Checkout = () => {
                       <div className="flex-1">
                         <h4 className="font-medium">{item.productName}</h4>
                         {item.size && (
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm text-muted-foreground">Taille: {item.size}</p>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <span>Taille:</span>
+                            <CartSizeSelector 
+                              currentSize={item.size}
+                              onSizeChange={(newSize) => {
+                                updateSize(item.productId, item.size, newSize, item.isSubscription);
+                                toast.success('Taille modifiée');
+                              }}
+                            />
                           </div>
                         )}
                         {item.isSubscription && (

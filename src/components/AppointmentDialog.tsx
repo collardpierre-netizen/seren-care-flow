@@ -50,6 +50,28 @@ export function AppointmentDialog({ trigger }: AppointmentDialogProps) {
 
       if (error) throw error;
 
+      // Send confirmation email
+      if (formData.email) {
+        try {
+          await supabase.functions.invoke('send-confirmation-email', {
+            body: {
+              type: 'appointment',
+              to: formData.email,
+              data: {
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                phone: formData.phone,
+                email: formData.email,
+                preferredDay: formData.preferredDay,
+                preferredTime: formData.preferredTime,
+              }
+            }
+          });
+        } catch (emailError) {
+          console.log('Email notification failed, continuing anyway');
+        }
+      }
+
       setIsSubmitted(true);
       toast.success("Demande de rendez-vous envoyée !");
     } catch (error) {
