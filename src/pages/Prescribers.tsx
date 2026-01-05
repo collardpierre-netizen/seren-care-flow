@@ -397,8 +397,8 @@ const Prescribers = () => {
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Email</p>
-                      <a href="mailto:pro@pharmacie-allard.be" className="font-medium text-foreground hover:text-primary transition-colors">
-                        pro@pharmacie-allard.be
+                      <a href="mailto:ohall@noralphar.com" className="font-medium text-foreground hover:text-primary transition-colors">
+                        ohall@noralphar.com
                       </a>
                     </div>
                   </div>
@@ -409,7 +409,7 @@ const Prescribers = () => {
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Disponibilité</p>
-                      <p className="font-medium text-foreground">Lun-Dim 8h-20h</p>
+                      <p className="font-medium text-foreground">Lun-Ven 9h-15h</p>
                     </div>
                   </div>
                 </div>
