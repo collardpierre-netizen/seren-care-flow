@@ -16,6 +16,7 @@ import {
   Menu,
   X,
   UserCheck,
+  UserPlus,
   Euro
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -28,6 +29,7 @@ const navItems = [
   { label: 'Abonnements', href: '/admin/abonnements', icon: RefreshCw },
   { label: 'Clients', href: '/admin/clients', icon: Users },
   { label: 'Prescripteurs', href: '/admin/prescripteurs', icon: UserCheck },
+  { label: 'Candidatures', href: '/admin/candidatures', icon: UserPlus },
   { label: 'Commissions', href: '/admin/commissions', icon: Euro },
   { label: 'Pages', href: '/admin/pages', icon: FileText },
   { label: 'Médias', href: '/admin/medias', icon: Image },

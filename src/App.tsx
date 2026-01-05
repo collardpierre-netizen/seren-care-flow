@@ -37,6 +37,7 @@ import AdminMedia from "./pages/admin/Media";
 import AdminSettings from "./pages/admin/Settings";
 import AdminPrescribers from "./pages/admin/Prescribers";
 import AdminCommissions from "./pages/admin/Commissions";
+import AdminPrescriberApplications from "./pages/admin/PrescriberApplications";
 
 const queryClient = new QueryClient();
 
@@ -79,6 +80,7 @@ const App = () => (
                 <Route path="abonnements" element={<AdminSubscriptions />} />
                 <Route path="clients" element={<AdminCustomers />} />
                 <Route path="prescripteurs" element={<AdminPrescribers />} />
+                <Route path="candidatures" element={<AdminPrescriberApplications />} />
                 <Route path="commissions" element={<AdminCommissions />} />
                 <Route path="pages" element={<AdminPages />} />
                 <Route path="medias" element={<AdminMedia />} />
