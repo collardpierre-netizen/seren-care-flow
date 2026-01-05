@@ -36,7 +36,7 @@ const LegalNotice = () => {
                     <li><strong className="text-foreground">Numéro d'entreprise (BCE) :</strong> BE 0XXX.XXX.XXX</li>
                     <li><strong className="text-foreground">Numéro de TVA :</strong> BE 0XXX.XXX.XXX</li>
                     <li><strong className="text-foreground">Téléphone :</strong> +32 02 648 42 22</li>
-                    <li><strong className="text-foreground">Email :</strong> contact@pharmacie-allard.be</li>
+                    <li><strong className="text-foreground">Email :</strong> ohall@noralphar.com</li>
                     <li><strong className="text-foreground">Directeur de la publication :</strong> M./Mme [Nom du pharmacien titulaire]</li>
                   </ul>
                 </section>
@@ -127,7 +127,7 @@ const LegalNotice = () => {
                     Pour toute question concernant ces mentions légales, vous pouvez nous contacter :
                   </p>
                   <ul className="list-none space-y-1 mt-4">
-                    <li><strong className="text-foreground">Par email :</strong> contact@pharmacie-allard.be</li>
+                    <li><strong className="text-foreground">Par email :</strong> ohall@noralphar.com</li>
                     <li><strong className="text-foreground">Par téléphone :</strong> +32 02 648 42 22</li>
                     <li><strong className="text-foreground">Par courrier :</strong> Pharmacie Allard, Avenue de l'Hippodrome 148, 1050 Ixelles, Belgique</li>
                   </ul>
