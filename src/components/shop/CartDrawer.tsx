@@ -7,6 +7,8 @@ import { Link } from 'react-router-dom';
 import { Minus, Plus, Trash2, ShoppingBag, Truck, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SizeGuideDialog } from './SizeGuideDialog';
+import { CartSizeSelector } from './CartSizeSelector';
+import { toast } from 'sonner';
 
 const CartDrawer: React.FC = () => {
   const { 
@@ -15,6 +17,7 @@ const CartDrawer: React.FC = () => {
     closeCart, 
     updateQuantity, 
     removeItem, 
+    updateSize,
     getSubtotal, 
     getSubscriptionSavings,
     getItemCount 
@@ -96,8 +99,15 @@ const CartDrawer: React.FC = () => {
                       <div>
                         <h4 className="font-medium line-clamp-1">{item.productName}</h4>
                         {item.size && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <span>Taille: {item.size}</span>
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <span>Taille:</span>
+                            <CartSizeSelector
+                              currentSize={item.size}
+                              onSizeChange={(newSize) => {
+                                updateSize(item.productId, item.size, newSize, item.isSubscription);
+                                toast.success(`Taille modifiée: ${newSize}`);
+                              }}
+                            />
                             <SizeGuideDialog />
                           </div>
                         )}
