@@ -11,6 +11,7 @@ import {
   RefreshCw,
   FileText,
   Image,
+  Film,
   Settings,
   LogOut,
   Menu,
@@ -33,6 +34,7 @@ const navItems = [
   { label: 'Commissions', href: '/admin/commissions', icon: Euro },
   { label: 'Pages', href: '/admin/pages', icon: FileText },
   { label: 'Médias', href: '/admin/medias', icon: Image },
+  { label: 'Médias Hero', href: '/admin/hero-media', icon: Film },
   { label: 'Paramètres', href: '/admin/parametres', icon: Settings },
 ];
 
