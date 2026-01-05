@@ -19,6 +19,7 @@ interface CartStore {
   removeItem: (productId: string, size?: string, isSubscription?: boolean) => void;
   updateQuantity: (productId: string, quantity: number, size?: string, isSubscription?: boolean) => void;
   toggleSubscription: (productId: string, size?: string) => void;
+  updateSize: (productId: string, oldSize?: string, newSize?: string, isSubscription?: boolean) => void;
   clearCart: () => void;
   openCart: () => void;
   closeCart: () => void;
@@ -86,6 +87,46 @@ export const useCart = create<CartStore>()(
               : item
           )
         }));
+      },
+
+      updateSize: (productId, oldSize, newSize, isSubscription) => {
+        set((state) => {
+          // Check if item with new size already exists
+          const existingIndex = state.items.findIndex(
+            item => item.productId === productId && 
+                   item.size === newSize && 
+                   item.isSubscription === isSubscription
+          );
+
+          if (existingIndex > -1) {
+            // Merge quantities
+            const oldItem = state.items.find(
+              item => item.productId === productId && 
+                     item.size === oldSize && 
+                     item.isSubscription === isSubscription
+            );
+            if (!oldItem) return state;
+
+            const updatedItems = state.items.filter(
+              item => !(item.productId === productId && 
+                       item.size === oldSize && 
+                       item.isSubscription === isSubscription)
+            );
+            updatedItems[existingIndex > 0 ? existingIndex - 1 : 0].quantity += oldItem.quantity;
+            return { items: updatedItems };
+          }
+
+          // Just update size
+          return {
+            items: state.items.map(item =>
+              item.productId === productId && 
+              item.size === oldSize && 
+              item.isSubscription === isSubscription
+                ? { ...item, size: newSize }
+                : item
+            )
+          };
+        });
       },
 
       clearCart: () => set({ items: [] }),

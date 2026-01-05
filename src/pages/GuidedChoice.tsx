@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Heart, Phone, ClipboardList, ArrowRight, Clock } from "lucide-react";
 import { useState, useEffect } from "react";
 import CallbackFormCompact from "@/components/CallbackFormCompact";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { SizeGuideDialog } from "@/components/shop/SizeGuideDialog";
 
 import guidedChoiceVideo from "@/assets/guided-choice-video.mov";
 import guidedChoiceImage1 from "@/assets/guided-choice-1.jpeg";
@@ -236,6 +238,79 @@ const GuidedChoice = () => {
                 </motion.div>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Size FAQ Section */}
+        <section className="py-16 bg-card border-y border-border">
+          <div className="container-main">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="max-w-3xl mx-auto"
+            >
+              <div className="text-center mb-8">
+                <h2 className="font-display text-xl md:text-2xl font-bold text-foreground mb-3">
+                  Questions fréquentes sur les tailles
+                </h2>
+                <p className="text-muted-foreground">
+                  Trouvez la bonne taille du premier coup
+                </p>
+              </div>
+
+              <Accordion type="single" collapsible className="space-y-3">
+                <AccordionItem value="how-to-measure" className="border rounded-xl px-4">
+                  <AccordionTrigger className="text-left hover:no-underline">
+                    Comment mesurer le tour de taille/hanches ?
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground">
+                    <p>Munissez-vous d'un mètre souple :</p>
+                    <ul className="list-disc pl-5 mt-2 space-y-1">
+                      <li>Mesurez le <strong>tour de taille</strong> au niveau du nombril, sans serrer</li>
+                      <li>Mesurez le <strong>tour de hanches</strong> au point le plus large</li>
+                    </ul>
+                    <p className="mt-2">👉 Retenez toujours la mesure la plus grande.</p>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="between-sizes" className="border rounded-xl px-4">
+                  <AccordionTrigger className="text-left hover:no-underline">
+                    Je suis entre deux tailles, que faire ?
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground">
+                    <p>Si vous êtes entre deux tailles, <strong>choisissez la plus petite</strong> :</p>
+                    <ul className="list-disc pl-5 mt-2 space-y-1">
+                      <li>Meilleure tenue</li>
+                      <li>Plus discrète</li>
+                    </ul>
+                    <p className="mt-2">Si la protection semble trop serrée ou inconfortable, passez à la taille au-dessus.</p>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="wrong-size" className="border rounded-xl px-4">
+                  <AccordionTrigger className="text-left hover:no-underline">
+                    Et si je me trompe de taille ?
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground">
+                    <p>Pas de panique ! Vous pouvez modifier la taille à tout moment, surtout en abonnement.</p>
+                    <p className="mt-2">Une taille trop grande peut provoquer des fuites. Une taille bien ajustée améliore le confort et la sécurité.</p>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="size-guide" className="border rounded-xl px-4">
+                  <AccordionTrigger className="text-left hover:no-underline">
+                    Où trouver le guide des tailles complet ?
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground">
+                    <p>Le guide des tailles détaillé est disponible sur chaque fiche produit et dans votre panier.</p>
+                    <div className="mt-3">
+                      <SizeGuideDialog />
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </motion.div>
           </div>
         </section>
 
