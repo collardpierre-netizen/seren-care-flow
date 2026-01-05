@@ -656,12 +656,15 @@ export type Database = {
           mobility: Database["public"]["Enums"]["mobility_type"] | null
           name: string
           price: number
+          purchase_price: number | null
+          recommended_price: number | null
           short_description: string | null
           sku: string | null
           slug: string
           stock_quantity: number | null
           subscription_discount_percent: number | null
           subscription_price: number | null
+          units_per_product: number | null
           updated_at: string
           usage_time: Database["public"]["Enums"]["usage_time"] | null
         }
@@ -680,12 +683,15 @@ export type Database = {
           mobility?: Database["public"]["Enums"]["mobility_type"] | null
           name: string
           price: number
+          purchase_price?: number | null
+          recommended_price?: number | null
           short_description?: string | null
           sku?: string | null
           slug: string
           stock_quantity?: number | null
           subscription_discount_percent?: number | null
           subscription_price?: number | null
+          units_per_product?: number | null
           updated_at?: string
           usage_time?: Database["public"]["Enums"]["usage_time"] | null
         }
@@ -704,12 +710,15 @@ export type Database = {
           mobility?: Database["public"]["Enums"]["mobility_type"] | null
           name?: string
           price?: number
+          purchase_price?: number | null
+          recommended_price?: number | null
           short_description?: string | null
           sku?: string | null
           slug?: string
           stock_quantity?: number | null
           subscription_discount_percent?: number | null
           subscription_price?: number | null
+          units_per_product?: number | null
           updated_at?: string
           usage_time?: Database["public"]["Enums"]["usage_time"] | null
         }
