@@ -8,6 +8,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import CartDrawer from "./components/shop/CartDrawer";
 import ScrollToTop from "./components/ScrollToTop";
+import CookieConsent from "./components/CookieConsent";
 // Public pages
 import Index from "./pages/Index";
 import Shop from "./pages/Shop";
@@ -24,6 +25,7 @@ import ProductPage from "./pages/Product";
 import LegalNotice from "./pages/LegalNotice";
 import TermsOfSale from "./pages/TermsOfSale";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfUse from "./pages/TermsOfUse";
 
 // Admin pages
 import AdminLayout from "./components/admin/AdminLayout";
@@ -50,6 +52,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <CartDrawer />
+          <CookieConsent />
           <BrowserRouter>
             <ScrollToTop />
             <Routes>
@@ -67,6 +70,7 @@ const App = () => (
               <Route path="/produit/:slug" element={<ProductPage />} />
               <Route path="/mentions-legales" element={<LegalNotice />} />
               <Route path="/cgv" element={<TermsOfSale />} />
+              <Route path="/cgu" element={<TermsOfUse />} />
               <Route path="/confidentialite" element={<PrivacyPolicy />} />
 
               {/* Admin routes */}

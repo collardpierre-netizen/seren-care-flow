@@ -6,213 +6,277 @@ const PrivacyPolicy = () => {
   return (
     <>
       <Helmet>
-        <title>Politique de confidentialité | SerenCare</title>
-        <meta name="description" content="Politique de confidentialité du site SerenCare - Pharmacie Allard. Informations sur la collecte, le traitement et la protection de vos données personnelles." />
+        <title>Politique de Confidentialité | SerenCare</title>
+        <meta name="description" content="Politique de confidentialité et protection des données de SerenCare - Conformité RGPD." />
       </Helmet>
       <Layout>
-        <section className="py-16 md:py-24">
+        <section className="section-padding bg-background">
           <div className="container-main">
             <motion.div
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="max-w-3xl mx-auto"
+              transition={{ duration: 0.5 }}
+              className="max-w-4xl mx-auto"
             >
-              <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-8">
-                Politique de confidentialité
+              <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Politique de Confidentialité & Protection des Données (RGPD)
               </h1>
 
-              <div className="prose prose-lg max-w-none text-muted-foreground space-y-8">
+              <p className="text-muted-foreground mb-2">Version 2025 – SerenCare</p>
+              <p className="text-muted-foreground mb-8">Pharmacie Allard – Noralphar – APB 212033</p>
+
+              <div className="space-y-10 text-foreground">
+                {/* 1. Responsable du traitement */}
                 <section>
-                  <h2 className="font-display text-xl font-semibold text-foreground mb-4">
-                    1. Introduction
+                  <h2 className="font-display text-xl font-bold text-foreground mb-4">
+                    1. Responsable du traitement
                   </h2>
-                  <p>
-                    La Pharmacie Allard, exerçant sous la marque SerenCare, s'engage à protéger la vie privée des utilisateurs de son site internet. Cette politique de confidentialité explique comment nous collectons, utilisons et protégeons vos données personnelles conformément au Règlement Général sur la Protection des Données (RGPD).
+                  <p className="text-muted-foreground mb-4">
+                    Le traitement des données personnelles est effectué par :
                   </p>
+                  <div className="bg-muted/50 rounded-xl p-6 space-y-2 text-sm">
+                    <p className="font-semibold">Pharmacie Allard – Noralphar</p>
+                    <p>Titulaire : Sonia Bourahli</p>
+                    <p>APB : 212033</p>
+                    <p>Adresse : Avenue Georges Lecointe 50, 1180 Uccle – Belgique</p>
+                    <p>TVA : BE 0684.671.728</p>
+                    <p>Téléphone : <a href="tel:+3202216492" className="text-primary hover:underline">+32 02 216 49 23</a></p>
+                    <p>Email : <a href="mailto:ohall@noralphar.com" className="text-primary hover:underline">ohall@noralphar.com</a></p>
+                  </div>
                 </section>
 
+                {/* 2. Finalité du traitement */}
                 <section>
-                  <h2 className="font-display text-xl font-semibold text-foreground mb-4">
-                    2. Responsable du traitement
+                  <h2 className="font-display text-xl font-bold text-foreground mb-4">
+                    2. Finalité du traitement
                   </h2>
-                  <ul className="list-none space-y-1">
-                    <li><strong className="text-foreground">Raison sociale :</strong> Pharmacie Allard SPRL</li>
-                    <li><strong className="text-foreground">Adresse :</strong> Avenue de l'Hippodrome 148, 1050 Ixelles, Belgique</li>
-                    <li><strong className="text-foreground">Email :</strong> ohall@noralphar.com</li>
-                    <li><strong className="text-foreground">Téléphone :</strong> +32 02 648 42 22</li>
-                  </ul>
+                  <p className="text-muted-foreground mb-4">
+                    SerenCare est une boutique en ligne destinée aux particuliers. Les données personnelles collectées sont traitées pour :
+                  </p>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="font-semibold text-foreground">Gestion des comptes clients</h3>
+                      <ul className="list-disc list-inside text-muted-foreground mt-2 space-y-1">
+                        <li>Création et gestion du compte</li>
+                        <li>Authentification et sécurité</li>
+                        <li>Gestion des préférences</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h3 className="font-semibold text-foreground">Exécution des commandes</h3>
+                      <ul className="list-disc list-inside text-muted-foreground mt-2 space-y-1">
+                        <li>Traitement des achats</li>
+                        <li>Livraison</li>
+                        <li>Facturation</li>
+                        <li>Gestion des abonnements</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h3 className="font-semibold text-foreground">Relation client</h3>
+                      <ul className="list-disc list-inside text-muted-foreground mt-2 space-y-1">
+                        <li>Emails transactionnels</li>
+                        <li>Service client et assistance</li>
+                        <li>Suivi des réclamations</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h3 className="font-semibold text-foreground">Amélioration du service</h3>
+                      <ul className="list-disc list-inside text-muted-foreground mt-2 space-y-1">
+                        <li>Statistiques anonymisées</li>
+                        <li>Analyse de l'utilisation du site</li>
+                      </ul>
+                    </div>
+                  </div>
                 </section>
 
+                {/* 3. Données collectées */}
                 <section>
-                  <h2 className="font-display text-xl font-semibold text-foreground mb-4">
+                  <h2 className="font-display text-xl font-bold text-foreground mb-4">
                     3. Données collectées
                   </h2>
-                  <p>Nous collectons les données suivantes :</p>
-                  <ul className="list-disc pl-6 mt-4 space-y-2">
-                    <li><strong className="text-foreground">Données d'identification :</strong> nom, prénom, adresse email, numéro de téléphone</li>
-                    <li><strong className="text-foreground">Données de livraison :</strong> adresse postale</li>
-                    <li><strong className="text-foreground">Données de commande :</strong> historique des achats, préférences produits</li>
-                    <li><strong className="text-foreground">Données de navigation :</strong> adresse IP, cookies, pages visitées</li>
-                    <li><strong className="text-foreground">Données de santé :</strong> informations relatives à vos besoins en matière d'incontinence (collectées avec votre consentement explicite)</li>
+                  <p className="text-muted-foreground mb-4">
+                    Nous collectons les données suivantes :
+                  </p>
+                  <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                    <li><span className="font-medium text-foreground">Données d'identification :</span> nom, prénom, email, téléphone</li>
+                    <li><span className="font-medium text-foreground">Données de livraison :</span> adresse postale</li>
+                    <li><span className="font-medium text-foreground">Données de paiement :</span> informations de carte bancaire (traitées par notre prestataire de paiement sécurisé Stripe)</li>
+                    <li><span className="font-medium text-foreground">Données de navigation :</span> adresse IP, cookies, pages visitées</li>
+                    <li><span className="font-medium text-foreground">Données de commande :</span> historique des achats, préférences de produits</li>
                   </ul>
                 </section>
 
+                {/* 4. Base légale */}
                 <section>
-                  <h2 className="font-display text-xl font-semibold text-foreground mb-4">
-                    4. Finalités du traitement
+                  <h2 className="font-display text-xl font-bold text-foreground mb-4">
+                    4. Base légale du traitement
                   </h2>
-                  <p>Vos données sont utilisées pour :</p>
-                  <ul className="list-disc pl-6 mt-4 space-y-2">
-                    <li>Traiter et livrer vos commandes</li>
-                    <li>Gérer votre compte client et vos abonnements</li>
-                    <li>Vous fournir des recommandations personnalisées</li>
-                    <li>Répondre à vos demandes de contact</li>
-                    <li>Vous envoyer des communications marketing (avec votre consentement)</li>
-                    <li>Améliorer nos services et notre site web</li>
-                    <li>Respecter nos obligations légales</li>
+                  <p className="text-muted-foreground mb-4">
+                    Le traitement de vos données est fondé sur :
+                  </p>
+                  <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                    <li><span className="font-medium text-foreground">L'exécution du contrat :</span> pour traiter vos commandes et livraisons</li>
+                    <li><span className="font-medium text-foreground">Le consentement :</span> pour les cookies non essentiels et les communications marketing</li>
+                    <li><span className="font-medium text-foreground">L'intérêt légitime :</span> pour améliorer nos services et prévenir la fraude</li>
+                    <li><span className="font-medium text-foreground">L'obligation légale :</span> pour la facturation et les obligations comptables</li>
                   </ul>
                 </section>
 
+                {/* 5. Destinataires */}
                 <section>
-                  <h2 className="font-display text-xl font-semibold text-foreground mb-4">
-                    5. Base légale du traitement
+                  <h2 className="font-display text-xl font-bold text-foreground mb-4">
+                    5. Destinataires des données
                   </h2>
-                  <p>Le traitement de vos données repose sur :</p>
-                  <ul className="list-disc pl-6 mt-4 space-y-2">
-                    <li><strong className="text-foreground">L'exécution du contrat :</strong> pour traiter vos commandes</li>
-                    <li><strong className="text-foreground">Votre consentement :</strong> pour les données de santé et les communications marketing</li>
-                    <li><strong className="text-foreground">L'intérêt légitime :</strong> pour améliorer nos services</li>
-                    <li><strong className="text-foreground">L'obligation légale :</strong> pour la facturation et la comptabilité</li>
+                  <p className="text-muted-foreground mb-4">
+                    Vos données peuvent être transmises à :
+                  </p>
+                  <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                    <li>Notre équipe interne (service client, logistique)</li>
+                    <li>Nos prestataires de livraison (Bpost, DHL)</li>
+                    <li>Notre prestataire de paiement (Stripe)</li>
+                    <li>Notre hébergeur (Lovable Cloud / Supabase – UE)</li>
                   </ul>
-                </section>
-
-                <section>
-                  <h2 className="font-display text-xl font-semibold text-foreground mb-4">
-                    6. Destinataires des données
-                  </h2>
-                  <p>Vos données peuvent être partagées avec :</p>
-                  <ul className="list-disc pl-6 mt-4 space-y-2">
-                    <li>Nos prestataires de livraison (pour l'expédition des colis)</li>
-                    <li>Notre prestataire de paiement (Stripe) pour sécuriser les transactions</li>
-                    <li>Nos outils d'analyse (de manière anonymisée)</li>
-                    <li>Les autorités compétentes si la loi l'exige</li>
-                  </ul>
-                  <p className="mt-4">
-                    Nous ne vendons jamais vos données personnelles à des tiers.
+                  <p className="text-muted-foreground mt-4">
+                    <span className="font-medium text-foreground">Aucune vente de données :</span> vos données personnelles 
+                    ne sont jamais vendues à des tiers.
                   </p>
                 </section>
 
+                {/* 6. Durée de conservation */}
                 <section>
-                  <h2 className="font-display text-xl font-semibold text-foreground mb-4">
-                    7. Durée de conservation
+                  <h2 className="font-display text-xl font-bold text-foreground mb-4">
+                    6. Durée de conservation
                   </h2>
-                  <ul className="list-disc pl-6 space-y-2">
-                    <li><strong className="text-foreground">Données clients :</strong> 3 ans après la dernière interaction</li>
-                    <li><strong className="text-foreground">Données de commande :</strong> 10 ans (obligations comptables)</li>
-                    <li><strong className="text-foreground">Données de navigation :</strong> 13 mois maximum</li>
-                    <li><strong className="text-foreground">Données de santé :</strong> jusqu'au retrait de votre consentement</li>
+                  <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                    <li><span className="font-medium text-foreground">Données de compte :</span> durée de la relation commerciale + 3 ans</li>
+                    <li><span className="font-medium text-foreground">Données de commande :</span> 10 ans (obligations comptables)</li>
+                    <li><span className="font-medium text-foreground">Données de navigation :</span> 13 mois maximum</li>
+                    <li><span className="font-medium text-foreground">Cookies :</span> selon vos préférences (max 13 mois)</li>
                   </ul>
                 </section>
 
+                {/* 7. Vos droits */}
                 <section>
-                  <h2 className="font-display text-xl font-semibold text-foreground mb-4">
-                    8. Vos droits
+                  <h2 className="font-display text-xl font-bold text-foreground mb-4">
+                    7. Vos droits
                   </h2>
-                  <p>Conformément au RGPD, vous disposez des droits suivants :</p>
-                  <ul className="list-disc pl-6 mt-4 space-y-2">
-                    <li><strong className="text-foreground">Droit d'accès :</strong> obtenir une copie de vos données</li>
-                    <li><strong className="text-foreground">Droit de rectification :</strong> corriger vos données inexactes</li>
-                    <li><strong className="text-foreground">Droit à l'effacement :</strong> demander la suppression de vos données</li>
-                    <li><strong className="text-foreground">Droit à la portabilité :</strong> recevoir vos données dans un format structuré</li>
-                    <li><strong className="text-foreground">Droit d'opposition :</strong> vous opposer au traitement de vos données</li>
-                    <li><strong className="text-foreground">Droit de limitation :</strong> limiter le traitement de vos données</li>
-                    <li><strong className="text-foreground">Droit de retirer votre consentement :</strong> à tout moment</li>
+                  <p className="text-muted-foreground mb-4">
+                    Conformément au RGPD, vous disposez des droits suivants :
+                  </p>
+                  <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                    <li><span className="font-medium text-foreground">Droit d'accès :</span> obtenir une copie de vos données</li>
+                    <li><span className="font-medium text-foreground">Droit de rectification :</span> corriger vos données inexactes</li>
+                    <li><span className="font-medium text-foreground">Droit à l'effacement :</span> demander la suppression de vos données</li>
+                    <li><span className="font-medium text-foreground">Droit à la portabilité :</span> récupérer vos données dans un format structuré</li>
+                    <li><span className="font-medium text-foreground">Droit d'opposition :</span> vous opposer au traitement de vos données</li>
+                    <li><span className="font-medium text-foreground">Droit à la limitation :</span> limiter le traitement de vos données</li>
                   </ul>
-                  <p className="mt-4">
-                    Pour exercer ces droits, contactez-nous à ohall@noralphar.com. Nous répondrons dans un délai d'un mois.
+                  <p className="text-muted-foreground mt-4">
+                    Pour exercer ces droits, contactez-nous à{" "}
+                    <a href="mailto:ohall@noralphar.com" className="text-primary hover:underline">ohall@noralphar.com</a>.
                   </p>
                 </section>
 
+                {/* 8. Sécurité */}
                 <section>
-                  <h2 className="font-display text-xl font-semibold text-foreground mb-4">
-                    9. Sécurité des données
+                  <h2 className="font-display text-xl font-bold text-foreground mb-4">
+                    8. Sécurité des données
                   </h2>
-                  <p>
-                    Nous mettons en œuvre des mesures de sécurité techniques et organisationnelles appropriées pour protéger vos données :
+                  <p className="text-muted-foreground">
+                    Nous mettons en œuvre des mesures techniques et organisationnelles appropriées pour protéger 
+                    vos données contre la perte, l'accès non autorisé, la modification ou la divulgation :
                   </p>
-                  <ul className="list-disc pl-6 mt-4 space-y-2">
+                  <ul className="list-disc list-inside space-y-2 text-muted-foreground mt-4">
                     <li>Chiffrement SSL/TLS pour toutes les communications</li>
-                    <li>Hébergement sécurisé sur des serveurs européens</li>
-                    <li>Accès restreint aux données personnelles</li>
-                    <li>Sauvegarde régulière des données</li>
+                    <li>Authentification sécurisée des utilisateurs</li>
+                    <li>Accès restreint aux données sensibles</li>
+                    <li>Hébergement conforme RGPD dans l'Union Européenne</li>
                   </ul>
                 </section>
 
+                {/* 9. Cookies */}
                 <section>
-                  <h2 className="font-display text-xl font-semibold text-foreground mb-4">
-                    10. Cookies
+                  <h2 className="font-display text-xl font-bold text-foreground mb-4">
+                    9. Politique de cookies
                   </h2>
-                  <p>
-                    Notre site utilise des cookies pour améliorer votre expérience. Les types de cookies utilisés sont :
+                  <p className="text-muted-foreground mb-4">
+                    Notre site utilise des cookies pour :
                   </p>
-                  <ul className="list-disc pl-6 mt-4 space-y-2">
-                    <li><strong className="text-foreground">Cookies essentiels :</strong> nécessaires au fonctionnement du site</li>
-                    <li><strong className="text-foreground">Cookies de performance :</strong> pour analyser l'utilisation du site</li>
-                    <li><strong className="text-foreground">Cookies de fonctionnalité :</strong> pour mémoriser vos préférences</li>
+                  <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                    <li><span className="font-medium text-foreground">Cookies essentiels :</span> fonctionnement du site, panier, session</li>
+                    <li><span className="font-medium text-foreground">Cookies analytiques :</span> statistiques anonymes de visite</li>
+                    <li><span className="font-medium text-foreground">Cookies marketing :</span> personnalisation des publicités (avec votre consentement)</li>
                   </ul>
-                  <p className="mt-4">
-                    Vous pouvez gérer vos préférences de cookies via les paramètres de votre navigateur.
+                  <p className="text-muted-foreground mt-4">
+                    Vous pouvez gérer vos préférences de cookies à tout moment via la bannière de consentement 
+                    ou les paramètres de votre navigateur.
                   </p>
                 </section>
 
+                {/* 10. Transferts internationaux */}
                 <section>
-                  <h2 className="font-display text-xl font-semibold text-foreground mb-4">
-                    11. Transferts internationaux
+                  <h2 className="font-display text-xl font-bold text-foreground mb-4">
+                    10. Transferts internationaux
                   </h2>
-                  <p>
-                    Vos données sont principalement stockées au sein de l'Union Européenne. En cas de transfert vers des pays tiers, nous nous assurons que des garanties appropriées sont en place (clauses contractuelles types, décision d'adéquation).
+                  <p className="text-muted-foreground">
+                    Vos données sont principalement traitées au sein de l'Union Européenne. En cas de transfert 
+                    vers un pays tiers, nous nous assurons que des garanties appropriées sont en place 
+                    (clauses contractuelles types, décision d'adéquation).
                   </p>
                 </section>
 
+                {/* 11. Réclamations */}
                 <section>
-                  <h2 className="font-display text-xl font-semibold text-foreground mb-4">
-                    12. Réclamations
+                  <h2 className="font-display text-xl font-bold text-foreground mb-4">
+                    11. Réclamations
                   </h2>
-                  <p>
-                    Si vous estimez que vos droits ne sont pas respectés, vous pouvez introduire une réclamation auprès de l'Autorité de Protection des Données :
+                  <p className="text-muted-foreground mb-4">
+                    Si vous estimez que le traitement de vos données ne respecte pas la réglementation, 
+                    vous pouvez introduire une réclamation auprès de l'Autorité de protection des données :
                   </p>
-                  <ul className="list-none space-y-1 mt-4">
-                    <li><strong className="text-foreground">Autorité de Protection des Données (APD)</strong></li>
-                    <li>Rue de la Presse 35, 1000 Bruxelles</li>
-                    <li>https://www.autoriteprotectiondonnees.be</li>
-                  </ul>
+                  <div className="bg-muted/50 rounded-xl p-6 text-sm">
+                    <p className="font-semibold">Autorité de protection des données (APD)</p>
+                    <p className="text-muted-foreground mt-2">Rue de la Presse 35, 1000 Bruxelles</p>
+                    <p className="mt-2">
+                      <a href="https://www.autoriteprotectiondonnees.be" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                        www.autoriteprotectiondonnees.be
+                      </a>
+                    </p>
+                  </div>
                 </section>
 
+                {/* 12. Modifications */}
                 <section>
-                  <h2 className="font-display text-xl font-semibold text-foreground mb-4">
-                    13. Modifications
+                  <h2 className="font-display text-xl font-bold text-foreground mb-4">
+                    12. Modifications
                   </h2>
-                  <p>
-                    Nous nous réservons le droit de modifier cette politique de confidentialité. En cas de modification substantielle, nous vous en informerons par email ou via notre site.
+                  <p className="text-muted-foreground">
+                    Nous nous réservons le droit de modifier cette politique de confidentialité à tout moment. 
+                    En cas de modification substantielle, nous vous en informerons par email ou via une notification sur le site.
                   </p>
                 </section>
 
+                {/* 13. Contact */}
                 <section>
-                  <h2 className="font-display text-xl font-semibold text-foreground mb-4">
-                    14. Contact
+                  <h2 className="font-display text-xl font-bold text-foreground mb-4">
+                    13. Contact
                   </h2>
-                  <p>
-                    Pour toute question relative à cette politique, contactez-nous :
+                  <p className="text-muted-foreground">
+                    Pour toute question relative à cette politique ou à vos données personnelles :
                   </p>
-                  <ul className="list-none space-y-1 mt-4">
-                    <li><strong className="text-foreground">Par email :</strong> ohall@noralphar.com</li>
-                    <li><strong className="text-foreground">Par téléphone :</strong> +32 02 648 42 22</li>
-                    <li><strong className="text-foreground">Par courrier :</strong> Pharmacie Allard, Avenue de l'Hippodrome 148, 1050 Ixelles, Belgique</li>
+                  <ul className="list-disc list-inside space-y-2 text-muted-foreground mt-2">
+                    <li>Email : <a href="mailto:ohall@noralphar.com" className="text-primary hover:underline">ohall@noralphar.com</a></li>
+                    <li>Téléphone : <a href="tel:+3202216492" className="text-primary hover:underline">+32 02 216 49 23</a> (Du lundi au vendredi de 09h à 15h)</li>
+                    <li>Courrier : Pharmacie Allard, Avenue Georges Lecointe 50, 1180 Uccle, Belgique</li>
                   </ul>
                 </section>
 
                 <p className="text-sm text-muted-foreground/70 pt-8 border-t border-border">
-                  Dernière mise à jour : Janvier 2026
+                  Dernière mise à jour : Janvier 2025
                 </p>
               </div>
             </motion.div>

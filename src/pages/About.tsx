@@ -2,7 +2,9 @@ import { Helmet } from "react-helmet-async";
 import Layout from "@/components/Layout";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
-import { Heart, Users, Shield, Sparkles, Phone, Mail, MapPin, Clock } from "lucide-react";
+import { Heart, Users, Shield, Sparkles, Phone, Mail, MapPin, Clock, Calendar, Video } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import CallbackFormCompact from "@/components/CallbackFormCompact";
 import {
   Accordion,
   AccordionContent,
@@ -269,6 +271,50 @@ const About = () => {
           </div>
         </section>
 
+        {/* Team CTA Section */}
+        <section className="section-padding bg-primary/5">
+          <div className="container-main">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="max-w-4xl mx-auto"
+            >
+              <div className="grid lg:grid-cols-2 gap-10 items-center">
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <Video className="w-5 h-5 text-primary" />
+                    <span className="text-sm font-medium text-primary uppercase tracking-wide">Notre équipe</span>
+                  </div>
+                  <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-4">
+                    Rencontrez nos experts
+                  </h2>
+                  <p className="text-muted-foreground mb-6">
+                    Notre équipe de pharmaciens et conseillers est à votre disposition pour répondre à vos questions 
+                    et vous accompagner dans le choix des meilleures solutions pour vous ou vos proches.
+                  </p>
+                  <div className="flex flex-wrap gap-4">
+                    <Button size="lg" className="gap-2">
+                      <Phone className="w-4 h-4" />
+                      Demander un rappel
+                    </Button>
+                    <Button variant="outline" size="lg" className="gap-2">
+                      <Calendar className="w-4 h-4" />
+                      Prendre rendez-vous
+                    </Button>
+                  </div>
+                </div>
+                <div className="bg-card rounded-2xl p-6 border border-border shadow-lg">
+                  <h3 className="font-display font-semibold text-foreground mb-4">
+                    Être rappelé(e) par un conseiller
+                  </h3>
+                  <CallbackFormCompact />
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
         {/* Contact */}
         <section className="section-padding bg-muted/50">
           <div className="container-main">
@@ -302,8 +348,8 @@ const About = () => {
                       <Clock className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <p className="font-display font-bold text-foreground mb-1">Lun-Dim 8h-20h</p>
-                      <p className="text-sm text-muted-foreground">Disponible 7j/7</p>
+                      <p className="font-display font-bold text-foreground mb-1">Lun-Ven 9h-15h</p>
+                      <p className="text-sm text-muted-foreground">Du lundi au vendredi</p>
                     </div>
                   </div>
 
