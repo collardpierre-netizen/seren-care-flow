@@ -26,6 +26,8 @@ import LegalNotice from "./pages/LegalNotice";
 import TermsOfSale from "./pages/TermsOfSale";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfUse from "./pages/TermsOfUse";
+import Brands from "./pages/Brands";
+import Contact from "./pages/Contact";
 
 // Admin pages
 import AdminLayout from "./components/admin/AdminLayout";
@@ -72,6 +74,8 @@ const App = () => (
               <Route path="/cgv" element={<TermsOfSale />} />
               <Route path="/cgu" element={<TermsOfUse />} />
               <Route path="/confidentialite" element={<PrivacyPolicy />} />
+              <Route path="/marques" element={<Brands />} />
+              <Route path="/contact" element={<Contact />} />
 
               {/* Admin routes */}
               <Route path="/admin" element={
