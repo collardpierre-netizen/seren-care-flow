@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { useLocation } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -60,6 +61,7 @@ const faqItems = [
 
 const About = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const location = useLocation();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -67,6 +69,18 @@ const About = () => {
     }, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  // Scroll to hash on mount or location change
+  useEffect(() => {
+    if (location.hash) {
+      const element = document.querySelector(location.hash);
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
+  }, [location]);
 
   return (
     <>
