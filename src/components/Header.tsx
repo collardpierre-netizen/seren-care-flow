@@ -97,12 +97,12 @@ const Header = () => {
                   </div>
                   <DropdownMenuSeparator />
                   {isAdmin && (
-                    <DropdownMenuItem asChild>
-                      <Link to="/admin">Administration</Link>
+                    <DropdownMenuItem onSelect={() => navigate('/admin')}>
+                      Administration
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem asChild>
-                    <Link to="/mon-compte">Mon compte</Link>
+                  <DropdownMenuItem onSelect={() => navigate('/mon-compte')}>
+                    Mon compte
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
