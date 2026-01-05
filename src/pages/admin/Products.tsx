@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Loader2, Search, Package, Upload, Link, X, Image as ImageIcon } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, Search, Package, Upload, Link, X, Image as ImageIcon, Download, FileUp } from 'lucide-react';
 
 interface ProductFormData {
   name: string;
@@ -74,7 +74,9 @@ const AdminProducts: React.FC = () => {
   const [productImages, setProductImages] = useState<ProductImage[]>([]);
   const [imageUrl, setImageUrl] = useState('');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const importInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
 
   const { data: products, isLoading } = useQuery({
@@ -371,6 +373,157 @@ const AdminProducts: React.FC = () => {
     p.name.toLowerCase().includes(search.toLowerCase())
   );
 
+  // Export products to CSV
+  const handleExportCSV = () => {
+    if (!products || products.length === 0) {
+      toast.error('Aucun produit à exporter');
+      return;
+    }
+
+    const headers = [
+      'name', 'slug', 'sku', 'brand', 'category', 'short_description', 'description',
+      'incontinence_level', 'mobility', 'usage_time',
+      'recommended_price', 'price', 'subscription_price', 'purchase_price',
+      'units_per_product', 'min_order_quantity', 'stock_quantity',
+      'is_active', 'is_featured'
+    ];
+
+    const csvRows = [headers.join(';')];
+    
+    for (const product of products) {
+      const row = [
+        product.name || '',
+        product.slug || '',
+        product.sku || '',
+        product.brand?.name || '',
+        product.category?.name || '',
+        (product.short_description || '').replace(/;/g, ',').replace(/\n/g, ' '),
+        (product.description || '').replace(/;/g, ',').replace(/\n/g, ' '),
+        product.incontinence_level || '',
+        product.mobility || '',
+        product.usage_time || '',
+        product.recommended_price || 0,
+        product.price || 0,
+        product.subscription_price || 0,
+        product.purchase_price || 0,
+        product.units_per_product || 1,
+        product.min_order_quantity || 1,
+        product.stock_quantity || 0,
+        product.is_active ? 'true' : 'false',
+        product.is_featured ? 'true' : 'false'
+      ];
+      csvRows.push(row.join(';'));
+    }
+
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `produits-serencare-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success(`${products.length} produits exportés`);
+  };
+
+  // Import products from CSV
+  const handleImportCSV = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    try {
+      const text = await file.text();
+      const lines = text.split('\n').filter(line => line.trim());
+      
+      if (lines.length < 2) {
+        toast.error('Fichier CSV vide ou invalide');
+        return;
+      }
+
+      const headers = lines[0].split(';').map(h => h.trim().toLowerCase());
+      const nameIndex = headers.indexOf('name');
+      const slugIndex = headers.indexOf('slug');
+      
+      if (nameIndex === -1 || slugIndex === -1) {
+        toast.error('Le fichier doit contenir les colonnes "name" et "slug"');
+        return;
+      }
+
+      let imported = 0;
+      let updated = 0;
+      let errors = 0;
+
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(';').map(v => v.trim());
+        if (!values[nameIndex] || !values[slugIndex]) continue;
+
+        const productData: any = {
+          name: values[nameIndex],
+          slug: values[slugIndex],
+          sku: values[headers.indexOf('sku')] || null,
+          short_description: values[headers.indexOf('short_description')] || null,
+          description: values[headers.indexOf('description')] || null,
+          incontinence_level: values[headers.indexOf('incontinence_level')] || null,
+          mobility: values[headers.indexOf('mobility')] || null,
+          usage_time: values[headers.indexOf('usage_time')] || null,
+          recommended_price: parseFloat(values[headers.indexOf('recommended_price')]) || null,
+          price: parseFloat(values[headers.indexOf('price')]) || 0,
+          subscription_price: parseFloat(values[headers.indexOf('subscription_price')]) || null,
+          purchase_price: parseFloat(values[headers.indexOf('purchase_price')]) || null,
+          units_per_product: parseInt(values[headers.indexOf('units_per_product')]) || 1,
+          min_order_quantity: parseInt(values[headers.indexOf('min_order_quantity')]) || 1,
+          stock_quantity: parseInt(values[headers.indexOf('stock_quantity')]) || 0,
+          is_active: values[headers.indexOf('is_active')]?.toLowerCase() !== 'false',
+          is_featured: values[headers.indexOf('is_featured')]?.toLowerCase() === 'true',
+        };
+
+        // Match brand by name
+        const brandName = values[headers.indexOf('brand')];
+        if (brandName && brands) {
+          const brand = brands.find(b => b.name.toLowerCase() === brandName.toLowerCase());
+          if (brand) productData.brand_id = brand.id;
+        }
+
+        // Match category by name
+        const categoryName = values[headers.indexOf('category')];
+        if (categoryName && categories) {
+          const category = categories.find(c => c.name.toLowerCase() === categoryName.toLowerCase());
+          if (category) productData.category_id = category.id;
+        }
+
+        try {
+          // Check if product exists by slug
+          const { data: existing } = await supabase
+            .from('products')
+            .select('id')
+            .eq('slug', productData.slug)
+            .single();
+
+          if (existing) {
+            await supabase.from('products').update(productData).eq('id', existing.id);
+            updated++;
+          } else {
+            await supabase.from('products').insert(productData);
+            imported++;
+          }
+        } catch {
+          errors++;
+        }
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      toast.success(`Import terminé: ${imported} créés, ${updated} mis à jour${errors > 0 ? `, ${errors} erreurs` : ''}`);
+    } catch (error) {
+      toast.error('Erreur lors de l\'import du fichier');
+    } finally {
+      setIsImporting(false);
+      if (importInputRef.current) {
+        importInputRef.current.value = '';
+      }
+    }
+  };
+
   const incontinenceLevels = [
     { value: 'light', label: 'Légère' },
     { value: 'moderate', label: 'Modérée' },
@@ -392,25 +545,53 @@ const AdminProducts: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-display font-bold">Produits</h1>
           <p className="text-muted-foreground">Gérez votre catalogue de produits</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={(open) => {
-          setIsDialogOpen(open);
-          if (!open) {
-            setEditingProduct(null);
-            setFormData(initialFormData);
-            setProductImages([]);
-          }
-        }}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Ajouter un produit
-            </Button>
-          </DialogTrigger>
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Import CSV */}
+          <input
+            ref={importInputRef}
+            type="file"
+            accept=".csv"
+            onChange={handleImportCSV}
+            className="hidden"
+          />
+          <Button
+            variant="outline"
+            onClick={() => importInputRef.current?.click()}
+            disabled={isImporting}
+          >
+            {isImporting ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <FileUp className="h-4 w-4 mr-2" />
+            )}
+            Importer CSV
+          </Button>
+          
+          {/* Export CSV */}
+          <Button variant="outline" onClick={handleExportCSV}>
+            <Download className="h-4 w-4 mr-2" />
+            Exporter CSV
+          </Button>
+
+          <Dialog open={isDialogOpen} onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) {
+              setEditingProduct(null);
+              setFormData(initialFormData);
+              setProductImages([]);
+            }
+          }}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Ajouter
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
@@ -767,6 +948,7 @@ const AdminProducts: React.FC = () => {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <Card>
