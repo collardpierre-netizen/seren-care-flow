@@ -25,6 +25,7 @@ import {
   Mail,
   MapPin
 } from "lucide-react";
+import { PrescriberApplicationForm } from "@/components/prescribers/PrescriberApplicationForm";
 
 import prescriberImage1 from "@/assets/prescriber-1.jpeg";
 import prescriberImage2 from "@/assets/prescriber-2.jpeg";
@@ -358,58 +359,84 @@ const Prescribers = () => {
           </div>
         </section>
 
-        {/* CTA */}
-        <section id="contact" className="section-padding bg-primary">
+        {/* Application Form Section */}
+        <section id="contact" className="section-padding bg-muted/30">
           <div className="container-main">
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="max-w-2xl mx-auto text-center"
-            >
-              <h2 className="font-display text-2xl md:text-3xl font-bold text-primary-foreground mb-4">
-                Transformez votre pratique dès aujourd'hui
-              </h2>
-              <p className="text-primary-foreground/80 mb-8">
-                Découvrez pourquoi notre solution révolutionnaire transforme la pratique professionnelle. 
-                Rejoignez l'innovation dans le secteur de la santé.
-              </p>
-              
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
-                <Button size="lg" variant="white">
-                  Planifier une démonstration
-                </Button>
-                <Button
-                  asChild
-                  size="lg"
-                  variant="outline"
-                  className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary"
-                >
-                  <a href="tel:+3202648422">
-                    <Phone className="w-4 h-4 mr-2" />
-                    +32 02 648 42 22
-                  </a>
-                </Button>
-              </div>
+            <div className="grid lg:grid-cols-2 gap-12 items-start">
+              {/* Left: Info */}
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+              >
+                <p className="text-sm font-medium text-primary uppercase tracking-wide mb-2">Candidature</p>
+                <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-4">
+                  Devenez partenaire SerenCare
+                </h2>
+                <p className="text-muted-foreground mb-8">
+                  Remplissez le formulaire ci-contre et notre équipe commerciale vous contactera 
+                  dans les 48h pour discuter de notre partenariat et de vos besoins spécifiques.
+                </p>
 
-              {/* Contact info */}
-              <div className="grid sm:grid-cols-3 gap-4 text-primary-foreground/80 text-sm">
-                <div className="flex items-center justify-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  <span>Lun-Dim 8h-20h</span>
+                <div className="space-y-4 mb-8">
+                  <div className="flex items-center gap-3 p-4 bg-card rounded-xl border border-border">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Phone className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Téléphone</p>
+                      <a href="tel:+3202648422" className="font-medium text-foreground hover:text-primary transition-colors">
+                        +32 02 648 42 22
+                      </a>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 p-4 bg-card rounded-xl border border-border">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Mail className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Email</p>
+                      <a href="mailto:pro@pharmacie-allard.be" className="font-medium text-foreground hover:text-primary transition-colors">
+                        pro@pharmacie-allard.be
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 p-4 bg-card rounded-xl border border-border">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Clock className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Disponibilité</p>
+                      <p className="font-medium text-foreground">Lun-Dim 8h-20h</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center justify-center gap-2">
-                  <Mail className="w-4 h-4" />
-                  <a href="mailto:contact@pharmacie-allard.be" className="hover:text-primary-foreground">
-                    contact@pharmacie-allard.be
-                  </a>
+
+                <div className="p-6 bg-highlight rounded-xl">
+                  <h3 className="font-display font-semibold text-foreground mb-2">
+                    Pourquoi nous rejoindre ?
+                  </h3>
+                  <ul className="space-y-2">
+                    {[
+                      "Commission récurrente sur chaque abonnement",
+                      "Formation spécialisée incluse",
+                      "Support technique 24/7",
+                      "Tableaux de bord de suivi patient",
+                    ].map((item) => (
+                      <li key={item} className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <CheckCircle className="w-4 h-4 text-secondary flex-shrink-0" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <div className="flex items-center justify-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  <span>Ixelles, Belgique</span>
-                </div>
-              </div>
-            </motion.div>
+              </motion.div>
+
+              {/* Right: Form */}
+              <PrescriberApplicationForm />
+            </div>
           </div>
         </section>
       </Layout>
