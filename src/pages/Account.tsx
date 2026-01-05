@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { useCart } from '@/hooks/useCart';
 import { 
   User, 
   Package, 
@@ -25,11 +26,13 @@ import {
   Play,
   Edit,
   Save,
-  X
+  X,
+  RotateCcw
 } from 'lucide-react';
 
 const Account = () => {
   const { user, isLoading: authLoading } = useAuth();
+  const { addItem, openCart } = useCart();
   const queryClient = useQueryClient();
   const [editingProfile, setEditingProfile] = useState(false);
   const [profileForm, setProfileForm] = useState({
@@ -395,8 +398,49 @@ const Account = () => {
                                   {format(new Date(order.created_at), 'dd MMMM yyyy', { locale: fr })}
                                 </p>
                               </div>
-                              <div className="text-right">
+                              <div className="flex items-center gap-3">
                                 <p className="font-bold text-lg">{Number(order.total).toFixed(2)} €</p>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={async () => {
+                                    if (!order.items || order.items.length === 0) {
+                                      toast.error('Cette commande ne contient aucun article');
+                                      return;
+                                    }
+                                    
+                                    // Fetch product details for each item
+                                    for (const item of order.items) {
+                                      if (item.product_id) {
+                                        const { data: product } = await supabase
+                                          .from('products')
+                                          .select('*, product_images(*)')
+                                          .eq('id', item.product_id)
+                                          .single();
+                                        
+                                        if (product) {
+                                          const primaryImage = product.product_images?.find((img: any) => img.is_primary) || product.product_images?.[0];
+                                          addItem({
+                                            productId: product.id,
+                                            productName: product.name,
+                                            productImage: primaryImage?.image_url,
+                                            size: item.product_size || undefined,
+                                            quantity: item.quantity,
+                                            unitPrice: Number(item.unit_price),
+                                            isSubscription: false,
+                                            subscriptionPrice: product.subscription_price ? Number(product.subscription_price) : undefined
+                                          });
+                                        }
+                                      }
+                                    }
+                                    
+                                    toast.success('Articles ajoutés au panier');
+                                    openCart();
+                                  }}
+                                >
+                                  <RotateCcw className="h-4 w-4 mr-1" />
+                                  Re-commander
+                                </Button>
                               </div>
                             </div>
                             
