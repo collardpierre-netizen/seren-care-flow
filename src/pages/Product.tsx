@@ -28,6 +28,7 @@ import {
   Package
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SizeGuideDialog } from '@/components/shop/SizeGuideDialog';
 
 const ProductPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -282,7 +283,10 @@ const ProductPage = () => {
               {/* Size selection */}
               {sizes.length > 0 && (
                 <div className="space-y-3">
-                  <Label className="text-sm font-medium">Taille</Label>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium">Taille</Label>
+                    <SizeGuideDialog />
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {sizes.map((size) => (
                       <button
