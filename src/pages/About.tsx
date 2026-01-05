@@ -2,20 +2,21 @@ import { Helmet } from "react-helmet-async";
 import Layout from "@/components/Layout";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
-import { Heart, Users, Shield, Sparkles, Phone, Mail, MapPin, Clock, Calendar, Video } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import CallbackFormCompact from "@/components/CallbackFormCompact";
+import { Heart, Users, Shield, Sparkles, Phone, Mail, MapPin, Clock, Video } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { CallbackDialog } from "@/components/CallbackDialog";
+import { AppointmentDialog } from "@/components/AppointmentDialog";
 
 import aboutImage1 from "@/assets/about-1.jpeg";
 import aboutImage2 from "@/assets/about-2.jpeg";
 import aboutImage3 from "@/assets/about-3.jpeg";
 import aboutImage4 from "@/assets/about-4.jpeg";
+import foundersImage from "@/assets/founders.png";
 
 const aboutImages = [aboutImage1, aboutImage2, aboutImage3, aboutImage4];
 
@@ -280,35 +281,37 @@ const About = () => {
               viewport={{ once: true }}
               className="max-w-4xl mx-auto"
             >
-              <div className="grid lg:grid-cols-2 gap-10 items-center">
-                <div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <Video className="w-5 h-5 text-primary" />
-                    <span className="text-sm font-medium text-primary uppercase tracking-wide">Notre équipe</span>
-                  </div>
-                  <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-4">
-                    Rencontrez nos experts
-                  </h2>
-                  <p className="text-muted-foreground mb-6">
-                    Notre équipe de pharmaciens et conseillers est à votre disposition pour répondre à vos questions 
-                    et vous accompagner dans le choix des meilleures solutions pour vous ou vos proches.
-                  </p>
-                  <div className="flex flex-wrap gap-4">
-                    <Button size="lg" className="gap-2">
-                      <Phone className="w-4 h-4" />
-                      Demander un rappel
-                    </Button>
-                    <Button variant="outline" size="lg" className="gap-2">
-                      <Calendar className="w-4 h-4" />
-                      Prendre rendez-vous
-                    </Button>
+              <div className="text-center mb-10">
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <Video className="w-5 h-5 text-primary" />
+                  <span className="text-sm font-medium text-primary uppercase tracking-wide">Notre équipe</span>
+                </div>
+                <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-4">
+                  Rencontrez nos fondateurs
+                </h2>
+                <p className="text-muted-foreground max-w-2xl mx-auto">
+                  Deux passionnés qui ont créé SerenCare pour accompagner les familles avec bienveillance.
+                </p>
+
+                {/* Founders image */}
+                <div className="flex justify-center mt-8 mb-8">
+                  <div className="relative">
+                    <img
+                      src={foundersImage}
+                      alt="Nos fondateurs"
+                      className="w-48 h-48 md:w-56 md:h-56 rounded-full object-cover border-4 border-primary/20 shadow-lg"
+                    />
                   </div>
                 </div>
-                <div className="bg-card rounded-2xl p-6 border border-border shadow-lg">
-                  <h3 className="font-display font-semibold text-foreground mb-4">
-                    Être rappelé(e) par un conseiller
-                  </h3>
-                  <CallbackFormCompact />
+
+                <p className="text-muted-foreground mb-6">
+                  Notre équipe de pharmaciens et conseillers est à votre disposition pour répondre à vos questions 
+                  et vous accompagner dans le choix des meilleures solutions.
+                </p>
+                
+                <div className="flex flex-wrap justify-center gap-4">
+                  <CallbackDialog />
+                  <AppointmentDialog />
                 </div>
               </div>
             </motion.div>
