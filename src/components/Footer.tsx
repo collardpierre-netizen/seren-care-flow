@@ -21,7 +21,7 @@ const Footer = () => {
     about: [
       { name: "Notre mission", href: "/a-propos" },
       { name: "Nos marques", href: "/marques" },
-      { name: "Contact", href: "/a-propos#faq" },
+      { name: "Contact", href: "/contact" },
     ],
   };
 
