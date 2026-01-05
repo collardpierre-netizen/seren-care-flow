@@ -14,9 +14,9 @@ const Footer = () => {
     ],
     prescripteurs: [
       { name: "Espace Pro", href: "/prescripteurs" },
-      { name: "Maisons de repos & EHPAD", href: "/prescripteurs#contact" },
-      { name: "Médecins & Pharmaciens", href: "/prescripteurs#contact" },
-      { name: "Devenir partenaire", href: "/prescripteurs#contact" },
+      { name: "Maisons de repos & EHPAD", href: "/prescripteurs" },
+      { name: "Médecins & Pharmaciens", href: "/prescripteurs" },
+      { name: "Devenir partenaire", href: "/prescripteurs#candidature" },
     ],
     about: [
       { name: "Notre mission", href: "/a-propos" },
