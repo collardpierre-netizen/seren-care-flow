@@ -174,7 +174,7 @@ const HeroSection = () => {
               className="font-display text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-[1.1] tracking-tight mb-6"
             >
               Votre confort intime,{" "}
-              <span className="text-white/90">livré à domicile, sans stress.</span>
+              <span className="text-white/90">livré chez vous, sans stress.</span>
             </motion.h1>
 
             {/* Subheadline */}
