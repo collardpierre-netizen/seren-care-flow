@@ -40,6 +40,25 @@ const CallbackFormCompact = ({ variant = "default" }: CallbackFormCompactProps) 
 
       if (error) throw error;
 
+      // Send confirmation email
+      try {
+        await supabase.functions.invoke('send-confirmation-email', {
+          body: {
+            type: 'callback',
+            to: '', // No email for callback, will be skipped
+            data: {
+              firstName: formData.firstName,
+              lastName: formData.lastName,
+              phone: formData.phone,
+              preferredDay: formData.preferredDay,
+              preferredTime: formData.preferredTime,
+            }
+          }
+        });
+      } catch (emailError) {
+        console.log('Email notification skipped');
+      }
+
       setIsSubmitted(true);
       toast.success("Demande envoyée ! Nous vous rappellerons bientôt.");
     } catch (error) {
