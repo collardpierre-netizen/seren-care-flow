@@ -21,6 +21,9 @@ import RegisterPage from "./pages/Register";
 import Checkout from "./pages/Checkout";
 import Account from "./pages/Account";
 import ProductPage from "./pages/Product";
+import LegalNotice from "./pages/LegalNotice";
+import TermsOfSale from "./pages/TermsOfSale";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 // Admin pages
 import AdminLayout from "./components/admin/AdminLayout";
@@ -60,6 +63,9 @@ const App = () => (
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/mon-compte" element={<Account />} />
               <Route path="/produit/:slug" element={<ProductPage />} />
+              <Route path="/mentions-legales" element={<LegalNotice />} />
+              <Route path="/cgv" element={<TermsOfSale />} />
+              <Route path="/confidentialite" element={<PrivacyPolicy />} />
 
               {/* Admin routes */}
               <Route path="/admin" element={
