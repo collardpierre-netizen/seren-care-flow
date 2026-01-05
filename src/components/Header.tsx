@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/hooks/useCart";
+import { toast } from "@/hooks/use-toast";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const Header = () => {
@@ -27,6 +28,10 @@ const Header = () => {
 
   const handleSignOut = async () => {
     await signOut();
+    toast({
+      title: "Déconnexion réussie",
+      description: "À bientôt sur SerenCare !",
+    });
     navigate("/");
   };
 
