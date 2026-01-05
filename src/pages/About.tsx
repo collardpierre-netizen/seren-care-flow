@@ -312,7 +312,7 @@ const About = () => {
                       <Mail className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <p className="font-display font-bold text-foreground mb-1">contact@pharmacie-allard.be</p>
+                      <p className="font-display font-bold text-foreground mb-1">ohall@noralphar.com</p>
                       <p className="text-sm text-muted-foreground">Réponse rapide garantie</p>
                     </div>
                   </div>

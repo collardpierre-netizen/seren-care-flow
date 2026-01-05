@@ -38,7 +38,7 @@ const PrivacyPolicy = () => {
                   <ul className="list-none space-y-1">
                     <li><strong className="text-foreground">Raison sociale :</strong> Pharmacie Allard SPRL</li>
                     <li><strong className="text-foreground">Adresse :</strong> Avenue de l'Hippodrome 148, 1050 Ixelles, Belgique</li>
-                    <li><strong className="text-foreground">Email :</strong> contact@pharmacie-allard.be</li>
+                    <li><strong className="text-foreground">Email :</strong> ohall@noralphar.com</li>
                     <li><strong className="text-foreground">Téléphone :</strong> +32 02 648 42 22</li>
                   </ul>
                 </section>
@@ -129,7 +129,7 @@ const PrivacyPolicy = () => {
                     <li><strong className="text-foreground">Droit de retirer votre consentement :</strong> à tout moment</li>
                   </ul>
                   <p className="mt-4">
-                    Pour exercer ces droits, contactez-nous à contact@pharmacie-allard.be. Nous répondrons dans un délai d'un mois.
+                    Pour exercer ces droits, contactez-nous à ohall@noralphar.com. Nous répondrons dans un délai d'un mois.
                   </p>
                 </section>
 
@@ -205,7 +205,7 @@ const PrivacyPolicy = () => {
                     Pour toute question relative à cette politique, contactez-nous :
                   </p>
                   <ul className="list-none space-y-1 mt-4">
-                    <li><strong className="text-foreground">Par email :</strong> contact@pharmacie-allard.be</li>
+                    <li><strong className="text-foreground">Par email :</strong> ohall@noralphar.com</li>
                     <li><strong className="text-foreground">Par téléphone :</strong> +32 02 648 42 22</li>
                     <li><strong className="text-foreground">Par courrier :</strong> Pharmacie Allard, Avenue de l'Hippodrome 148, 1050 Ixelles, Belgique</li>
                   </ul>

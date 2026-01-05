@@ -127,7 +127,7 @@ const TermsOfSale = () => {
                     <strong className="text-foreground">Exceptions :</strong> Pour des raisons d'hygiène, les produits descellés ne peuvent être retournés.
                   </p>
                   <p className="mt-4">
-                    Pour exercer ce droit, contactez-nous à contact@pharmacie-allard.be ou par téléphone au +32 02 648 42 22.
+                    Pour exercer ce droit, contactez-nous à ohall@noralphar.com ou par téléphone au +32 02 648 42 22.
                   </p>
                 </section>
 
@@ -151,7 +151,7 @@ const TermsOfSale = () => {
                     Pour toute réclamation, le client peut contacter le service client :
                   </p>
                   <ul className="list-none space-y-1 mt-4">
-                    <li><strong className="text-foreground">Par email :</strong> contact@pharmacie-allard.be</li>
+                    <li><strong className="text-foreground">Par email :</strong> ohall@noralphar.com</li>
                     <li><strong className="text-foreground">Par téléphone :</strong> +32 02 648 42 22 (Lun-Dim 8h-20h)</li>
                   </ul>
                   <p className="mt-4">
