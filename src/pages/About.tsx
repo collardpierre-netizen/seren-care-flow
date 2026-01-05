@@ -102,16 +102,20 @@ const About = () => {
               >
                 <div className="relative rounded-3xl overflow-hidden shadow-2xl aspect-[4/3]">
                   <AnimatePresence mode="wait">
-                    <motion.img
+                    <motion.div
                       key={currentImageIndex}
-                      src={aboutImages[currentImageIndex]}
-                      alt="Personnes heureuses et actives"
-                      className="w-full h-full object-cover"
                       initial={{ opacity: 0, scale: 1.05 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.7 }}
-                    />
+                      className="w-full h-full"
+                    >
+                      <img
+                        src={aboutImages[currentImageIndex]}
+                        alt="Personnes heureuses et actives"
+                        className="w-full h-full object-cover"
+                      />
+                    </motion.div>
                   </AnimatePresence>
                   <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent pointer-events-none" />
                 </div>
