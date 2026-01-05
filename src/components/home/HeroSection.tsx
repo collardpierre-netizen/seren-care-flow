@@ -173,8 +173,8 @@ const HeroSection = () => {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="font-display text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-[1.1] tracking-tight mb-6"
             >
-              La tranquillité d'esprit,{" "}
-              <span className="text-white/90">livrée chez vous.</span>
+              Votre confort intime,{" "}
+              <span className="text-white/90">livré à domicile, sans stress.</span>
             </motion.h1>
 
             {/* Subheadline */}
