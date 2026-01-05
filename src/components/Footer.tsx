@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import { Phone, Mail, ArrowUpRight, MapPin, Clock } from "lucide-react";
 import logo from "@/assets/logo.png";
-
+import { CallbackDialog } from "./CallbackDialog";
+import { Button } from "./ui/button";
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
@@ -61,6 +62,16 @@ const Footer = () => {
                 <span>Av. de l'Hippodrome 148<br />1050 Ixelles, Belgique</span>
               </div>
             </div>
+
+            {/* CTA Button */}
+            <CallbackDialog 
+              trigger={
+                <Button variant="secondary" size="sm" className="gap-2">
+                  <Phone className="w-4 h-4" />
+                  Demander un rappel
+                </Button>
+              }
+            />
           </div>
 
           {/* Services */}

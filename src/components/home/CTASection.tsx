@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Calendar } from "lucide-react";
 import CallbackForm from "./CallbackForm";
-
+import { AppointmentDialog } from "@/components/AppointmentDialog";
 const CTASection = () => {
   return (
     <section id="contact" className="section-padding bg-background">
@@ -42,6 +42,14 @@ const CTASection = () => {
                     <ArrowRight className="w-5 h-5" />
                   </Link>
                 </Button>
+                <AppointmentDialog
+                  trigger={
+                    <Button variant="ghost" size="lg" className="gap-2">
+                      <Calendar className="w-5 h-5" />
+                      Prendre rendez-vous
+                    </Button>
+                  }
+                />
               </div>
 
               <p className="text-sm text-muted-foreground">

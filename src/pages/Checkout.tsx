@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 import { ShoppingBag, ArrowLeft, CreditCard, Truck, RefreshCw, Tag, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { SizeGuideDialog } from '@/components/shop/SizeGuideDialog';
 
 const Checkout = () => {
   const { items, getSubtotal, getSubscriptionSavings } = useCart();
@@ -95,8 +96,9 @@ const Checkout = () => {
             {/* Order Summary */}
             <div className="lg:col-span-2 space-y-6">
               <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="text-lg">Récapitulatif ({items.length} article{items.length > 1 ? 's' : ''})</CardTitle>
+                  {items.some(item => item.size) && <SizeGuideDialog />}
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {items.map((item) => (
@@ -115,7 +117,11 @@ const Checkout = () => {
                       )}
                       <div className="flex-1">
                         <h4 className="font-medium">{item.productName}</h4>
-                        {item.size && <p className="text-sm text-muted-foreground">Taille: {item.size}</p>}
+                        {item.size && (
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm text-muted-foreground">Taille: {item.size}</p>
+                          </div>
+                        )}
                         {item.isSubscription && (
                           <div className="flex items-center gap-1 text-sm text-secondary mt-1">
                             <RefreshCw className="h-3 w-3" />
