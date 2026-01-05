@@ -215,7 +215,7 @@ const About = () => {
         </section>
 
         {/* FAQ */}
-        <section id="faq" className="section-padding">
+        <section id="faq" className="section-padding scroll-mt-24">
           <div className="container-main">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
