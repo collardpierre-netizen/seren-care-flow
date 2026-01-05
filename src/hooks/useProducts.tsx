@@ -13,6 +13,9 @@ export interface Product {
   mobility: 'mobile' | 'reduced' | 'bedridden' | null;
   usage_time: 'day' | 'night' | 'day_night' | null;
   price: number;
+  recommended_price: number | null;
+  purchase_price: number | null;
+  units_per_product: number | null;
   subscription_price: number | null;
   subscription_discount_percent: number | null;
   min_order_quantity: number | null;
