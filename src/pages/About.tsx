@@ -17,6 +17,9 @@ import aboutImage2 from "@/assets/about-2.jpeg";
 import aboutImage3 from "@/assets/about-3.jpeg";
 import aboutImage4 from "@/assets/about-4.jpeg";
 import foundersImage from "@/assets/founders.png";
+import teamOlivier from "@/assets/team-olivier.png";
+import teamPierre from "@/assets/team-pierre.png";
+import teamGaetan from "@/assets/team-gaetan.png";
 
 const aboutImages = [aboutImage1, aboutImage2, aboutImage3, aboutImage4];
 
@@ -287,15 +290,15 @@ const About = () => {
                   <span className="text-sm font-medium text-primary uppercase tracking-wide">Notre équipe</span>
                 </div>
                 <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-4">
-                  Rencontrez nos fondateurs
+                  Rencontrez notre équipe
                 </h2>
                 <p className="text-muted-foreground max-w-2xl mx-auto">
-                  Deux passionnés qui ont créé SerenCare pour accompagner les familles avec bienveillance.
+                  Une équipe passionnée qui a créé SerenCare pour accompagner les familles avec bienveillance.
                 </p>
 
-                {/* Founders with badges */}
+                {/* Team members with photos */}
                 <div className="flex flex-col md:flex-row items-center justify-center gap-8 mt-10 mb-10">
-                  {/* Founder 1 */}
+                  {/* Team member 1 - Olivier */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -304,8 +307,8 @@ const About = () => {
                     className="flex flex-col items-center"
                   >
                     <div className="relative mb-4">
-                      <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center border-4 border-primary/20 shadow-lg">
-                        <span className="font-display text-4xl md:text-5xl font-bold text-primary">OH</span>
+                      <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-primary/20 shadow-lg">
+                        <img src={teamOlivier} alt="Olivier Hall" className="w-full h-full object-cover" />
                       </div>
                       {/* Badge pharmacien */}
                       <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap shadow-md">
@@ -316,7 +319,7 @@ const About = () => {
                     <p className="text-sm text-muted-foreground">Co-fondateur</p>
                   </motion.div>
 
-                  {/* Founder 2 */}
+                  {/* Team member 2 - Pierre */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -325,8 +328,8 @@ const About = () => {
                     className="flex flex-col items-center"
                   >
                     <div className="relative mb-4">
-                      <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center border-4 border-primary/20 shadow-lg">
-                        <span className="font-display text-4xl md:text-5xl font-bold text-primary">PC</span>
+                      <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-primary/20 shadow-lg">
+                        <img src={teamPierre} alt="Pierre Collard" className="w-full h-full object-cover" />
                       </div>
                       {/* Badge conseiller */}
                       <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap shadow-md">
@@ -335,6 +338,27 @@ const About = () => {
                     </div>
                     <h3 className="font-display font-bold text-foreground text-lg mt-4">Pierre Collard</h3>
                     <p className="text-sm text-muted-foreground">Co-fondateur</p>
+                  </motion.div>
+
+                  {/* Team member 3 - Gaetan */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.3 }}
+                    className="flex flex-col items-center"
+                  >
+                    <div className="relative mb-4">
+                      <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-primary/20 shadow-lg">
+                        <img src={teamGaetan} alt="Gaetan Meuleman" className="w-full h-full object-cover" />
+                      </div>
+                      {/* Badge business */}
+                      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap shadow-md">
+                        Business Developer
+                      </div>
+                    </div>
+                    <h3 className="font-display font-bold text-foreground text-lg mt-4">Gaetan Meuleman</h3>
+                    <p className="text-sm text-muted-foreground">Équipe</p>
                   </motion.div>
                 </div>
 
