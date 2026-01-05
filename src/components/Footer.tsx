@@ -54,7 +54,7 @@ const Footer = () => {
               </a>
               <div className="flex items-center gap-3 text-sm text-background/80">
                 <Clock className="w-4 h-4" />
-                Lun-Dim 8h-20h
+                Lun-Ven 9h-15h
               </div>
               <div className="flex items-start gap-3 text-sm text-background/80">
                 <MapPin className="w-4 h-4 mt-0.5" />
@@ -115,6 +115,7 @@ const Footer = () => {
             <div className="flex items-center gap-6 text-xs text-background/50">
               <Link to="/mentions-legales" className="hover:text-background/70 transition-colors">Mentions légales</Link>
               <Link to="/cgv" className="hover:text-background/70 transition-colors">CGV</Link>
+              <Link to="/cgu" className="hover:text-background/70 transition-colors">CGU</Link>
               <Link to="/confidentialite" className="hover:text-background/70 transition-colors">Confidentialité</Link>
             </div>
           </div>
