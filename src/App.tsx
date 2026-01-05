@@ -53,9 +53,9 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <CartDrawer />
-          <CookieConsent />
           <BrowserRouter>
+            <CartDrawer />
+            <CookieConsent />
             <ScrollToTop />
             <Routes>
               {/* Public routes */}
