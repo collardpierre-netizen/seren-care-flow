@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Menu, X, Phone, ChevronRight, ShoppingCart, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, isAdmin, signOut } = useAuth();
   const { openCart, getItemCount } = useCart();
   const itemCount = getItemCount();
@@ -26,6 +27,7 @@ const Header = () => {
 
   const handleSignOut = async () => {
     await signOut();
+    navigate("/");
   };
 
   return (
