@@ -58,18 +58,30 @@ const Account = () => {
     enabled: !!user
   });
 
-  // Fetch orders
+  // Fetch orders with items
   const { data: orders, isLoading: ordersLoading } = useQuery({
     queryKey: ['user-orders', user?.id],
     queryFn: async () => {
       if (!user) return [];
-      const { data, error } = await supabase
+      const { data: ordersData, error } = await supabase
         .from('orders')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data;
+
+      // Fetch items for each order
+      const ordersWithItems = await Promise.all(
+        (ordersData || []).map(async (order) => {
+          const { data: items } = await supabase
+            .from('order_items')
+            .select('*')
+            .eq('order_id', order.id);
+          return { ...order, items: items || [] };
+        })
+      );
+      
+      return ordersWithItems;
     },
     enabled: !!user
   });
@@ -363,28 +375,60 @@ const Account = () => {
                         {orders?.map((order) => (
                           <div 
                             key={order.id} 
-                            className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border rounded-xl"
+                            className="p-4 border rounded-xl space-y-3"
                           >
-                            <div>
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="font-medium">{order.order_number}</span>
-                                <Badge variant={statusLabels[order.status]?.variant || 'outline'}>
-                                  {statusLabels[order.status]?.label || order.status}
-                                </Badge>
-                                {order.is_subscription_order && (
-                                  <Badge variant="secondary">
-                                    <RefreshCw className="h-3 w-3 mr-1" />
-                                    Abo
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                              <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="font-medium">{order.order_number}</span>
+                                  <Badge variant={statusLabels[order.status]?.variant || 'outline'}>
+                                    {statusLabels[order.status]?.label || order.status}
                                   </Badge>
+                                  {order.is_subscription_order && (
+                                    <Badge variant="secondary">
+                                      <RefreshCw className="h-3 w-3 mr-1" />
+                                      Abo
+                                    </Badge>
+                                  )}
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                  {format(new Date(order.created_at), 'dd MMMM yyyy', { locale: fr })}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <p className="font-bold text-lg">{Number(order.total).toFixed(2)} €</p>
+                              </div>
+                            </div>
+                            
+                            {/* Order items */}
+                            {order.items && order.items.length > 0 && (
+                              <div className="pt-3 border-t space-y-2">
+                                {order.items.map((item: any) => (
+                                  <div key={item.id} className="flex items-center justify-between text-sm">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-muted-foreground">×{item.quantity}</span>
+                                      <span>{item.product_name}</span>
+                                      {item.product_size && (
+                                        <span className="text-muted-foreground">({item.product_size})</span>
+                                      )}
+                                    </div>
+                                    <span className="font-medium">{Number(item.total_price).toFixed(2)} €</span>
+                                  </div>
+                                ))}
+                                {order.shipping_fee && Number(order.shipping_fee) > 0 && (
+                                  <div className="flex items-center justify-between text-sm text-muted-foreground">
+                                    <span>Frais de livraison</span>
+                                    <span>{Number(order.shipping_fee).toFixed(2)} €</span>
+                                  </div>
+                                )}
+                                {order.discount_amount && Number(order.discount_amount) > 0 && (
+                                  <div className="flex items-center justify-between text-sm text-green-600">
+                                    <span>Réduction</span>
+                                    <span>-{Number(order.discount_amount).toFixed(2)} €</span>
+                                  </div>
                                 )}
                               </div>
-                              <p className="text-sm text-muted-foreground">
-                                {format(new Date(order.created_at), 'dd MMMM yyyy', { locale: fr })}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-bold">{order.total.toFixed(2)} €</p>
-                            </div>
+                            )}
                           </div>
                         ))}
                       </div>
