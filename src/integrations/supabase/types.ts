@@ -792,6 +792,7 @@ export type Database = {
           category_id: string | null
           created_at: string
           description: string | null
+          gender: string | null
           id: string
           incontinence_level:
             | Database["public"]["Enums"]["incontinence_level"]
@@ -800,6 +801,7 @@ export type Database = {
           is_featured: boolean | null
           min_order_quantity: number | null
           mobility: Database["public"]["Enums"]["mobility_type"] | null
+          mobility_levels: string | null
           name: string
           price: number
           purchase_price: number | null
@@ -814,12 +816,14 @@ export type Database = {
           units_per_product: number | null
           updated_at: string
           usage_time: Database["public"]["Enums"]["usage_time"] | null
+          usage_times: string | null
         }
         Insert: {
           brand_id?: string | null
           category_id?: string | null
           created_at?: string
           description?: string | null
+          gender?: string | null
           id?: string
           incontinence_level?:
             | Database["public"]["Enums"]["incontinence_level"]
@@ -828,6 +832,7 @@ export type Database = {
           is_featured?: boolean | null
           min_order_quantity?: number | null
           mobility?: Database["public"]["Enums"]["mobility_type"] | null
+          mobility_levels?: string | null
           name: string
           price: number
           purchase_price?: number | null
@@ -842,12 +847,14 @@ export type Database = {
           units_per_product?: number | null
           updated_at?: string
           usage_time?: Database["public"]["Enums"]["usage_time"] | null
+          usage_times?: string | null
         }
         Update: {
           brand_id?: string | null
           category_id?: string | null
           created_at?: string
           description?: string | null
+          gender?: string | null
           id?: string
           incontinence_level?:
             | Database["public"]["Enums"]["incontinence_level"]
@@ -856,6 +863,7 @@ export type Database = {
           is_featured?: boolean | null
           min_order_quantity?: number | null
           mobility?: Database["public"]["Enums"]["mobility_type"] | null
+          mobility_levels?: string | null
           name?: string
           price?: number
           purchase_price?: number | null
@@ -870,6 +878,7 @@ export type Database = {
           units_per_product?: number | null
           updated_at?: string
           usage_time?: Database["public"]["Enums"]["usage_time"] | null
+          usage_times?: string | null
         }
         Relationships: [
           {

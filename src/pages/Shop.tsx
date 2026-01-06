@@ -4,8 +4,14 @@ import Layout from "@/components/Layout";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Filter, X, ChevronDown, Loader2, Package, Droplet, Moon, Sun, Footprints, Sparkles } from "lucide-react";
+import { Filter, X, ChevronDown, Loader2, Package, Droplet, Moon, Sun, Footprints, Sparkles, User } from "lucide-react";
 import { useProducts, useBrands, useCategories, Product } from "@/hooks/useProducts";
+import { 
+  useProductFilters, 
+  mobilityFilterOptions, 
+  usageTimeFilterOptions, 
+  genderFilterOptions 
+} from "@/hooks/useProductFilters";
 import ProductCard from "@/components/shop/ProductCard";
 import ProductQuickView from "@/components/shop/ProductQuickView";
 import SearchBar from "@/components/shop/SearchBar";
@@ -20,26 +26,13 @@ const incontinenceLevelOptions = [
   { id: "very_heavy", label: "Très forte", icon: 4 },
 ];
 
-const mobilityOptions = [
-  { id: "all", label: "Toutes" },
-  { id: "mobile", label: "Mobile" },
-  { id: "reduced", label: "Réduite" },
-  { id: "bedridden", label: "Alitée" },
-];
-
-const usageTimeOptions = [
-  { id: "all", label: "Tous" },
-  { id: "day", label: "Jour" },
-  { id: "night", label: "Nuit" },
-  { id: "day_night", label: "Jour & Nuit" },
-];
-
 const Shop = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
   const [selectedIncontinence, setSelectedIncontinence] = useState<string>("all");
   const [selectedMobility, setSelectedMobility] = useState<string>("all");
   const [selectedUsageTime, setSelectedUsageTime] = useState<string>("all");
+  const [selectedGender, setSelectedGender] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [showProductSelector, setShowProductSelector] = useState(false);
@@ -53,74 +46,24 @@ const Shop = () => {
   const { data: brands } = useBrands();
   const { data: categories } = useCategories({ includeCount: true, includeEmpty: false });
 
-  // Filter products by search, incontinence, mobility, and usage time
-  const filteredProducts = useMemo(() => {
-    return products?.filter(product => {
-      // Search filter
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        const matchesName = product.name.toLowerCase().includes(query);
-        const matchesBrand = product.brand?.name.toLowerCase().includes(query);
-        const matchesDescription = product.short_description?.toLowerCase().includes(query);
-        if (!matchesName && !matchesBrand && !matchesDescription) return false;
-      }
-      
-      // Only exclude if filter is active AND product has a DIFFERENT value (not null)
-      // Products with null values pass through all filters (they match everything)
-      if (selectedIncontinence !== "all") {
-        if (product.incontinence_level !== null && product.incontinence_level !== selectedIncontinence) return false;
-      }
-      if (selectedMobility !== "all") {
-        if (product.mobility !== null && product.mobility !== selectedMobility) return false;
-      }
-      if (selectedUsageTime !== "all") {
-        if (product.usage_time !== null) {
-          // day_night products should show for both "day" and "night" filters
-          if (product.usage_time === "day_night") {
-            // day_night products match all usage time filters
-          } else if (product.usage_time !== selectedUsageTime) {
-            return false;
-          }
-        }
-      }
-      return true;
-    });
-  }, [products, searchQuery, selectedIncontinence, selectedMobility, selectedUsageTime]);
-
-  // Calculate count of products for each filter option
-  const getFilterCounts = useMemo(() => {
-    const counts = {
-      incontinence: {} as Record<string, number>,
-      mobility: {} as Record<string, number>,
-      usageTime: {} as Record<string, number>,
-    };
-    
-    products?.forEach(product => {
-      if (product.incontinence_level) {
-        counts.incontinence[product.incontinence_level] = (counts.incontinence[product.incontinence_level] || 0) + 1;
-      }
-      if (product.mobility) {
-        counts.mobility[product.mobility] = (counts.mobility[product.mobility] || 0) + 1;
-      }
-      if (product.usage_time) {
-        counts.usageTime[product.usage_time] = (counts.usageTime[product.usage_time] || 0) + 1;
-        // day_night also counts for day and night
-        if (product.usage_time === "day_night") {
-          counts.usageTime["day"] = (counts.usageTime["day"] || 0) + 1;
-          counts.usageTime["night"] = (counts.usageTime["night"] || 0) + 1;
-        }
-      }
-    });
-    
-    return counts;
-  }, [products]);
+  // Use the new multi-tag filter system
+  const { filteredProducts, filterCounts } = useProductFilters(products, {
+    selectedMobility,
+    selectedUsageTime,
+    selectedGender,
+    searchQuery,
+    selectedCategory,
+    selectedBrand,
+    selectedIncontinence,
+  });
 
   const activeFiltersCount = [
     selectedCategory, 
     selectedBrand, 
     selectedIncontinence, 
     selectedMobility, 
-    selectedUsageTime
+    selectedUsageTime,
+    selectedGender
   ].filter(f => f !== "all").length;
 
   const clearFilters = () => {
@@ -129,6 +72,7 @@ const Shop = () => {
     setSelectedIncontinence("all");
     setSelectedMobility("all");
     setSelectedUsageTime("all");
+    setSelectedGender("all");
     setSearchQuery("");
   };
 
@@ -146,6 +90,7 @@ const Shop = () => {
     if (filters.usageTime) setSelectedUsageTime(filters.usageTime);
     if (filters.mobility) setSelectedMobility(filters.mobility);
     if (filters.incontinenceLevel) setSelectedIncontinence(filters.incontinenceLevel);
+    if (filters.gender) setSelectedGender(filters.gender);
     setShowProductSelector(false);
   };
 
@@ -302,9 +247,10 @@ const Shop = () => {
             <div className="hidden lg:flex flex-wrap items-center gap-3 mb-8">
               <FilterButton options={categoryOptions} value={selectedCategory} onChange={setSelectedCategory} label="Catégorie" />
               <FilterButton options={brandOptions} value={selectedBrand} onChange={setSelectedBrand} label="Marque" />
-              <FilterButton options={incontinenceLevelOptions} value={selectedIncontinence} onChange={setSelectedIncontinence} label="Absorption" showDroplets counts={getFilterCounts.incontinence} />
-              <FilterButton options={mobilityOptions} value={selectedMobility} onChange={setSelectedMobility} label="Mobilité" counts={getFilterCounts.mobility} />
-              <FilterButton options={usageTimeOptions} value={selectedUsageTime} onChange={setSelectedUsageTime} label="Moment" counts={getFilterCounts.usageTime} />
+              <FilterButton options={incontinenceLevelOptions} value={selectedIncontinence} onChange={setSelectedIncontinence} label="Absorption" showDroplets counts={filterCounts.incontinence} />
+              <FilterButton options={mobilityFilterOptions} value={selectedMobility} onChange={setSelectedMobility} label="Mobilité" counts={filterCounts.mobility} />
+              <FilterButton options={usageTimeFilterOptions} value={selectedUsageTime} onChange={setSelectedUsageTime} label="Moment" counts={filterCounts.usageTime} />
+              <FilterButton options={genderFilterOptions} value={selectedGender} onChange={setSelectedGender} label="Genre" counts={filterCounts.gender} />
               
               {activeFiltersCount > 0 && (
                 <button
@@ -415,7 +361,7 @@ const Shop = () => {
                       <Footprints className="w-3 h-3" /> Mobilité
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {mobilityOptions.map((opt) => (
+                      {mobilityFilterOptions.map((opt) => (
                         <button
                           key={opt.id}
                           onClick={() => setSelectedMobility(opt.id)}
@@ -437,12 +383,34 @@ const Shop = () => {
                       <Sun className="w-3 h-3" /> Moment
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {usageTimeOptions.map((opt) => (
+                      {usageTimeFilterOptions.map((opt) => (
                         <button
                           key={opt.id}
                           onClick={() => setSelectedUsageTime(opt.id)}
                           className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                             selectedUsageTime === opt.id
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted text-foreground"
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Genre */}
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide flex items-center gap-1">
+                      <User className="w-3 h-3" /> Genre
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {genderFilterOptions.map((opt) => (
+                        <button
+                          key={opt.id}
+                          onClick={() => setSelectedGender(opt.id)}
+                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                            selectedGender === opt.id
                               ? "bg-primary text-primary-foreground"
                               : "bg-muted text-foreground"
                           }`}
