@@ -9,10 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Loader2, Search, Package, Upload, Link, X, Image as ImageIcon, Download, FileUp } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, Search, Package, Upload, Link, X, Image as ImageIcon, Download, FileUp, Copy, CheckSquare } from 'lucide-react';
 
 interface ProductFormData {
   name: string;
@@ -75,6 +77,8 @@ const AdminProducts: React.FC = () => {
   const [imageUrl, setImageUrl] = useState('');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
@@ -231,6 +235,77 @@ const AdminProducts: React.FC = () => {
     },
   });
 
+  const bulkDeleteProducts = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { error } = await supabase.from('products').delete().in('id', ids);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      setSelectedProducts(new Set());
+      setShowDeleteDialog(false);
+      toast.success(`${selectedProducts.size} produit(s) supprimé(s)`);
+    },
+    onError: () => {
+      toast.error('Erreur lors de la suppression');
+    },
+  });
+
+  const duplicateProducts = useMutation({
+    mutationFn: async (ids: string[]) => {
+      for (const id of ids) {
+        const product = products?.find(p => p.id === id);
+        if (!product) continue;
+
+        // Create new product with copied data
+        const newSlug = `${product.slug}-copie-${Date.now()}`;
+        const { data: newProduct, error } = await supabase.from('products').insert({
+          name: `${product.name} (copie)`,
+          slug: newSlug,
+          brand_id: product.brand_id,
+          category_id: product.category_id,
+          short_description: product.short_description,
+          description: product.description,
+          incontinence_level: product.incontinence_level,
+          mobility: product.mobility,
+          usage_time: product.usage_time,
+          recommended_price: product.recommended_price,
+          price: product.price,
+          subscription_price: product.subscription_price,
+          purchase_price: product.purchase_price,
+          units_per_product: product.units_per_product,
+          min_order_quantity: product.min_order_quantity,
+          stock_quantity: product.stock_quantity,
+          sku: product.sku ? `${product.sku}-COPY` : null,
+          is_active: false,
+          is_featured: false,
+        }).select().single();
+
+        if (error) throw error;
+
+        // Copy images
+        if (product.images && product.images.length > 0 && newProduct) {
+          const imagesToInsert = product.images.map((img: any, index: number) => ({
+            product_id: newProduct.id,
+            image_url: img.image_url,
+            alt_text: img.alt_text,
+            is_primary: img.is_primary,
+            sort_order: index,
+          }));
+          await supabase.from('product_images').insert(imagesToInsert);
+        }
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      setSelectedProducts(new Set());
+      toast.success(`${selectedProducts.size} produit(s) dupliqué(s)`);
+    },
+    onError: () => {
+      toast.error('Erreur lors de la duplication');
+    },
+  });
+
   const handleEdit = (product: any) => {
     setEditingProduct(product);
     setFormData({
@@ -372,6 +447,47 @@ const AdminProducts: React.FC = () => {
   const filteredProducts = products?.filter(p => 
     p.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  // Selection handlers
+  const handleSelectAll = () => {
+    if (!filteredProducts) return;
+    if (selectedProducts.size === filteredProducts.length) {
+      setSelectedProducts(new Set());
+    } else {
+      setSelectedProducts(new Set(filteredProducts.map(p => p.id)));
+    }
+  };
+
+  const handleSelectProduct = (id: string) => {
+    const newSelection = new Set(selectedProducts);
+    if (newSelection.has(id)) {
+      newSelection.delete(id);
+    } else {
+      newSelection.add(id);
+    }
+    setSelectedProducts(newSelection);
+  };
+
+  const handleBulkDelete = () => {
+    setShowDeleteDialog(true);
+  };
+
+  const handleBulkDuplicate = () => {
+    duplicateProducts.mutate(Array.from(selectedProducts));
+  };
+
+  const handleBulkEdit = () => {
+    if (selectedProducts.size === 1) {
+      const productId = Array.from(selectedProducts)[0];
+      const product = products?.find(p => p.id === productId);
+      if (product) {
+        handleEdit(product);
+        setSelectedProducts(new Set());
+      }
+    } else {
+      toast.info('Sélectionnez un seul produit pour l\'éditer');
+    }
+  };
 
   // Export products to CSV
   const handleExportCSV = () => {
@@ -951,6 +1067,76 @@ const AdminProducts: React.FC = () => {
         </div>
       </div>
 
+      {/* Bulk Actions Bar */}
+      {selectedProducts.size > 0 && (
+        <Card className="border-primary bg-primary/5">
+          <CardContent className="py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <CheckSquare className="h-5 w-5 text-primary" />
+                <span className="font-medium">
+                  {selectedProducts.size} produit{selectedProducts.size > 1 ? 's' : ''} sélectionné{selectedProducts.size > 1 ? 's' : ''}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                {selectedProducts.size === 1 && (
+                  <Button variant="outline" size="sm" onClick={handleBulkEdit}>
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Éditer
+                  </Button>
+                )}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleBulkDuplicate}
+                  disabled={duplicateProducts.isPending}
+                >
+                  {duplicateProducts.isPending ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Copy className="h-4 w-4 mr-2" />
+                  )}
+                  Dupliquer
+                </Button>
+                <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Supprimer
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setSelectedProducts(new Set())}>
+                  <X className="h-4 w-4 mr-2" />
+                  Désélectionner
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer {selectedProducts.size} produit{selectedProducts.size > 1 ? 's' : ''} ?
+              Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => bulkDeleteProducts.mutate(Array.from(selectedProducts))}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {bulkDeleteProducts.isPending ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : null}
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <Card>
         <CardHeader>
           <div className="flex items-center gap-4">
@@ -979,6 +1165,12 @@ const AdminProducts: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-12">
+                    <Checkbox
+                      checked={filteredProducts && selectedProducts.size === filteredProducts.length && filteredProducts.length > 0}
+                      onCheckedChange={handleSelectAll}
+                    />
+                  </TableHead>
                   <TableHead>Image</TableHead>
                   <TableHead>Produit</TableHead>
                   <TableHead>Marque</TableHead>
@@ -997,7 +1189,13 @@ const AdminProducts: React.FC = () => {
                   const primaryImage = product.images?.find((img: any) => img.is_primary) || product.images?.[0];
                   
                   return (
-                    <TableRow key={product.id}>
+                    <TableRow key={product.id} className={selectedProducts.has(product.id) ? 'bg-primary/5' : ''}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedProducts.has(product.id)}
+                          onCheckedChange={() => handleSelectProduct(product.id)}
+                        />
+                      </TableCell>
                       <TableCell>
                         {primaryImage ? (
                           <img 
