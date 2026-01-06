@@ -175,10 +175,12 @@ const Checkout = () => {
       if (checkoutError) throw checkoutError;
 
       if (checkoutData?.url) {
-        // Clear cart before redirect
+        // Redirect to Stripe Checkout first, then clear cart
+        // Store the redirect URL and use a flag to prevent double redirect
+        const redirectUrl = checkoutData.url;
         clearCart();
-        // Redirect to Stripe Checkout
-        window.location.href = checkoutData.url;
+        // Use replace to prevent back button issues
+        window.location.replace(redirectUrl);
       } else {
         throw new Error('No checkout URL returned');
       }
