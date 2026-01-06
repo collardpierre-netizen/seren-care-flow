@@ -7,10 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useCart } from '@/hooks/useCart';
 import { useStoreSettings } from '@/hooks/useProducts';
+import { useEstimatedDelivery } from '@/hooks/useEstimatedDelivery';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
-import { ShoppingBag, ArrowLeft, CreditCard, Truck, RefreshCw, Tag, Check, Loader2 } from 'lucide-react';
+import { ShoppingBag, ArrowLeft, CreditCard, Truck, RefreshCw, Tag, Check, Loader2, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { SizeGuideDialog } from '@/components/shop/SizeGuideDialog';
@@ -30,6 +31,7 @@ interface ShippingAddress {
 const Checkout = () => {
   const { items, getSubtotal, getSubscriptionSavings, updateSize, clearCart } = useCart();
   const { data: settings } = useStoreSettings();
+  const { formattedDate: estimatedDeliveryDate, workingDays } = useEstimatedDelivery();
   const { user } = useAuth();
   
   const [referralCode, setReferralCode] = useState('');
@@ -455,6 +457,16 @@ const Checkout = () => {
                       {isFreeShipping ? 'Gratuite' : `${shippingCost.toFixed(2)} €`}
                     </span>
                   </div>
+                  
+                  {/* Estimated delivery */}
+                  <div className="flex items-center gap-2 text-sm p-3 bg-primary/5 rounded-lg border border-primary/20">
+                    <Calendar className="h-4 w-4 text-primary flex-shrink-0" />
+                    <div>
+                      <span className="text-muted-foreground">Livraison estimée:</span>
+                      <span className="font-semibold text-primary ml-1">{estimatedDeliveryDate}</span>
+                    </div>
+                  </div>
+                  
                   <div className="flex justify-between text-lg font-bold pt-4 border-t border-border">
                     <span>Total</span>
                     <span>{total.toFixed(2)} €</span>
@@ -495,7 +507,7 @@ const Checkout = () => {
                   </Button>
                   
                   <p className="text-xs text-center text-muted-foreground">
-                    Paiement sécurisé par Stripe • Livraison en 48-72h
+                    Paiement sécurisé par Stripe • Livraison en {workingDays} jours ouvrables
                   </p>
                 </CardContent>
               </Card>
