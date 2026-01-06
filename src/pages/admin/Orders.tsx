@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -10,9 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Search, Loader2, ShoppingCart, Eye, Bell } from 'lucide-react';
+import { Search, Loader2, ShoppingCart, Eye, Bell, Truck, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import OrderDetailDialog from '@/components/admin/OrderDetailDialog';
 
 const statusLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
   pending: { label: 'En attente', variant: 'outline' },
@@ -23,9 +25,11 @@ const statusLabels: Record<string, { label: string; variant: 'default' | 'second
 };
 
 const AdminOrders: React.FC = () => {
+  const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [notifyCustomer, setNotifyCustomer] = useState(true);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const { data: orders, isLoading } = useQuery({
@@ -33,7 +37,7 @@ const AdminOrders: React.FC = () => {
     queryFn: async () => {
       const { data: ordersData, error } = await supabase
         .from('orders')
-        .select('*')
+        .select('*, tracking_number, tracking_url, carrier')
         .order('created_at', { ascending: false });
       if (error) throw error;
       
@@ -55,7 +59,6 @@ const AdminOrders: React.FC = () => {
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status, sendNotification }: { id: string; status: string; sendNotification: boolean }) => {
-      // Get order details for email
       const order = orders?.find(o => o.id === id);
       
       const { error } = await supabase
@@ -63,6 +66,15 @@ const AdminOrders: React.FC = () => {
         .update({ status: status as 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled' })
         .eq('id', id);
       if (error) throw error;
+
+      // Log status change to history
+      await supabase.from('order_status_history').insert({
+        order_id: id,
+        status,
+        changed_by: user?.id,
+        notification_sent: sendNotification && !!order?.profile?.email,
+        notification_type: sendNotification ? 'email' : null,
+      });
 
       // Send notification email if enabled
       if (sendNotification && order?.profile?.email) {
@@ -74,12 +86,13 @@ const AdminOrders: React.FC = () => {
               customerEmail: order.profile.email,
               customerName: order.profile.first_name || '',
               newStatus: status,
-              orderTotal: order.total
+              orderTotal: order.total,
+              trackingNumber: order.tracking_number,
+              trackingUrl: order.tracking_url,
             }
           });
         } catch (emailError) {
           console.error('Failed to send status email:', emailError);
-          // Don't throw - status update succeeded, just email failed
         }
       }
     },
@@ -210,8 +223,15 @@ const AdminOrders: React.FC = () => {
                         </SelectContent>
                       </Select>
                     </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="icon">
+                    <TableCell className="text-right flex items-center gap-1 justify-end">
+                      {order.tracking_number && (
+                        <Button variant="ghost" size="icon" asChild>
+                          <a href={order.tracking_url || '#'} target="_blank" rel="noopener noreferrer">
+                            <Truck className="h-4 w-4 text-primary" />
+                          </a>
+                        </Button>
+                      )}
+                      <Button variant="ghost" size="icon" onClick={() => setSelectedOrderId(order.id)}>
                         <Eye className="h-4 w-4" />
                       </Button>
                     </TableCell>
@@ -222,6 +242,11 @@ const AdminOrders: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      <OrderDetailDialog 
+        orderId={selectedOrderId} 
+        onClose={() => setSelectedOrderId(null)} 
+      />
     </div>
   );
 };

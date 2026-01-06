@@ -11,3 +11,15 @@ verify_jwt = false
 
 [functions.customer-portal]
 verify_jwt = false
+
+[functions.send-order-status-email]
+verify_jwt = false
+
+[functions.send-order-to-preparer]
+verify_jwt = false
+
+[functions.verify-preparer-access]
+verify_jwt = false
+
+[functions.get-order-for-preparer]
+verify_jwt = false
