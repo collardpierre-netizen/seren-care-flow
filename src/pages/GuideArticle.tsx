@@ -182,11 +182,16 @@ const GuideArticle = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
                 className="prose prose-lg max-w-none 
-                  prose-headings:font-display prose-headings:text-foreground
-                  prose-p:text-muted-foreground prose-p:leading-relaxed
-                  prose-li:text-foreground
-                  prose-strong:text-foreground
-                  prose-a:text-primary hover:prose-a:text-primary/80"
+                  prose-headings:font-display prose-headings:text-foreground prose-headings:mt-12 prose-headings:mb-6
+                  prose-h2:text-2xl prose-h2:border-b prose-h2:border-border prose-h2:pb-3
+                  prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-4
+                  prose-p:text-muted-foreground prose-p:leading-relaxed prose-p:mb-6 prose-p:text-base
+                  prose-li:text-foreground prose-li:mb-2 prose-li:leading-relaxed
+                  prose-ul:my-6 prose-ul:space-y-2
+                  prose-strong:text-foreground prose-strong:font-semibold
+                  prose-a:text-primary hover:prose-a:text-primary/80 prose-a:underline-offset-4
+                  prose-table:my-8 prose-th:py-4 prose-td:py-3
+                  prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:my-8"
                 dangerouslySetInnerHTML={{ __html: guide.content }}
               />
             ) : (
