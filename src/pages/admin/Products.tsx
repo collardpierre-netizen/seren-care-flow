@@ -26,6 +26,10 @@ interface ProductFormData {
   incontinence_level: string;
   mobility: string;
   usage_time: string;
+  // New multi-tag fields
+  mobility_levels: string;
+  usage_times: string;
+  gender: string;
   recommended_price: number;
   price: number;
   subscription_price: number;
@@ -49,6 +53,9 @@ const initialFormData: ProductFormData = {
   incontinence_level: '',
   mobility: '',
   usage_time: '',
+  mobility_levels: '',
+  usage_times: '',
+  gender: '',
   recommended_price: 0,
   price: 0,
   subscription_price: 0,
@@ -61,6 +68,24 @@ const initialFormData: ProductFormData = {
   is_active: true,
   is_featured: false,
 };
+
+// Multi-tag options
+const mobilityLevelOptions = [
+  { value: 'mobile', label: 'Mobile' },
+  { value: 'reduite', label: 'Mobilité réduite' },
+  { value: 'alitee', label: 'Alitée' },
+];
+
+const usageTimesOptions = [
+  { value: 'day', label: 'Jour' },
+  { value: 'night', label: 'Nuit' },
+];
+
+const genderOptions = [
+  { value: 'male', label: 'Homme' },
+  { value: 'female', label: 'Femme' },
+  { value: 'unisex', label: 'Unisexe' },
+];
 
 const stockStatuses = [
   { value: 'in_stock', label: 'En stock' },
@@ -134,6 +159,9 @@ const AdminProducts: React.FC = () => {
         incontinence_level: (data.incontinence_level || null) as 'light' | 'moderate' | 'heavy' | 'very_heavy' | null,
         mobility: (data.mobility || null) as 'mobile' | 'reduced' | 'bedridden' | null,
         usage_time: (data.usage_time || null) as 'day' | 'night' | 'day_night' | null,
+        mobility_levels: data.mobility_levels || '',
+        usage_times: data.usage_times || '',
+        gender: data.gender || '',
         recommended_price: data.recommended_price || null,
         price: data.price,
         subscription_price: data.subscription_price || null,
@@ -190,6 +218,9 @@ const AdminProducts: React.FC = () => {
         incontinence_level: (data.incontinence_level || null) as 'light' | 'moderate' | 'heavy' | 'very_heavy' | null,
         mobility: (data.mobility || null) as 'mobile' | 'reduced' | 'bedridden' | null,
         usage_time: (data.usage_time || null) as 'day' | 'night' | 'day_night' | null,
+        mobility_levels: data.mobility_levels || '',
+        usage_times: data.usage_times || '',
+        gender: data.gender || '',
         recommended_price: data.recommended_price || null,
         price: data.price,
         subscription_price: data.subscription_price || null,
@@ -329,6 +360,9 @@ const AdminProducts: React.FC = () => {
       incontinence_level: product.incontinence_level || '',
       mobility: product.mobility || '',
       usage_time: product.usage_time || '',
+      mobility_levels: product.mobility_levels || '',
+      usage_times: product.usage_times || '',
+      gender: product.gender || '',
       recommended_price: product.recommended_price || 0,
       price: product.price,
       subscription_price: product.subscription_price || 0,
