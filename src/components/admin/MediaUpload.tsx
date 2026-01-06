@@ -135,17 +135,16 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
           placeholder="ou collez une URL..."
           className="text-xs"
         />
-        {!value && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading}
-          >
-            <Upload className="h-4 w-4" />
-          </Button>
-        )}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isUploading}
+          title="Téléverser une image"
+        >
+          <Upload className="h-4 w-4" />
+        </Button>
       </div>
     </div>
   );
