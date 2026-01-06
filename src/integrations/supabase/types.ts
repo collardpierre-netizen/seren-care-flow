@@ -382,6 +382,44 @@ export type Database = {
         }
         Relationships: []
       }
+      order_access_tokens: {
+        Row: {
+          accessed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          order_id: string
+          password_hash: string
+          token: string
+        }
+        Insert: {
+          accessed_at?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          order_id: string
+          password_hash: string
+          token: string
+        }
+        Update: {
+          accessed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          order_id?: string
+          password_hash?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_access_tokens_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
@@ -433,9 +471,51 @@ export type Database = {
           },
         ]
       }
+      order_status_history: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          notification_sent: boolean | null
+          notification_type: string | null
+          order_id: string
+          status: string
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          notification_sent?: boolean | null
+          notification_type?: string | null
+          order_id: string
+          status: string
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          notification_sent?: boolean | null
+          notification_type?: string | null
+          order_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_status_history_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           billing_address: Json | null
+          carrier: string | null
           created_at: string
           discount_amount: number | null
           id: string
@@ -451,11 +531,14 @@ export type Database = {
           subscription_id: string | null
           subtotal: number
           total: number
+          tracking_number: string | null
+          tracking_url: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
           billing_address?: Json | null
+          carrier?: string | null
           created_at?: string
           discount_amount?: number | null
           id?: string
@@ -471,11 +554,14 @@ export type Database = {
           subscription_id?: string | null
           subtotal: number
           total: number
+          tracking_number?: string | null
+          tracking_url?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
           billing_address?: Json | null
+          carrier?: string | null
           created_at?: string
           discount_amount?: number | null
           id?: string
@@ -491,6 +577,8 @@ export type Database = {
           subscription_id?: string | null
           subtotal?: number
           total?: number
+          tracking_number?: string | null
+          tracking_url?: string | null
           updated_at?: string
           user_id?: string | null
         }
