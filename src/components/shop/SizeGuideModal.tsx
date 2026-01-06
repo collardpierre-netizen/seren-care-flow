@@ -12,8 +12,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Ruler, HelpCircle, CheckCircle2, AlertCircle, Lightbulb, Check } from "lucide-react";
+import { Ruler, HelpCircle, CheckCircle2, AlertCircle, Lightbulb, Check, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MeasurementIllustration } from "./MeasurementIllustration";
+import { usePreferredSize } from "@/hooks/usePreferredSize";
 
 // Centralized size data by brand
 const SIZE_DATA = {
@@ -146,6 +148,7 @@ export function SizeGuideModal({
   const [waistInput, setWaistInput] = useState("");
   const [recommendation, setRecommendation] = useState<SizeRecommendation | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const { preferredSize, savePreferredSize, isSaving } = usePreferredSize();
   
   // Determine active brand tab
   const detectBrand = (): BrandKey => {
@@ -175,7 +178,10 @@ export function SizeGuideModal({
     onOpenChange(false);
   };
 
-  const handleSizeSelect = (size: string) => {
+  const handleSizeSelect = (size: string, saveAsPreferred = false) => {
+    if (saveAsPreferred) {
+      savePreferredSize(size);
+    }
     if (onSelectSize && availableSizes?.includes(size)) {
       onSelectSize(size);
       handleClose();
@@ -212,19 +218,30 @@ export function SizeGuideModal({
           </DialogHeader>
 
           <div className="space-y-6 py-4">
-            {/* Étape 1 - Comment mesurer */}
+            {/* Étape 1 - Comment mesurer avec illustration */}
             <motion.section variants={itemVariants} className="space-y-3">
               <h3 className="font-semibold text-lg flex items-center gap-2">
                 <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">1</span>
                 Comment mesurer ?
               </h3>
-              <div className="bg-muted/50 rounded-xl p-4 space-y-2">
-                <p className="text-sm">
-                  <strong>Mesurez le tour de taille</strong> (au niveau du nombril), sans serrer.
-                </p>
-                <p className="text-sm text-primary font-medium">
-                  Si la personne est entre deux tailles, choisissez la taille supérieure pour plus de confort.
-                </p>
+              <div className="bg-muted/50 rounded-xl p-4 grid sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <p className="text-sm">
+                    <strong>Mesurez le tour de taille</strong> (au niveau du nombril), sans serrer.
+                  </p>
+                  <p className="text-sm text-primary font-medium">
+                    Si la personne est entre deux tailles, choisissez la taille supérieure pour plus de confort.
+                  </p>
+                  {preferredSize && (
+                    <div className="mt-3 p-2 bg-secondary/10 rounded-lg border border-secondary/20">
+                      <p className="text-sm flex items-center gap-2">
+                        <Heart className="w-4 h-4 text-secondary fill-secondary" />
+                        Votre taille préférée : <strong>{preferredSize}</strong>
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <MeasurementIllustration className="max-w-[180px] mx-auto" />
               </div>
             </motion.section>
 
@@ -291,20 +308,30 @@ export function SizeGuideModal({
                           </p>
                         )}
                         
-                        {/* Quick select button */}
+                        {/* Quick select buttons */}
                         {onSelectSize && availableSizes?.includes(recommendation.primary) && (
                           <motion.div
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
+                            className="flex flex-col sm:flex-row gap-2 mt-2"
                           >
                             <Button
-                              onClick={() => handleSizeSelect(recommendation.primary)}
-                              className="w-full mt-2 gap-2"
+                              onClick={() => handleSizeSelect(recommendation.primary, false)}
+                              className="flex-1 gap-2"
                               variant="default"
                             >
                               <Check className="w-4 h-4" />
-                              Sélectionner la taille {recommendation.primary}
+                              Sélectionner {recommendation.primary}
+                            </Button>
+                            <Button
+                              onClick={() => handleSizeSelect(recommendation.primary, true)}
+                              className="flex-1 gap-2"
+                              variant="secondary"
+                              disabled={isSaving}
+                            >
+                              <Heart className="w-4 h-4" />
+                              Sélectionner et mémoriser
                             </Button>
                           </motion.div>
                         )}
@@ -392,21 +419,35 @@ export function SizeGuideModal({
                                 {onSelectSize && availableSizes && (
                                   <td className="py-3 px-4 text-right">
                                     {isAvailable ? (
-                                      <Button
-                                        size="sm"
-                                        variant={isSelected ? "secondary" : "outline"}
-                                        onClick={() => handleSizeSelect(range.size)}
-                                        className="gap-1"
-                                      >
-                                        {isSelected ? (
-                                          <>
-                                            <Check className="w-3 h-3" />
-                                            Sélectionné
-                                          </>
-                                        ) : (
-                                          "Choisir"
-                                        )}
-                                      </Button>
+                                      <div className="flex items-center justify-end gap-1">
+                                        <Button
+                                          size="sm"
+                                          variant={isSelected ? "secondary" : "outline"}
+                                          onClick={() => handleSizeSelect(range.size, false)}
+                                          className="gap-1"
+                                        >
+                                          {isSelected ? (
+                                            <>
+                                              <Check className="w-3 h-3" />
+                                              Sélectionné
+                                            </>
+                                          ) : (
+                                            "Choisir"
+                                          )}
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          onClick={() => handleSizeSelect(range.size, true)}
+                                          className="p-2"
+                                          title="Mémoriser cette taille"
+                                        >
+                                          <Heart className={cn(
+                                            "w-4 h-4",
+                                            preferredSize === range.size && "fill-secondary text-secondary"
+                                          )} />
+                                        </Button>
+                                      </div>
                                     ) : (
                                       <span className="text-xs text-muted-foreground">Non dispo.</span>
                                     )}
