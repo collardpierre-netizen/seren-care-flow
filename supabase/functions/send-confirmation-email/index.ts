@@ -8,9 +8,13 @@ const corsHeaders = {
 };
 
 interface EmailRequest {
-  type: "callback" | "appointment" | "order";
+  type?: "callback" | "appointment" | "order";
   to: string;
-  data: {
+  // Direct HTML mode (for testing)
+  subject?: string;
+  html?: string;
+  // Template mode
+  data?: {
     firstName: string;
     lastName: string;
     phone?: string;
@@ -44,7 +48,7 @@ const getEmailStyles = () => `
   </style>
 `;
 
-const getEmailContent = (type: string, data: EmailRequest["data"]) => {
+const getEmailContent = (type: string, data: NonNullable<EmailRequest["data"]>) => {
   const baseWrapper = (content: string) => `
     <!DOCTYPE html>
     <html>
@@ -155,7 +159,8 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { type, to, data }: EmailRequest = await req.json();
+    const requestData: EmailRequest = await req.json();
+    const { type, to, data, subject: directSubject, html: directHtml } = requestData;
     
     if (!RESEND_API_KEY) {
       console.log("RESEND_API_KEY not configured, skipping email");
@@ -165,7 +170,24 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const { subject, html } = getEmailContent(type, data);
+    // Support direct HTML mode for testing
+    let subject: string;
+    let html: string;
+
+    if (directSubject && directHtml) {
+      // Direct mode - use provided subject and HTML
+      subject = directSubject;
+      html = directHtml;
+      console.log(`[SEND-EMAIL] Direct mode - to: ${to}, subject: ${subject.substring(0, 50)}...`);
+    } else if (type && data) {
+      // Template mode - generate from type
+      const emailContent = getEmailContent(type, data);
+      subject = emailContent.subject;
+      html = emailContent.html;
+      console.log(`[SEND-EMAIL] Template mode - type: ${type}, to: ${to}`);
+    } else {
+      throw new Error("Either (subject + html) or (type + data) is required");
+    }
 
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
