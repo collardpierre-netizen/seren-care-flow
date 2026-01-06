@@ -12,6 +12,9 @@ export interface Product {
   incontinence_level: 'light' | 'moderate' | 'heavy' | 'very_heavy' | null;
   mobility: 'mobile' | 'reduced' | 'bedridden' | null;
   usage_time: 'day' | 'night' | 'day_night' | null;
+  mobility_levels: string | null;
+  usage_times: string | null;
+  gender: string | null;
   price: number;
   recommended_price: number | null;
   purchase_price: number | null;
@@ -20,9 +23,13 @@ export interface Product {
   subscription_discount_percent: number | null;
   min_order_quantity: number | null;
   stock_quantity: number | null;
+  stock_status: string | null;
   sku: string | null;
+  ean_code: string | null;
+  cnk_code: string | null;
   is_active: boolean | null;
   is_featured: boolean | null;
+  is_coming_soon: boolean | null;
   created_at: string;
   updated_at: string;
   brand?: { id: string; name: string; slug: string } | null;

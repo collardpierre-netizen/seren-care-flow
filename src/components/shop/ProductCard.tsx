@@ -38,12 +38,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
             alt={primaryImage?.alt_text || product.name}
             className="w-full h-full object-contain p-4 transition-transform duration-300 group-hover:scale-105"
           />
-          {hasRecommendedPrice && (
+          {product.is_coming_soon && (
+            <Badge className="absolute top-3 right-3 bg-amber-500 text-white">
+              Prochainement
+            </Badge>
+          )}
+          {!product.is_coming_soon && hasRecommendedPrice && (
             <Badge className="absolute top-3 right-3 bg-destructive text-destructive-foreground">
               -{savingsPercent}%
             </Badge>
           )}
-          {hasSubscription && !hasRecommendedPrice && (
+          {!product.is_coming_soon && hasSubscription && !hasRecommendedPrice && (
             <Badge className="absolute top-3 right-3 bg-secondary text-secondary-foreground">
               -{discountPercent}% abo
             </Badge>
@@ -72,30 +77,38 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
           {product.name}
         </h3>
         <div className="space-y-1 mt-auto">
-          {hasRecommendedPrice && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground line-through">
-                Prix public : {product.recommended_price?.toFixed(2)} €
-              </span>
+          {product.is_coming_soon ? (
+            <div className="text-amber-600 font-medium">
+              Bientôt disponible
             </div>
-          )}
-          <div className="flex items-baseline gap-2">
-            <span className="text-lg font-bold text-primary">
-              {product.price.toFixed(2)} €
-            </span>
-            {hasRecommendedPrice && (
-              <span className="text-xs font-medium text-destructive">
-                Économisez {savingsValue.toFixed(2)} €
-              </span>
-            )}
-          </div>
-          {hasSubscription && (
-            <div className="mt-2">
-              <SubscriptionBadge discountPercent={discountPercent} variant="small" />
-              <p className="text-xs text-muted-foreground mt-1">
-                {product.subscription_price?.toFixed(2)} €/mois
-              </p>
-            </div>
+          ) : (
+            <>
+              {hasRecommendedPrice && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground line-through">
+                    Prix public : {product.recommended_price?.toFixed(2)} €
+                  </span>
+                </div>
+              )}
+              <div className="flex items-baseline gap-2">
+                <span className="text-lg font-bold text-primary">
+                  {product.price.toFixed(2)} €
+                </span>
+                {hasRecommendedPrice && (
+                  <span className="text-xs font-medium text-destructive">
+                    Économisez {savingsValue.toFixed(2)} €
+                  </span>
+                )}
+              </div>
+              {hasSubscription && (
+                <div className="mt-2">
+                  <SubscriptionBadge discountPercent={discountPercent} variant="small" />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {product.subscription_price?.toFixed(2)} €/mois
+                  </p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </CardContent>

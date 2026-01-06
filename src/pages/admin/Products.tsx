@@ -39,8 +39,11 @@ interface ProductFormData {
   stock_quantity: number;
   stock_status: string;
   sku: string;
+  ean_code: string;
+  cnk_code: string;
   is_active: boolean;
   is_featured: boolean;
+  is_coming_soon: boolean;
 }
 
 const initialFormData: ProductFormData = {
@@ -65,8 +68,11 @@ const initialFormData: ProductFormData = {
   stock_quantity: 0,
   stock_status: 'in_stock',
   sku: '',
+  ean_code: '',
+  cnk_code: '',
   is_active: true,
   is_featured: false,
+  is_coming_soon: false,
 };
 
 // Multi-tag options
@@ -171,8 +177,11 @@ const AdminProducts: React.FC = () => {
         stock_quantity: data.stock_quantity,
         stock_status: data.stock_status || 'in_stock',
         sku: data.sku || null,
+        ean_code: data.ean_code || '',
+        cnk_code: data.cnk_code || '',
         is_active: data.is_active,
         is_featured: data.is_featured,
+        is_coming_soon: data.is_coming_soon || false,
       };
       const { data: newProduct, error } = await supabase
         .from('products')
@@ -230,8 +239,11 @@ const AdminProducts: React.FC = () => {
         stock_quantity: data.stock_quantity,
         stock_status: data.stock_status || 'in_stock',
         sku: data.sku || null,
+        ean_code: data.ean_code || '',
+        cnk_code: data.cnk_code || '',
         is_active: data.is_active,
         is_featured: data.is_featured,
+        is_coming_soon: data.is_coming_soon || false,
       };
       const { error } = await supabase.from('products').update(updateData).eq('id', id);
       if (error) throw error;
@@ -372,8 +384,11 @@ const AdminProducts: React.FC = () => {
       stock_quantity: product.stock_quantity || 0,
       stock_status: product.stock_status || 'in_stock',
       sku: product.sku || '',
+      ean_code: product.ean_code || '',
+      cnk_code: product.cnk_code || '',
       is_active: product.is_active,
       is_featured: product.is_featured,
+      is_coming_soon: product.is_coming_soon || false,
     });
     setProductImages(
       product.images?.map((img: any) => ({
@@ -1175,7 +1190,27 @@ const AdminProducts: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-6">
+              {/* Product Codes */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Code EAN</Label>
+                  <Input
+                    value={formData.ean_code}
+                    onChange={(e) => setFormData({ ...formData, ean_code: e.target.value })}
+                    placeholder="Ex: 4015400..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Code CNK</Label>
+                  <Input
+                    value={formData.cnk_code}
+                    onChange={(e) => setFormData({ ...formData, cnk_code: e.target.value })}
+                    placeholder="Ex: 123456..."
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-6 flex-wrap">
                 <div className="flex items-center gap-2">
                   <Switch
                     id="is_active"
@@ -1191,6 +1226,15 @@ const AdminProducts: React.FC = () => {
                     onCheckedChange={(v) => setFormData({ ...formData, is_featured: v })}
                   />
                   <Label htmlFor="is_featured">Mis en avant</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="is_coming_soon"
+                    checked={formData.is_coming_soon}
+                    onCheckedChange={(v) => setFormData({ ...formData, is_coming_soon: v })}
+                  />
+                  <Label htmlFor="is_coming_soon" className="text-amber-600">Prochainement</Label>
+                  <span className="text-xs text-muted-foreground">(visible sans prix, non achetable)</span>
                 </div>
               </div>
 
