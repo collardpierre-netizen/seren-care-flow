@@ -21,7 +21,7 @@ import {
   Activity
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { SizeGuideDialog } from './SizeGuideDialog';
+import { SizeGuideModal, SizeGuideButton } from './SizeGuideModal';
 
 interface ProductQuickViewProps {
   product: Product | null;
@@ -34,6 +34,7 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [purchaseMode, setPurchaseMode] = useState<'one-time' | 'subscription'>('subscription');
   const [quantity, setQuantity] = useState(1);
+  const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
   
   const { addItem, openCart } = useCart();
   const { data: settings } = useStoreSettings();
@@ -251,12 +252,19 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
               )}
             </div>
 
+            {/* Size Guide Modal */}
+            <SizeGuideModal
+              open={sizeGuideOpen}
+              onOpenChange={setSizeGuideOpen}
+              brand={product.brand?.name}
+            />
+
             {/* Size selection */}
             {sizes.length > 0 && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <Label className="text-sm font-medium">Taille</Label>
-                  <SizeGuideDialog />
+                  <SizeGuideButton onClick={() => setSizeGuideOpen(true)} />
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {sizes.map((size) => (

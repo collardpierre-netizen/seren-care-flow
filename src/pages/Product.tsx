@@ -28,7 +28,7 @@ import {
   Package
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { SizeGuideDialog } from '@/components/shop/SizeGuideDialog';
+import { SizeGuideModal, SizeGuideButton } from '@/components/shop/SizeGuideModal';
 import SubscriptionBadge from '@/components/shop/SubscriptionBadge';
 import SubscriptionBenefits from '@/components/subscription/SubscriptionBenefits';
 
@@ -42,6 +42,7 @@ const ProductPage = () => {
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [purchaseMode, setPurchaseMode] = useState<'one-time' | 'subscription'>('subscription');
   const [quantity, setQuantity] = useState(1);
+  const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
 
   useEffect(() => {
     if (product?.min_order_quantity) {
@@ -283,11 +284,18 @@ const ProductPage = () => {
               )}
 
               {/* Size selection */}
+              {/* Size Guide Modal */}
+              <SizeGuideModal
+                open={sizeGuideOpen}
+                onOpenChange={setSizeGuideOpen}
+                brand={product.brand?.name}
+              />
+
               {sizes.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <Label className="text-sm font-medium">Taille</Label>
-                    <SizeGuideDialog />
+                    <SizeGuideButton onClick={() => setSizeGuideOpen(true)} />
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {sizes.map((size) => (
