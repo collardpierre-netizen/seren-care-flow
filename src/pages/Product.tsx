@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useProduct, useStoreSettings } from '@/hooks/useProducts';
+import { useEstimatedDelivery } from '@/hooks/useEstimatedDelivery';
 import { useCart } from '@/hooks/useCart';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
@@ -26,7 +27,8 @@ import {
   Loader2,
   Shield,
   Clock,
-  Package
+  Package,
+  Calendar
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SizeGuideModal, SizeGuideButton } from '@/components/shop/SizeGuideModal';
@@ -40,6 +42,7 @@ const ProductPage = () => {
   const { data: settings } = useStoreSettings();
   const { addItem, openCart } = useCart();
   const isMobile = useIsMobile();
+  const { formattedDate: estimatedDeliveryDate } = useEstimatedDelivery();
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string>('');
@@ -457,6 +460,17 @@ const ProductPage = () => {
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
+                </div>
+              </div>
+
+              {/* Estimated delivery date */}
+              <div className="flex items-center gap-3 p-4 bg-primary/5 border border-primary/20 rounded-xl">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
+                  <Calendar className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Livraison estimée</p>
+                  <p className="font-semibold text-foreground">{estimatedDeliveryDate}</p>
                 </div>
               </div>
 
