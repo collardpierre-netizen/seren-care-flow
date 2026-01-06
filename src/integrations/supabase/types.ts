@@ -689,6 +689,65 @@ export type Database = {
           },
         ]
       }
+      product_reviews: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          author_email: string | null
+          author_name: string
+          content: string | null
+          created_at: string
+          id: string
+          is_approved: boolean | null
+          is_verified_purchase: boolean | null
+          product_id: string
+          rating: number
+          title: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          author_email?: string | null
+          author_name: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          is_approved?: boolean | null
+          is_verified_purchase?: boolean | null
+          product_id: string
+          rating: number
+          title?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          author_email?: string | null
+          author_name?: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          is_approved?: boolean | null
+          is_verified_purchase?: boolean | null
+          product_id?: string
+          rating?: number
+          title?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_sizes: {
         Row: {
           id: string
@@ -749,6 +808,7 @@ export type Database = {
           sku: string | null
           slug: string
           stock_quantity: number | null
+          stock_status: string
           subscription_discount_percent: number | null
           subscription_price: number | null
           units_per_product: number | null
@@ -776,6 +836,7 @@ export type Database = {
           sku?: string | null
           slug: string
           stock_quantity?: number | null
+          stock_status?: string
           subscription_discount_percent?: number | null
           subscription_price?: number | null
           units_per_product?: number | null
@@ -803,6 +864,7 @@ export type Database = {
           sku?: string | null
           slug?: string
           stock_quantity?: number | null
+          stock_status?: string
           subscription_discount_percent?: number | null
           subscription_price?: number | null
           units_per_product?: number | null
@@ -873,6 +935,44 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      stock_alerts: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          is_active: boolean
+          notified_at: string | null
+          product_id: string
+          size: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          is_active?: boolean
+          notified_at?: string | null
+          product_id: string
+          size?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          is_active?: boolean
+          notified_at?: string | null
+          product_id?: string
+          size?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_alerts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       store_settings: {
         Row: {

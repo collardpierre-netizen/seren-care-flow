@@ -33,6 +33,7 @@ interface ProductFormData {
   units_per_product: number;
   min_order_quantity: number;
   stock_quantity: number;
+  stock_status: string;
   sku: string;
   is_active: boolean;
   is_featured: boolean;
@@ -55,10 +56,18 @@ const initialFormData: ProductFormData = {
   units_per_product: 1,
   min_order_quantity: 1,
   stock_quantity: 0,
+  stock_status: 'in_stock',
   sku: '',
   is_active: true,
   is_featured: false,
 };
+
+const stockStatuses = [
+  { value: 'in_stock', label: 'En stock' },
+  { value: 'limited', label: 'Stock limité' },
+  { value: 'out_of_stock', label: 'Rupture de stock' },
+  { value: 'coming_soon', label: 'Prochainement' },
+];
 
 interface ProductImage {
   id?: string;
@@ -132,6 +141,7 @@ const AdminProducts: React.FC = () => {
         units_per_product: data.units_per_product || 1,
         min_order_quantity: data.min_order_quantity,
         stock_quantity: data.stock_quantity,
+        stock_status: data.stock_status || 'in_stock',
         sku: data.sku || null,
         is_active: data.is_active,
         is_featured: data.is_featured,
@@ -187,6 +197,7 @@ const AdminProducts: React.FC = () => {
         units_per_product: data.units_per_product || 1,
         min_order_quantity: data.min_order_quantity,
         stock_quantity: data.stock_quantity,
+        stock_status: data.stock_status || 'in_stock',
         sku: data.sku || null,
         is_active: data.is_active,
         is_featured: data.is_featured,
@@ -325,6 +336,7 @@ const AdminProducts: React.FC = () => {
       units_per_product: product.units_per_product || 1,
       min_order_quantity: product.min_order_quantity || 1,
       stock_quantity: product.stock_quantity || 0,
+      stock_status: product.stock_status || 'in_stock',
       sku: product.sku || '',
       is_active: product.is_active,
       is_featured: product.is_featured,
@@ -1005,7 +1017,7 @@ const AdminProducts: React.FC = () => {
               </div>
 
               {/* Stock & SKU */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-4 gap-4">
                 <div className="space-y-2">
                   <Label>Quantité min.</Label>
                   <Input
@@ -1021,6 +1033,17 @@ const AdminProducts: React.FC = () => {
                     value={formData.stock_quantity}
                     onChange={(e) => setFormData({ ...formData, stock_quantity: parseInt(e.target.value) })}
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label>Statut stock</Label>
+                  <Select value={formData.stock_status} onValueChange={(v) => setFormData({ ...formData, stock_status: v })}>
+                    <SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+                    <SelectContent>
+                      {stockStatuses.map(s => (
+                        <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>SKU</Label>

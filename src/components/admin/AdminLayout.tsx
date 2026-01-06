@@ -20,7 +20,8 @@ import {
   UserPlus,
   Euro,
   FolderOpen,
-  BookOpen
+  BookOpen,
+  Star
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -32,6 +33,7 @@ const navItems = [
   { label: 'Commandes', href: '/admin/commandes', icon: ShoppingCart },
   { label: 'Abonnements', href: '/admin/abonnements', icon: RefreshCw },
   { label: 'Clients', href: '/admin/clients', icon: Users },
+  { label: 'Avis clients', href: '/admin/avis', icon: Star },
   { label: 'Prescripteurs', href: '/admin/prescripteurs', icon: UserCheck },
   { label: 'Candidatures', href: '/admin/candidatures', icon: UserPlus },
   { label: 'Commissions', href: '/admin/commissions', icon: Euro },
