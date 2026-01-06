@@ -28,8 +28,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfUse from "./pages/TermsOfUse";
 import Brands from "./pages/Brands";
 import Contact from "./pages/Contact";
-
-// Admin pages
+import Guides from "./pages/Guides";
+import GuideArticle from "./pages/GuideArticle";
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminProducts from "./pages/admin/Products";
@@ -76,6 +76,8 @@ const App = () => (
               <Route path="/confidentialite" element={<PrivacyPolicy />} />
               <Route path="/marques" element={<Brands />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/guides" element={<Guides />} />
+              <Route path="/guides/:slug" element={<GuideArticle />} />
 
               {/* Admin routes */}
               <Route path="/admin" element={
