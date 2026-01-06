@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
@@ -29,7 +29,18 @@ import {
   FileText,
   Copy,
   Check,
+  RefreshCw,
 } from 'lucide-react';
+
+// Generate a secure random password
+const generatePassword = (): string => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  let password = '';
+  for (let i = 0; i < 8; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+};
 
 interface OrderDetailDialogProps {
   orderId: string | null;
@@ -43,8 +54,15 @@ const OrderDetailDialog: React.FC<OrderDetailDialogProps> = ({ orderId, onClose 
   const [carrier, setCarrier] = useState('');
   const [isSendingToPreparer, setIsSendingToPreparer] = useState(false);
   const [preparerEmail, setPreparerEmail] = useState('');
-  const [preparerPassword, setPreparerPassword] = useState('');
+  const [preparerPassword, setPreparerPassword] = useState(() => generatePassword());
   const [includePdf, setIncludePdf] = useState(false);
+
+  // Auto-generate password on mount
+  useEffect(() => {
+    if (orderId) {
+      setPreparerPassword(generatePassword());
+    }
+  }, [orderId]);
   const [copied, setCopied] = useState(false);
 
   const { data: order, isLoading } = useQuery({
@@ -308,14 +326,26 @@ const OrderDetailDialog: React.FC<OrderDetailDialogProps> = ({ orderId, onClose 
 
                 <div className="space-y-2">
                   <Label>Mot de passe d'accès</Label>
-                  <Input
-                    type="text"
-                    value={preparerPassword}
-                    onChange={(e) => setPreparerPassword(e.target.value)}
-                    placeholder="Créez un mot de passe temporaire"
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      type="text"
+                      value={preparerPassword}
+                      onChange={(e) => setPreparerPassword(e.target.value)}
+                      placeholder="Mot de passe auto-généré"
+                      className="font-mono"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setPreparerPassword(generatePassword())}
+                      title="Générer un nouveau mot de passe"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                    </Button>
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    Ce mot de passe sera requis pour accéder à la page de préparation
+                    Mot de passe auto-généré. Cliquez sur le bouton pour en créer un nouveau.
                   </p>
                 </div>
 
