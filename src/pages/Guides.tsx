@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, ArrowRight, BookOpen } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import VideoTutorials from "@/components/guides/VideoTutorials";
 
 interface Guide {
   id: string;
@@ -194,6 +195,11 @@ const Guides = () => {
             )}
           </>
         )}
+
+        {/* Video Tutorials Section */}
+        <div className="bg-muted/20">
+          <VideoTutorials maxItems={4} />
+        </div>
 
         {/* CTA */}
         <section className="py-16 md:py-24">
