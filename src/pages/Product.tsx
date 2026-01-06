@@ -208,6 +208,23 @@ const ProductPage = () => {
                     >
                       <ChevronRight className="h-5 w-5" />
                     </Button>
+                    
+                    {/* Dots indicator */}
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                      {images.map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setCurrentImageIndex(idx)}
+                          className={cn(
+                            "w-2 h-2 rounded-full transition-all duration-300",
+                            idx === currentImageIndex 
+                              ? "bg-primary w-6" 
+                              : "bg-primary/30 hover:bg-primary/50"
+                          )}
+                          aria-label={`Aller à l'image ${idx + 1}`}
+                        />
+                      ))}
+                    </div>
                   </>
                 )}
               </div>
