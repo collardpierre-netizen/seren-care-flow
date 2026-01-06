@@ -31,6 +31,7 @@ const AdminSettings: React.FC = () => {
   const [shippingFee, setShippingFee] = React.useState('');
   const [subscriptionDiscount, setSubscriptionDiscount] = React.useState('');
   const [minimumOrderAmount, setMinimumOrderAmount] = React.useState('');
+  const [deliveryDelay, setDeliveryDelay] = React.useState('');
 
   React.useEffect(() => {
     if (settings) {
@@ -38,6 +39,7 @@ const AdminSettings: React.FC = () => {
       setShippingFee(settings.shipping?.standard_shipping_fee?.toString() || '4.90');
       setSubscriptionDiscount(settings.subscription?.discount_percent?.toString() || '10');
       setMinimumOrderAmount(settings.checkout?.minimum_order_amount?.toString() || '25');
+      setDeliveryDelay(settings.delivery?.working_days_delay?.toString() || '3');
     }
   }, [settings]);
 
@@ -64,6 +66,12 @@ const AdminSettings: React.FC = () => {
             key: 'checkout',
             value: {
               minimum_order_amount: parseFloat(minimumOrderAmount)
+            }
+          },
+          {
+            key: 'delivery',
+            value: {
+              working_days_delay: parseInt(deliveryDelay)
             }
           }
         ], { onConflict: 'key' });
@@ -96,7 +104,7 @@ const AdminSettings: React.FC = () => {
         <Card>
           <CardHeader>
             <CardTitle>Livraison</CardTitle>
-            <CardDescription>Configurez les frais et seuils de livraison</CardDescription>
+            <CardDescription>Configurez les frais, seuils et délais de livraison</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -120,6 +128,21 @@ const AdminSettings: React.FC = () => {
                   onChange={(e) => setShippingFee(e.target.value)}
                 />
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="deliveryDelay">Délai de livraison (jours ouvrables)</Label>
+              <Input
+                id="deliveryDelay"
+                type="number"
+                min="1"
+                max="30"
+                value={deliveryDelay}
+                onChange={(e) => setDeliveryDelay(e.target.value)}
+                className="max-w-[200px]"
+              />
+              <p className="text-xs text-muted-foreground">
+                Nombre de jours ouvrables avant la livraison estimée (hors week-ends).
+              </p>
             </div>
           </CardContent>
         </Card>

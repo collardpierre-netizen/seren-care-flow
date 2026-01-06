@@ -3,8 +3,9 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/useCart';
 import { useStoreSettings } from '@/hooks/useProducts';
+import { useEstimatedDelivery } from '@/hooks/useEstimatedDelivery';
 import { Link } from 'react-router-dom';
-import { Minus, Plus, Trash2, ShoppingBag, Truck, RefreshCw } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingBag, Truck, RefreshCw, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SizeGuideDialog } from './SizeGuideDialog';
 import { CartSizeSelector } from './CartSizeSelector';
@@ -24,6 +25,7 @@ const CartDrawer: React.FC = () => {
   } = useCart();
   
   const { data: settings } = useStoreSettings();
+  const { formattedDate: estimatedDeliveryDate } = useEstimatedDelivery();
   
   const subtotal = getSubtotal();
   const savings = getSubscriptionSavings();
@@ -182,6 +184,14 @@ const CartDrawer: React.FC = () => {
                   {isFreeShipping ? 'Gratuite' : `${shippingCost.toFixed(2)} €`}
                 </span>
               </div>
+              
+              {/* Estimated delivery */}
+              <div className="flex items-center gap-2 text-sm p-2 bg-primary/5 rounded-lg">
+                <Calendar className="h-4 w-4 text-primary" />
+                <span className="text-muted-foreground">Livraison estimée:</span>
+                <span className="font-medium text-primary">{estimatedDeliveryDate}</span>
+              </div>
+              
               <div className="flex justify-between text-lg font-bold pt-2 border-t border-border">
                 <span>Total</span>
                 <span>{total.toFixed(2)} €</span>
