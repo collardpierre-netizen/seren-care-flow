@@ -29,6 +29,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SizeGuideDialog } from '@/components/shop/SizeGuideDialog';
+import SubscriptionBadge from '@/components/shop/SubscriptionBadge';
+import SubscriptionBenefits from '@/components/subscription/SubscriptionBenefits';
 
 const ProductPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -445,7 +447,17 @@ const ProductPage = () => {
                   <p className="text-xs text-muted-foreground">SAV réactif</p>
                 </div>
               </div>
+
+              {/* Subscription promo badge */}
+              {product.subscription_price && (
+                <SubscriptionBadge discountPercent={discountPercent} variant="prominent" />
+              )}
             </motion.div>
+          </div>
+
+          {/* Subscription Benefits Section */}
+          <div className="mt-16">
+            <SubscriptionBenefits variant="card" showCTA={false} />
           </div>
         </div>
       </Layout>
