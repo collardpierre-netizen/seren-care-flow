@@ -982,6 +982,7 @@ export type Database = {
           purchase_price: number | null
           recommended_price: number | null
           short_description: string | null
+          show_size_guide: boolean
           sku: string | null
           slug: string
           stock_quantity: number | null
@@ -1017,6 +1018,7 @@ export type Database = {
           purchase_price?: number | null
           recommended_price?: number | null
           short_description?: string | null
+          show_size_guide?: boolean
           sku?: string | null
           slug: string
           stock_quantity?: number | null
@@ -1052,6 +1054,7 @@ export type Database = {
           purchase_price?: number | null
           recommended_price?: number | null
           short_description?: string | null
+          show_size_guide?: boolean
           sku?: string | null
           slug?: string
           stock_quantity?: number | null

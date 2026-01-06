@@ -321,21 +321,25 @@ const ProductPage = () => {
                 <p className="text-muted-foreground leading-relaxed">{product.description}</p>
               )}
 
-              {/* Size Guide Modal */}
-              <SizeGuideModal
-                open={sizeGuideOpen}
-                onOpenChange={setSizeGuideOpen}
-                brand={product.brand?.name}
-                availableSizes={sizes.map(s => s.size)}
-                selectedSize={selectedSize}
-                onSelectSize={setSelectedSize}
-              />
+              {/* Size Guide Modal - only if show_size_guide is true */}
+              {product.show_size_guide !== false && (
+                <SizeGuideModal
+                  open={sizeGuideOpen}
+                  onOpenChange={setSizeGuideOpen}
+                  brand={product.brand?.name}
+                  availableSizes={sizes.map(s => s.size)}
+                  selectedSize={selectedSize}
+                  onSelectSize={setSelectedSize}
+                />
+              )}
 
               {/* Size selection */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <Label className="text-sm font-medium">Taille</Label>
-                  <SizeGuideButton onClick={() => setSizeGuideOpen(true)} />
+                  {product.show_size_guide !== false && (
+                    <SizeGuideButton onClick={() => setSizeGuideOpen(true)} />
+                  )}
                 </div>
                 {sizes.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
