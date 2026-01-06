@@ -839,6 +839,7 @@ export type Database = {
           last_name: string | null
           phone: string | null
           postal_code: string | null
+          preferred_size: string | null
           updated_at: string
         }
         Insert: {
@@ -853,6 +854,7 @@ export type Database = {
           last_name?: string | null
           phone?: string | null
           postal_code?: string | null
+          preferred_size?: string | null
           updated_at?: string
         }
         Update: {
@@ -867,6 +869,7 @@ export type Database = {
           last_name?: string | null
           phone?: string | null
           postal_code?: string | null
+          preferred_size?: string | null
           updated_at?: string
         }
         Relationships: []

@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import AbsorptionDroplets from './AbsorptionDroplets';
 import SubscriptionBadge from './SubscriptionBadge';
+import { CompareButton } from './ProductComparator';
 
 interface ProductCardProps {
   product: Product;
@@ -52,6 +53,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
               Recommandé
             </Badge>
           )}
+          {/* Compare button */}
+          <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+            <CompareButton product={product} />
+          </div>
         </div>
       </Link>
       <CardContent className="p-4 flex-1 flex flex-col">
