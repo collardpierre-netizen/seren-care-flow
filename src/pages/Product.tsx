@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useProduct, useStoreSettings } from '@/hooks/useProducts';
 import { useCart } from '@/hooks/useCart';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 import { 
   ChevronLeft, 
@@ -31,12 +32,14 @@ import { cn } from '@/lib/utils';
 import { SizeGuideModal, SizeGuideButton } from '@/components/shop/SizeGuideModal';
 import SubscriptionBadge from '@/components/shop/SubscriptionBadge';
 import SubscriptionBenefits from '@/components/subscription/SubscriptionBenefits';
+import MobileCartFooter from '@/components/shop/MobileCartFooter';
 
 const ProductPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const { data: product, isLoading } = useProduct(slug || '');
   const { data: settings } = useStoreSettings();
   const { addItem, openCart } = useCart();
+  const isMobile = useIsMobile();
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string>('');
@@ -477,10 +480,10 @@ const ProductPage = () => {
                 </div>
               </div>
 
-              {/* Add to cart */}
+              {/* Add to cart - hidden on mobile (shown in footer) */}
               {product.is_coming_soon ? (
                 <Button 
-                  className="w-full h-14 text-base" 
+                  className="w-full h-14 text-base hidden lg:flex" 
                   size="lg"
                   disabled
                 >
@@ -489,7 +492,7 @@ const ProductPage = () => {
                 </Button>
               ) : (
                 <Button 
-                  className="w-full h-14 text-base" 
+                  className="w-full h-14 text-base hidden lg:flex" 
                   size="lg"
                   onClick={handleAddToCart}
                 >
@@ -522,10 +525,23 @@ const ProductPage = () => {
           </div>
 
           {/* Subscription Benefits Section */}
-          <div className="mt-16">
+          <div className="mt-16 pb-24 lg:pb-0">
             <SubscriptionBenefits variant="card" showCTA={false} />
           </div>
         </div>
+
+        {/* Mobile fixed cart footer with swipe */}
+        {product && (
+          <MobileCartFooter
+            isVisible={isMobile}
+            onAddToCart={handleAddToCart}
+            price={finalPrice}
+            quantity={quantity}
+            isDisabled={sizes.length > 0 && !selectedSize}
+            isComingSoon={product.is_coming_soon || false}
+            productName={product.name}
+          />
+        )}
       </Layout>
     </>
   );
