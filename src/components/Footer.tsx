@@ -11,7 +11,7 @@ const Footer = () => {
       { name: "Boutique", href: "/boutique" },
       { name: "Aide au choix", href: "/aide-au-choix" },
       { name: "Abonnement", href: "/boutique?mode=subscription" },
-      { name: "FAQ", href: "/a-propos#faq" },
+      { name: "FAQ", href: "/faq" },
     ],
     prescripteurs: [
       { name: "Espace Pro", href: "/prescripteurs" },

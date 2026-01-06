@@ -30,6 +30,7 @@ import Brands from "./pages/Brands";
 import Contact from "./pages/Contact";
 import Guides from "./pages/Guides";
 import GuideArticle from "./pages/GuideArticle";
+import FAQ from "./pages/FAQ";
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminProducts from "./pages/admin/Products";
@@ -79,6 +80,7 @@ const App = () => (
               <Route path="/contact" element={<Contact />} />
               <Route path="/guides" element={<Guides />} />
               <Route path="/guides/:slug" element={<GuideArticle />} />
+              <Route path="/faq" element={<FAQ />} />
 
               {/* Admin routes */}
               <Route path="/admin" element={

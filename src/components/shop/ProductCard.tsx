@@ -4,6 +4,7 @@ import { Product } from '@/hooks/useProducts';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import AbsorptionDroplets from './AbsorptionDroplets';
+import SubscriptionBadge from './SubscriptionBadge';
 
 interface ProductCardProps {
   product: Product;
@@ -84,8 +85,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
             )}
           </div>
           {hasSubscription && (
-            <div className="text-xs text-secondary font-medium">
-              ou {product.subscription_price?.toFixed(2)} € en abonnement (-{discountPercent}%)
+            <div className="mt-2">
+              <SubscriptionBadge discountPercent={discountPercent} variant="small" />
+              <p className="text-xs text-muted-foreground mt-1">
+                {product.subscription_price?.toFixed(2)} €/mois
+              </p>
             </div>
           )}
         </div>
