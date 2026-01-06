@@ -39,10 +39,8 @@ const Shop = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
 
-  const { data: products, isLoading: productsLoading } = useProducts({
-    categoryId: selectedCategory !== "all" ? selectedCategory : undefined,
-    brandId: selectedBrand !== "all" ? selectedBrand : undefined,
-  });
+  // Load all products without category/brand filter - we filter client-side
+  const { data: products, isLoading: productsLoading } = useProducts();
   const { data: brands } = useBrands();
   const { data: categories } = useCategories({ includeCount: true, includeEmpty: false });
 

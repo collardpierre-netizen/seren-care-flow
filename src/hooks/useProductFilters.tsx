@@ -158,6 +158,20 @@ export const useProductFilters = (
         if (!matchesName && !matchesBrand && !matchesDescription) return false;
       }
 
+      // Category filter
+      if (selectedCategory !== 'all') {
+        if (product.category_id !== selectedCategory) {
+          return false;
+        }
+      }
+
+      // Brand filter
+      if (selectedBrand !== 'all') {
+        if (product.brand_id !== selectedBrand) {
+          return false;
+        }
+      }
+
       // Incontinence filter (existing single-value)
       if (selectedIncontinence !== 'all') {
         if (product.incontinence_level !== null && product.incontinence_level !== selectedIncontinence) {
@@ -191,7 +205,7 @@ export const useProductFilters = (
 
       return true;
     });
-  }, [products, searchQuery, selectedIncontinence, selectedMobility, selectedUsageTime, selectedGender]);
+  }, [products, searchQuery, selectedCategory, selectedBrand, selectedIncontinence, selectedMobility, selectedUsageTime, selectedGender]);
 
   // Calculate counts for filter options
   const filterCounts = useMemo(() => {
