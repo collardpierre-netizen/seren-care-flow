@@ -10,17 +10,17 @@ import { CompareButton } from './ProductComparator';
 interface ProductCardProps {
   product: Product;
   onClick: () => void;
+  compact?: boolean;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, onClick, compact = false }) => {
   const primaryImage = product.images?.find(img => img.is_primary) || product.images?.[0];
   const hasSubscription = product.subscription_price && product.subscription_price < product.price;
   const discountPercent = product.subscription_discount_percent || 10;
   
   // Calculate savings from recommended price
   const hasRecommendedPrice = product.recommended_price && product.recommended_price > product.price;
-  const savingsValue = hasRecommendedPrice ? product.recommended_price! - product.price : 0;
-  const savingsPercent = hasRecommendedPrice ? Math.round((savingsValue / product.recommended_price!) * 100) : 0;
+  const savingsPercent = hasRecommendedPrice ? Math.round(((product.recommended_price! - product.price) / product.recommended_price!) * 100) : 0;
 
   return (
     <Card 
@@ -32,80 +32,67 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
         onClick={(e) => e.stopPropagation()}
         className="block"
       >
-        <div className="relative aspect-square bg-muted/30 overflow-hidden">
+        <div className={`relative bg-muted/30 overflow-hidden ${compact ? 'aspect-[4/3]' : 'aspect-square'}`}>
           <img
             src={primaryImage?.image_url || '/placeholder.svg'}
             alt={primaryImage?.alt_text || product.name}
-            className="w-full h-full object-contain p-4 transition-transform duration-300 group-hover:scale-105"
+            className={`w-full h-full object-contain transition-transform duration-300 group-hover:scale-105 ${compact ? 'p-2' : 'p-4'}`}
           />
           {product.is_coming_soon && (
-            <Badge className="absolute top-3 right-3 bg-amber-500 text-white">
+            <Badge className={`absolute ${compact ? 'top-1.5 right-1.5 text-[10px] px-1.5 py-0.5' : 'top-3 right-3'} bg-amber-500 text-white`}>
               Prochainement
             </Badge>
           )}
           {!product.is_coming_soon && hasRecommendedPrice && (
-            <Badge className="absolute top-3 right-3 bg-destructive text-destructive-foreground">
+            <Badge className={`absolute ${compact ? 'top-1.5 right-1.5 text-[10px] px-1.5 py-0.5' : 'top-3 right-3'} bg-destructive text-destructive-foreground`}>
               -{savingsPercent}%
             </Badge>
           )}
           {!product.is_coming_soon && hasSubscription && !hasRecommendedPrice && (
-            <Badge className="absolute top-3 right-3 bg-secondary text-secondary-foreground">
+            <Badge className={`absolute ${compact ? 'top-1.5 right-1.5 text-[10px] px-1.5 py-0.5' : 'top-3 right-3'} bg-secondary text-secondary-foreground`}>
               -{discountPercent}% abo
             </Badge>
           )}
-          {product.is_featured && (
+          {product.is_featured && !compact && (
             <Badge className="absolute top-3 left-3" variant="outline">
               Recommandé
             </Badge>
           )}
-          {/* Compare button */}
-          <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-            <CompareButton product={product} />
-          </div>
+          {/* Compare button - hidden in compact mode */}
+          {!compact && (
+            <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+              <CompareButton product={product} />
+            </div>
+          )}
         </div>
       </Link>
-      <CardContent className="p-4 flex-1 flex flex-col">
+      <CardContent className={`flex-1 flex flex-col ${compact ? 'p-2' : 'p-4'}`}>
         <div className="flex items-center justify-between mb-1">
           {product.brand && (
-            <p className="text-xs text-muted-foreground">{product.brand.name}</p>
+            <p className={`text-muted-foreground ${compact ? 'text-[10px]' : 'text-xs'}`}>{product.brand.name}</p>
           )}
-          {product.incontinence_level && (
+          {product.incontinence_level && !compact && (
             <AbsorptionDroplets level={product.incontinence_level} />
           )}
         </div>
-        <h3 className="font-medium line-clamp-2 mb-2 group-hover:text-primary transition-colors min-h-[2.5rem]">
+        <h3 className={`font-medium group-hover:text-primary transition-colors ${compact ? 'text-xs line-clamp-1 mb-1' : 'line-clamp-2 mb-2 min-h-[2.5rem]'}`}>
           {product.name}
         </h3>
         <div className="space-y-1 mt-auto">
           {product.is_coming_soon ? (
-            <div className="text-amber-600 font-medium">
+            <div className={`text-amber-600 font-medium ${compact ? 'text-xs' : ''}`}>
               Bientôt disponible
             </div>
           ) : (
             <>
-              {hasRecommendedPrice && (
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground line-through">
-                    Prix public : {product.recommended_price?.toFixed(2)} €
-                  </span>
-                </div>
-              )}
-              <div className="flex items-baseline gap-2">
-                <span className="text-lg font-bold text-primary">
+              <div className="flex items-baseline gap-1">
+                <span className={`font-bold text-primary ${compact ? 'text-sm' : 'text-lg'}`}>
                   {product.price.toFixed(2)} €
                 </span>
-                {hasRecommendedPrice && (
-                  <span className="text-xs font-medium text-destructive">
-                    Économisez {savingsValue.toFixed(2)} €
-                  </span>
-                )}
               </div>
-              {hasSubscription && (
-                <div className="mt-2">
+              {hasSubscription && !compact && (
+                <div className="mt-1">
                   <SubscriptionBadge discountPercent={discountPercent} variant="small" />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {product.subscription_price?.toFixed(2)} €/mois
-                  </p>
                 </div>
               )}
             </>
