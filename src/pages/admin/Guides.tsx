@@ -33,6 +33,7 @@ import { Plus, Pencil, Trash2, Eye, FileText, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import MediaUpload from '@/components/admin/MediaUpload';
 
 interface Guide {
   id: string;
@@ -400,15 +401,12 @@ const AdminGuides = () => {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="image_url">URL de l'image</Label>
-                <Input
-                  id="image_url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
-                  placeholder="https://..."
-                />
-              </div>
+              <MediaUpload
+                value={formData.image_url}
+                onChange={(url) => setFormData(prev => ({ ...prev, image_url: url }))}
+                bucket="guides"
+                label="Image de couverture"
+              />
 
               <div className="border-t pt-4 mt-4">
                 <h4 className="font-medium mb-4">SEO</h4>
