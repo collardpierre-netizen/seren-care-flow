@@ -11,17 +11,47 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Search, Loader2, ShoppingCart, Eye, Bell, Truck, ExternalLink } from 'lucide-react';
+import { 
+  Search, 
+  Loader2, 
+  ShoppingCart, 
+  Eye, 
+  Bell, 
+  Truck, 
+  CreditCard, 
+  Package, 
+  CheckCircle2, 
+  XCircle,
+  Send,
+  Mail
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import OrderDetailDialog from '@/components/admin/OrderDetailDialog';
 
-const statusLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-  pending: { label: 'En attente', variant: 'outline' },
-  paid: { label: 'Payée', variant: 'default' },
-  shipped: { label: 'Expédiée', variant: 'secondary' },
-  delivered: { label: 'Livrée', variant: 'default' },
-  cancelled: { label: 'Annulée', variant: 'destructive' },
+const statusLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: React.ReactNode }> = {
+  pending: { label: 'En attente', variant: 'outline', icon: <Loader2 className="h-3 w-3" /> },
+  paid: { label: 'Payée', variant: 'default', icon: <CreditCard className="h-3 w-3" /> },
+  shipped: { label: 'Expédiée', variant: 'secondary', icon: <Truck className="h-3 w-3" /> },
+  delivered: { label: 'Livrée', variant: 'default', icon: <CheckCircle2 className="h-3 w-3" /> },
+  cancelled: { label: 'Annulée', variant: 'destructive', icon: <XCircle className="h-3 w-3" /> },
+};
+
+// Status flow with next actions
+const statusActions: Record<string, { nextStatus: string; label: string; icon: React.ReactNode; color: string }[]> = {
+  pending: [
+    { nextStatus: 'paid', label: 'Marquer payée', icon: <CreditCard className="h-4 w-4" />, color: 'bg-green-600 hover:bg-green-700' },
+    { nextStatus: 'cancelled', label: 'Annuler', icon: <XCircle className="h-4 w-4" />, color: 'bg-destructive hover:bg-destructive/90' },
+  ],
+  paid: [
+    { nextStatus: 'shipped', label: 'Marquer expédiée', icon: <Truck className="h-4 w-4" />, color: 'bg-blue-600 hover:bg-blue-700' },
+    { nextStatus: 'cancelled', label: 'Annuler', icon: <XCircle className="h-4 w-4" />, color: 'bg-destructive hover:bg-destructive/90' },
+  ],
+  shipped: [
+    { nextStatus: 'delivered', label: 'Marquer livrée', icon: <Package className="h-4 w-4" />, color: 'bg-green-600 hover:bg-green-700' },
+  ],
+  delivered: [],
+  cancelled: [],
 };
 
 const AdminOrders: React.FC = () => {
@@ -177,7 +207,8 @@ const AdminOrders: React.FC = () => {
                   <TableHead>Total</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Statut</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>Actions rapides</TableHead>
+                  <TableHead className="text-right">Détails</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -201,39 +232,52 @@ const AdminOrders: React.FC = () => {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Select
-                        value={order.status}
-                        onValueChange={(status) => updateStatus.mutate({ 
-                          id: order.id, 
-                          status,
-                          sendNotification: notifyCustomer 
-                        })}
-                      >
-                        <SelectTrigger className="w-[130px]">
-                          <Badge variant={statusLabels[order.status]?.variant || 'outline'}>
-                            {statusLabels[order.status]?.label || order.status}
-                          </Badge>
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pending">En attente</SelectItem>
-                          <SelectItem value="paid">Payée</SelectItem>
-                          <SelectItem value="shipped">Expédiée</SelectItem>
-                          <SelectItem value="delivered">Livrée</SelectItem>
-                          <SelectItem value="cancelled">Annulée</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Badge variant={statusLabels[order.status]?.variant || 'outline'} className="flex items-center gap-1 w-fit">
+                        {statusLabels[order.status]?.icon}
+                        {statusLabels[order.status]?.label || order.status}
+                      </Badge>
                     </TableCell>
-                    <TableCell className="text-right flex items-center gap-1 justify-end">
-                      {order.tracking_number && (
-                        <Button variant="ghost" size="icon" asChild>
-                          <a href={order.tracking_url || '#'} target="_blank" rel="noopener noreferrer">
-                            <Truck className="h-4 w-4 text-primary" />
-                          </a>
+                    <TableCell>
+                      <div className="flex items-center gap-1 flex-wrap">
+                        {statusActions[order.status]?.map((action) => (
+                          <Button
+                            key={action.nextStatus}
+                            size="sm"
+                            className={`h-7 text-xs ${action.color} text-white`}
+                            onClick={() => updateStatus.mutate({ 
+                              id: order.id, 
+                              status: action.nextStatus,
+                              sendNotification: notifyCustomer 
+                            })}
+                            disabled={updateStatus.isPending}
+                          >
+                            {action.icon}
+                            <span className="ml-1 hidden sm:inline">{action.label}</span>
+                          </Button>
+                        ))}
+                        {statusActions[order.status]?.length === 0 && (
+                          <span className="text-xs text-muted-foreground">Terminée</span>
+                        )}
+                        {notifyCustomer && order.profile?.email && statusActions[order.status]?.length > 0 && (
+                          <span title="Email envoyé automatiquement">
+                            <Mail className="h-3 w-3 text-muted-foreground ml-1" />
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center gap-1 justify-end">
+                        {order.tracking_number && (
+                          <Button variant="ghost" size="icon" asChild title="Suivi transporteur">
+                            <a href={order.tracking_url || '#'} target="_blank" rel="noopener noreferrer">
+                              <Truck className="h-4 w-4 text-primary" />
+                            </a>
+                          </Button>
+                        )}
+                        <Button variant="ghost" size="icon" onClick={() => setSelectedOrderId(order.id)} title="Voir les détails">
+                          <Eye className="h-4 w-4" />
                         </Button>
-                      )}
-                      <Button variant="ghost" size="icon" onClick={() => setSelectedOrderId(order.id)}>
-                        <Eye className="h-4 w-4" />
-                      </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

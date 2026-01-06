@@ -14,6 +14,9 @@ interface StatusEmailRequest {
   customerName: string;
   newStatus: string;
   orderTotal: number;
+  trackingNumber?: string;
+  trackingUrl?: string;
+  carrier?: string;
 }
 
 const statusConfig: Record<string, { title: string; message: string; emoji: string; color: string }> = {
@@ -99,9 +102,48 @@ const getStatusTimeline = (currentStatus: string) => {
   `;
 };
 
+const getTrackingSection = (data: StatusEmailRequest) => {
+  if (!data.trackingNumber && !data.trackingUrl) {
+    return '';
+  }
+
+  return `
+    <!-- Tracking Section -->
+    <div style="background: #eff6ff; border-radius: 12px; padding: 20px; margin-top: 16px; border: 1px solid #bfdbfe;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+        <div style="font-size: 24px;">🚚</div>
+        <h3 style="margin: 0; color: #1e40af; font-size: 16px; font-weight: 600;">Suivi de votre colis</h3>
+      </div>
+      ${data.carrier ? `
+        <p style="margin: 0 0 8px; color: #374151; font-size: 14px;">
+          <strong>Transporteur :</strong> ${data.carrier}
+        </p>
+      ` : ''}
+      ${data.trackingNumber ? `
+        <p style="margin: 0 0 12px; color: #374151; font-size: 14px;">
+          <strong>N° de suivi :</strong> <span style="font-family: monospace; background: #dbeafe; padding: 2px 8px; border-radius: 4px;">${data.trackingNumber}</span>
+        </p>
+      ` : ''}
+      ${data.trackingUrl ? `
+        <a href="${data.trackingUrl}" style="
+          display: inline-block;
+          background: #2563eb;
+          color: white;
+          padding: 10px 20px;
+          border-radius: 6px;
+          text-decoration: none;
+          font-weight: 600;
+          font-size: 14px;
+        ">Suivre mon colis →</a>
+      ` : ''}
+    </div>
+  `;
+};
+
 const getEmailHtml = (data: StatusEmailRequest) => {
   const config = statusConfig[data.newStatus] || statusConfig.pending;
   const timeline = getStatusTimeline(data.newStatus);
+  const trackingSection = getTrackingSection(data);
   
   return `
     <!DOCTYPE html>
@@ -152,6 +194,8 @@ const getEmailHtml = (data: StatusEmailRequest) => {
                 </div>
               </div>
               
+              ${trackingSection}
+              
               <!-- CTA Button -->
               <div style="text-align: center; margin-top: 32px;">
                 <a href="https://serencare.be/compte" style="
@@ -163,7 +207,7 @@ const getEmailHtml = (data: StatusEmailRequest) => {
                   text-decoration: none;
                   font-weight: 600;
                   font-size: 15px;
-                ">Suivre ma commande</a>
+                ">Voir ma commande</a>
               </div>
             </div>
             
@@ -191,6 +235,7 @@ serve(async (req) => {
   try {
     const data: StatusEmailRequest = await req.json();
     console.log('Sending status email for order:', data.orderNumber, 'Status:', data.newStatus);
+    console.log('Tracking info:', { carrier: data.carrier, trackingNumber: data.trackingNumber, trackingUrl: data.trackingUrl });
 
     if (!RESEND_API_KEY) {
       console.error('RESEND_API_KEY not configured');
