@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Search, Star, CheckCircle2, XCircle, Trash2, Loader2, Eye } from 'lucide-react';
+import { Search, Star, CheckCircle2, XCircle, Trash2, Loader2, Eye, Ban } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -66,6 +66,27 @@ const AdminReviews = () => {
     },
     onError: () => {
       toast.error('Erreur lors de l\'approbation');
+    },
+  });
+
+  const unapproveReview = useMutation({
+    mutationFn: async (reviewId: string) => {
+      const { error } = await supabase
+        .from('product_reviews')
+        .update({ 
+          is_approved: false, 
+          approved_at: null,
+          approved_by: null 
+        })
+        .eq('id', reviewId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-reviews'] });
+      toast.success('Avis désapprouvé');
+    },
+    onError: () => {
+      toast.error('Erreur lors de la désapprobation');
     },
   });
 
@@ -222,15 +243,27 @@ const AdminReviews = () => {
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        {!review.is_approved && (
+                        {!review.is_approved ? (
                           <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => approveReview.mutate(review.id)}
                             disabled={approveReview.isPending}
                             className="text-green-600 hover:text-green-700"
+                            title="Approuver"
                           >
                             <CheckCircle2 className="h-4 w-4" />
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => unapproveReview.mutate(review.id)}
+                            disabled={unapproveReview.isPending}
+                            className="text-amber-600 hover:text-amber-700"
+                            title="Désapprouver"
+                          >
+                            <Ban className="h-4 w-4" />
                           </Button>
                         )}
                         <Button
@@ -239,6 +272,7 @@ const AdminReviews = () => {
                           onClick={() => rejectReview.mutate(review.id)}
                           disabled={rejectReview.isPending}
                           className="text-destructive hover:text-destructive"
+                          title="Supprimer"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -301,7 +335,7 @@ const AdminReviews = () => {
                 </div>
               )}
               <div className="flex gap-3 pt-4">
-                {!viewingReview.is_approved && (
+                {!viewingReview.is_approved ? (
                   <Button
                     onClick={() => {
                       approveReview.mutate(viewingReview.id);
@@ -312,11 +346,22 @@ const AdminReviews = () => {
                     <CheckCircle2 className="h-4 w-4 mr-2" />
                     Approuver
                   </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      unapproveReview.mutate(viewingReview.id);
+                      setViewingReview(null);
+                    }}
+                    className="flex-1"
+                  >
+                    <Ban className="h-4 w-4 mr-2" />
+                    Désapprouver
+                  </Button>
                 )}
                 <Button
                   variant="destructive"
                   onClick={() => rejectReview.mutate(viewingReview.id)}
-                  className={viewingReview.is_approved ? "flex-1" : ""}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Supprimer
