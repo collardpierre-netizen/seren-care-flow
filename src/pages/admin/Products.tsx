@@ -1199,7 +1199,8 @@ const AdminProducts: React.FC = () => {
                   <TableHead>Marque</TableHead>
                   <TableHead>Prix</TableHead>
                   <TableHead>Marge</TableHead>
-                  <TableHead>Stock</TableHead>
+                  <TableHead>Qté</TableHead>
+                  <TableHead>Disponibilité</TableHead>
                   <TableHead>Statut</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -1254,6 +1255,19 @@ const AdminProducts: React.FC = () => {
                         )}
                       </TableCell>
                       <TableCell>{product.stock_quantity}</TableCell>
+                      <TableCell>
+                        {(() => {
+                          const status = product.stock_status || 'in_stock';
+                          const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
+                            in_stock: { label: 'En stock', variant: 'default' },
+                            limited: { label: 'Limité', variant: 'outline' },
+                            out_of_stock: { label: 'Rupture', variant: 'destructive' },
+                            coming_soon: { label: 'Bientôt', variant: 'secondary' },
+                          };
+                          const config = statusConfig[status] || statusConfig.in_stock;
+                          return <Badge variant={config.variant}>{config.label}</Badge>;
+                        })()}
+                      </TableCell>
                       <TableCell>
                         <Badge variant={product.is_active ? 'default' : 'secondary'}>
                           {product.is_active ? 'Actif' : 'Inactif'}
