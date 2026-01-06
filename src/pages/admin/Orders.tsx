@@ -7,8 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Search, Loader2, ShoppingCart, Eye } from 'lucide-react';
+import { Search, Loader2, ShoppingCart, Eye, Bell } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -23,6 +25,7 @@ const statusLabels: Record<string, { label: string; variant: 'default' | 'second
 const AdminOrders: React.FC = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [notifyCustomer, setNotifyCustomer] = useState(true);
   const queryClient = useQueryClient();
 
   const { data: orders, isLoading } = useQuery({
@@ -51,16 +54,41 @@ const AdminOrders: React.FC = () => {
   });
 
   const updateStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+    mutationFn: async ({ id, status, sendNotification }: { id: string; status: string; sendNotification: boolean }) => {
+      // Get order details for email
+      const order = orders?.find(o => o.id === id);
+      
       const { error } = await supabase
         .from('orders')
         .update({ status: status as 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled' })
         .eq('id', id);
       if (error) throw error;
+
+      // Send notification email if enabled
+      if (sendNotification && order?.profile?.email) {
+        try {
+          await supabase.functions.invoke('send-order-status-email', {
+            body: {
+              orderId: id,
+              orderNumber: order.order_number,
+              customerEmail: order.profile.email,
+              customerName: order.profile.first_name || '',
+              newStatus: status,
+              orderTotal: order.total
+            }
+          });
+        } catch (emailError) {
+          console.error('Failed to send status email:', emailError);
+          // Don't throw - status update succeeded, just email failed
+        }
+      }
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
-      toast.success('Statut mis à jour');
+      const message = variables.sendNotification 
+        ? 'Statut mis à jour et client notifié' 
+        : 'Statut mis à jour';
+      toast.success(message);
     },
   });
 
@@ -102,6 +130,18 @@ const AdminOrders: React.FC = () => {
                 <SelectItem value="cancelled">Annulée</SelectItem>
               </SelectContent>
             </Select>
+            
+            <div className="flex items-center gap-2 ml-auto">
+              <Bell className={`h-4 w-4 ${notifyCustomer ? 'text-primary' : 'text-muted-foreground'}`} />
+              <Switch
+                id="notify-customer"
+                checked={notifyCustomer}
+                onCheckedChange={setNotifyCustomer}
+              />
+              <Label htmlFor="notify-customer" className="text-sm cursor-pointer">
+                Notifier le client
+              </Label>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -150,7 +190,11 @@ const AdminOrders: React.FC = () => {
                     <TableCell>
                       <Select
                         value={order.status}
-                        onValueChange={(status) => updateStatus.mutate({ id: order.id, status })}
+                        onValueChange={(status) => updateStatus.mutate({ 
+                          id: order.id, 
+                          status,
+                          sendNotification: notifyCustomer 
+                        })}
                       >
                         <SelectTrigger className="w-[130px]">
                           <Badge variant={statusLabels[order.status]?.variant || 'outline'}>

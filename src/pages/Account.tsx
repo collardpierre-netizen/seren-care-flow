@@ -14,8 +14,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
 import { useCart } from '@/hooks/useCart';
+import OrderStatusTimeline from '@/components/account/OrderStatusTimeline';
 import { 
   User, 
   Package, 
@@ -29,7 +31,8 @@ import {
   X,
   RotateCcw,
   CreditCard,
-  ExternalLink
+  ExternalLink,
+  ChevronDown
 } from 'lucide-react';
 
 const Account = () => {
@@ -379,104 +382,122 @@ const Account = () => {
                     ) : (
                       <div className="space-y-4">
                         {orders?.map((order) => (
-                          <div 
-                            key={order.id} 
-                            className="p-4 border rounded-xl space-y-3"
-                          >
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                              <div>
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="font-medium">{order.order_number}</span>
-                                  <Badge variant={statusLabels[order.status]?.variant || 'outline'}>
-                                    {statusLabels[order.status]?.label || order.status}
-                                  </Badge>
-                                  {order.is_subscription_order && (
-                                    <Badge variant="secondary">
-                                      <RefreshCw className="h-3 w-3 mr-1" />
-                                      Abo
+                          <Collapsible key={order.id}>
+                            <div className="p-4 border rounded-xl space-y-3">
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <div>
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="font-medium">{order.order_number}</span>
+                                    <Badge variant={statusLabels[order.status]?.variant || 'outline'}>
+                                      {statusLabels[order.status]?.label || order.status}
                                     </Badge>
-                                  )}
+                                    {order.is_subscription_order && (
+                                      <Badge variant="secondary">
+                                        <RefreshCw className="h-3 w-3 mr-1" />
+                                        Abo
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">
+                                    {format(new Date(order.created_at), 'dd MMMM yyyy', { locale: fr })}
+                                  </p>
                                 </div>
-                                <p className="text-sm text-muted-foreground">
-                                  {format(new Date(order.created_at), 'dd MMMM yyyy', { locale: fr })}
-                                </p>
+                                <div className="flex items-center gap-3">
+                                  <p className="font-bold text-lg">{Number(order.total).toFixed(2)} €</p>
+                                  <CollapsibleTrigger asChild>
+                                    <Button variant="ghost" size="sm">
+                                      <ChevronDown className="h-4 w-4" />
+                                    </Button>
+                                  </CollapsibleTrigger>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-3">
-                                <p className="font-bold text-lg">{Number(order.total).toFixed(2)} €</p>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={async () => {
-                                    if (!order.items || order.items.length === 0) {
-                                      toast.error('Cette commande ne contient aucun article');
-                                      return;
-                                    }
-                                    
-                                    // Fetch product details for each item
-                                    for (const item of order.items) {
-                                      if (item.product_id) {
-                                        const { data: product } = await supabase
-                                          .from('products')
-                                          .select('*, product_images(*)')
-                                          .eq('id', item.product_id)
-                                          .single();
-                                        
-                                        if (product) {
-                                          const primaryImage = product.product_images?.find((img: any) => img.is_primary) || product.product_images?.[0];
-                                          addItem({
-                                            productId: product.id,
-                                            productName: product.name,
-                                            productImage: primaryImage?.image_url,
-                                            size: item.product_size || undefined,
-                                            quantity: item.quantity,
-                                            unitPrice: Number(item.unit_price),
-                                            isSubscription: false,
-                                            subscriptionPrice: product.subscription_price ? Number(product.subscription_price) : undefined
-                                          });
+                              
+                              <CollapsibleContent className="space-y-4">
+                                {/* Order Status Timeline */}
+                                <OrderStatusTimeline 
+                                  status={order.status} 
+                                  createdAt={order.created_at}
+                                  className="border-t pt-4"
+                                />
+                                
+                                {/* Order items */}
+                                {order.items && order.items.length > 0 && (
+                                  <div className="pt-3 border-t space-y-2">
+                                    <h4 className="text-sm font-medium text-muted-foreground mb-2">Articles</h4>
+                                    {order.items.map((item: any) => (
+                                      <div key={item.id} className="flex items-center justify-between text-sm">
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-muted-foreground">×{item.quantity}</span>
+                                          <span>{item.product_name}</span>
+                                          {item.product_size && (
+                                            <span className="text-muted-foreground">({item.product_size})</span>
+                                          )}
+                                        </div>
+                                        <span className="font-medium">{Number(item.total_price).toFixed(2)} €</span>
+                                      </div>
+                                    ))}
+                                    {order.shipping_fee && Number(order.shipping_fee) > 0 && (
+                                      <div className="flex items-center justify-between text-sm text-muted-foreground">
+                                        <span>Frais de livraison</span>
+                                        <span>{Number(order.shipping_fee).toFixed(2)} €</span>
+                                      </div>
+                                    )}
+                                    {order.discount_amount && Number(order.discount_amount) > 0 && (
+                                      <div className="flex items-center justify-between text-sm text-green-600">
+                                        <span>Réduction</span>
+                                        <span>-{Number(order.discount_amount).toFixed(2)} €</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                                
+                                {/* Re-order button */}
+                                <div className="pt-3 border-t">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={async () => {
+                                      if (!order.items || order.items.length === 0) {
+                                        toast.error('Cette commande ne contient aucun article');
+                                        return;
+                                      }
+                                      
+                                      // Fetch product details for each item
+                                      for (const item of order.items) {
+                                        if (item.product_id) {
+                                          const { data: product } = await supabase
+                                            .from('products')
+                                            .select('*, product_images(*)')
+                                            .eq('id', item.product_id)
+                                            .single();
+                                          
+                                          if (product) {
+                                            const primaryImage = product.product_images?.find((img: any) => img.is_primary) || product.product_images?.[0];
+                                            addItem({
+                                              productId: product.id,
+                                              productName: product.name,
+                                              productImage: primaryImage?.image_url,
+                                              size: item.product_size || undefined,
+                                              quantity: item.quantity,
+                                              unitPrice: Number(item.unit_price),
+                                              isSubscription: false,
+                                              subscriptionPrice: product.subscription_price ? Number(product.subscription_price) : undefined
+                                            });
+                                          }
                                         }
                                       }
-                                    }
-                                    
-                                    toast.success('Articles ajoutés au panier');
-                                    openCart();
-                                  }}
-                                >
-                                  <RotateCcw className="h-4 w-4 mr-1" />
-                                  Re-commander
-                                </Button>
-                              </div>
+                                      
+                                      toast.success('Articles ajoutés au panier');
+                                      openCart();
+                                    }}
+                                  >
+                                    <RotateCcw className="h-4 w-4 mr-1" />
+                                    Re-commander
+                                  </Button>
+                                </div>
+                              </CollapsibleContent>
                             </div>
-                            
-                            {/* Order items */}
-                            {order.items && order.items.length > 0 && (
-                              <div className="pt-3 border-t space-y-2">
-                                {order.items.map((item: any) => (
-                                  <div key={item.id} className="flex items-center justify-between text-sm">
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-muted-foreground">×{item.quantity}</span>
-                                      <span>{item.product_name}</span>
-                                      {item.product_size && (
-                                        <span className="text-muted-foreground">({item.product_size})</span>
-                                      )}
-                                    </div>
-                                    <span className="font-medium">{Number(item.total_price).toFixed(2)} €</span>
-                                  </div>
-                                ))}
-                                {order.shipping_fee && Number(order.shipping_fee) > 0 && (
-                                  <div className="flex items-center justify-between text-sm text-muted-foreground">
-                                    <span>Frais de livraison</span>
-                                    <span>{Number(order.shipping_fee).toFixed(2)} €</span>
-                                  </div>
-                                )}
-                                {order.discount_amount && Number(order.discount_amount) > 0 && (
-                                  <div className="flex items-center justify-between text-sm text-green-600">
-                                    <span>Réduction</span>
-                                    <span>-{Number(order.discount_amount).toFixed(2)} €</span>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
+                          </Collapsible>
                         ))}
                       </div>
                     )}
