@@ -18,7 +18,9 @@ import {
   X,
   UserCheck,
   UserPlus,
-  Euro
+  Euro,
+  FolderOpen,
+  BookOpen
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -26,6 +28,7 @@ import { useState } from 'react';
 const navItems = [
   { label: 'Tableau de bord', href: '/admin', icon: LayoutDashboard },
   { label: 'Produits', href: '/admin/produits', icon: Package },
+  { label: 'Catégories', href: '/admin/categories', icon: FolderOpen },
   { label: 'Commandes', href: '/admin/commandes', icon: ShoppingCart },
   { label: 'Abonnements', href: '/admin/abonnements', icon: RefreshCw },
   { label: 'Clients', href: '/admin/clients', icon: Users },
@@ -33,7 +36,7 @@ const navItems = [
   { label: 'Candidatures', href: '/admin/candidatures', icon: UserPlus },
   { label: 'Commissions', href: '/admin/commissions', icon: Euro },
   { label: 'Pages', href: '/admin/pages', icon: FileText },
-  { label: 'Guides', href: '/admin/guides', icon: FileText },
+  { label: 'Guides', href: '/admin/guides', icon: BookOpen },
   { label: 'Médias', href: '/admin/medias', icon: Image },
   { label: 'Médias Hero', href: '/admin/hero-media', icon: Film },
   { label: 'Paramètres', href: '/admin/parametres', icon: Settings },

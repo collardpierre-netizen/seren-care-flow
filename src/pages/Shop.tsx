@@ -51,7 +51,7 @@ const Shop = () => {
     brandId: selectedBrand !== "all" ? selectedBrand : undefined,
   });
   const { data: brands } = useBrands();
-  const { data: categories } = useCategories();
+  const { data: categories } = useCategories({ includeCount: true, includeEmpty: false });
 
   // Filter products by search, incontinence, mobility, and usage time
   const filteredProducts = useMemo(() => {

@@ -150,18 +150,50 @@ export const useBrands = () => {
   });
 };
 
-export const useCategories = () => {
+export interface CategoryWithCount extends Category {
+  product_count?: number;
+}
+
+export const useCategories = (options?: { includeCount?: boolean; includeEmpty?: boolean }) => {
   return useQuery({
-    queryKey: ['categories'],
+    queryKey: ['categories', options],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: categories, error } = await supabase
         .from('categories')
         .select('*')
         .eq('is_active', true)
         .order('sort_order');
 
       if (error) throw error;
-      return data as Category[];
+      
+      if (!options?.includeCount) {
+        return categories as Category[];
+      }
+      
+      // Get product counts per category
+      const { data: products } = await supabase
+        .from('products')
+        .select('category_id')
+        .eq('is_active', true);
+      
+      const counts: Record<string, number> = {};
+      products?.forEach(p => {
+        if (p.category_id) {
+          counts[p.category_id] = (counts[p.category_id] || 0) + 1;
+        }
+      });
+      
+      const categoriesWithCount = categories?.map(cat => ({
+        ...cat,
+        product_count: counts[cat.id] || 0
+      })) as CategoryWithCount[];
+      
+      // Filter out empty categories if requested
+      if (!options?.includeEmpty) {
+        return categoriesWithCount.filter(cat => cat.product_count > 0);
+      }
+      
+      return categoriesWithCount;
     },
   });
 };
