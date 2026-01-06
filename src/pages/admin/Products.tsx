@@ -46,6 +46,7 @@ interface ProductFormData {
   is_active: boolean;
   is_featured: boolean;
   is_coming_soon: boolean;
+  show_size_guide: boolean;
 }
 
 const initialFormData: ProductFormData = {
@@ -77,6 +78,7 @@ const initialFormData: ProductFormData = {
   is_active: true,
   is_featured: false,
   is_coming_soon: false,
+  show_size_guide: true,
 };
 
 // Multi-tag options
@@ -187,6 +189,7 @@ const AdminProducts: React.FC = () => {
         is_active: data.is_active,
         is_featured: data.is_featured,
         is_coming_soon: data.is_coming_soon || false,
+        show_size_guide: data.show_size_guide,
       };
       const { data: newProduct, error } = await supabase
         .from('products')
@@ -250,6 +253,7 @@ const AdminProducts: React.FC = () => {
         is_active: data.is_active,
         is_featured: data.is_featured,
         is_coming_soon: data.is_coming_soon || false,
+        show_size_guide: data.show_size_guide,
       };
       const { error } = await supabase.from('products').update(updateData).eq('id', id);
       if (error) throw error;
@@ -397,6 +401,7 @@ const AdminProducts: React.FC = () => {
       is_active: product.is_active,
       is_featured: product.is_featured,
       is_coming_soon: product.is_coming_soon || false,
+      show_size_guide: product.show_size_guide !== false,
     });
     setProductImages(
       product.images?.map((img: any) => ({
@@ -1353,6 +1358,15 @@ const AdminProducts: React.FC = () => {
                   />
                   <Label htmlFor="is_coming_soon" className="text-amber-600">Prochainement</Label>
                   <span className="text-xs text-muted-foreground">(visible sans prix, non achetable)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="show_size_guide"
+                    checked={formData.show_size_guide}
+                    onCheckedChange={(v) => setFormData({ ...formData, show_size_guide: v })}
+                  />
+                  <Label htmlFor="show_size_guide">Guide des tailles</Label>
+                  <span className="text-xs text-muted-foreground">(afficher le guide des tailles)</span>
                 </div>
               </div>
 
