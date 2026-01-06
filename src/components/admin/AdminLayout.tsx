@@ -33,6 +33,7 @@ const navItems = [
   { label: 'Candidatures', href: '/admin/candidatures', icon: UserPlus },
   { label: 'Commissions', href: '/admin/commissions', icon: Euro },
   { label: 'Pages', href: '/admin/pages', icon: FileText },
+  { label: 'Guides', href: '/admin/guides', icon: FileText },
   { label: 'Médias', href: '/admin/medias', icon: Image },
   { label: 'Médias Hero', href: '/admin/hero-media', icon: Film },
   { label: 'Paramètres', href: '/admin/parametres', icon: Settings },
