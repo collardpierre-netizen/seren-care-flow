@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Product } from '@/hooks/useProducts';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import AbsorptionDroplets from './AbsorptionDroplets';
 
 interface ProductCardProps {
   product: Product;
@@ -53,9 +54,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
         </div>
       </Link>
       <CardContent className="p-4">
-        {product.brand && (
-          <p className="text-xs text-muted-foreground mb-1">{product.brand.name}</p>
-        )}
+        <div className="flex items-center justify-between mb-1">
+          {product.brand && (
+            <p className="text-xs text-muted-foreground">{product.brand.name}</p>
+          )}
+          {product.incontinence_level && (
+            <AbsorptionDroplets level={product.incontinence_level} />
+          )}
+        </div>
         <h3 className="font-medium line-clamp-2 mb-2 group-hover:text-primary transition-colors">
           {product.name}
         </h3>
