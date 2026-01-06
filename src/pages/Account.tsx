@@ -188,11 +188,21 @@ const Account = () => {
   }
 
   const statusLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }> = {
-    pending: { label: 'En attente', variant: 'outline' },
-    paid: { label: 'Payée', variant: 'default' },
+    order_received: { label: 'Reçue', variant: 'outline' },
+    payment_confirmed: { label: 'Confirmée', variant: 'default' },
+    processing: { label: 'En traitement', variant: 'secondary' },
+    preparing: { label: 'En préparation', variant: 'secondary' },
+    packed: { label: 'Prête', variant: 'secondary' },
     shipped: { label: 'Expédiée', variant: 'secondary' },
+    out_for_delivery: { label: 'En livraison', variant: 'secondary' },
     delivered: { label: 'Livrée', variant: 'default' },
+    closed: { label: 'Clôturée', variant: 'default' },
+    on_hold: { label: 'En attente', variant: 'outline' },
+    delayed: { label: 'Retardée', variant: 'outline' },
+    partially_shipped: { label: 'Partiellement expédiée', variant: 'secondary' },
     cancelled: { label: 'Annulée', variant: 'destructive' },
+    returned: { label: 'Retournée', variant: 'destructive' },
+    refunded: { label: 'Remboursée', variant: 'destructive' },
     active: { label: 'Actif', variant: 'default' },
     paused: { label: 'En pause', variant: 'outline' }
   };
@@ -451,8 +461,17 @@ const Account = () => {
                                   </div>
                                 )}
                                 
-                                {/* Re-order button */}
-                                <div className="pt-3 border-t">
+                                {/* Action buttons */}
+                                <div className="pt-3 border-t flex flex-wrap gap-2">
+                                  <Button
+                                    asChild
+                                    size="sm"
+                                  >
+                                    <Link to={`/commande/${order.id}`}>
+                                      <Package className="h-4 w-4 mr-1" />
+                                      Voir le suivi
+                                    </Link>
+                                  </Button>
                                   <Button
                                     variant="outline"
                                     size="sm"
