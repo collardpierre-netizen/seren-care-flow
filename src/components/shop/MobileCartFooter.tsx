@@ -34,19 +34,24 @@ const MobileCartFooter: React.FC<MobileCartFooterProps> = ({
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           className={cn(
             "fixed bottom-0 left-0 right-0 z-50",
-            "bg-background/95 backdrop-blur-lg border-t border-border",
-            "px-4 pb-safe pt-3",
+            "bg-background/98 backdrop-blur-xl border-t border-border",
+            "shadow-[0_-4px_20px_rgba(0,0,0,0.1)]",
             "lg:hidden" // Only show on mobile
           )}
-          style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 12px)' }}
+          style={{ 
+            paddingBottom: 'max(env(safe-area-inset-bottom, 12px), 12px)',
+            paddingTop: '12px',
+            paddingLeft: '16px',
+            paddingRight: '16px'
+          }}
         >
           {/* Product summary */}
           {productName && (
-            <div className="flex items-center justify-between mb-2 text-sm">
+            <div className="flex items-center justify-between mb-3 text-sm">
               <span className="text-muted-foreground truncate max-w-[60%]">
                 {productName} {quantity > 1 && `× ${quantity}`}
               </span>
-              <span className="font-semibold text-foreground">
+              <span className="font-bold text-foreground text-base">
                 {totalPrice.toFixed(2)} €
               </span>
             </div>
