@@ -1,13 +1,15 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Layout from "@/components/Layout";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Heart, Phone, ClipboardList, ArrowRight, Clock } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Heart, Phone, ClipboardList, ArrowRight, Clock, RefreshCw, Check } from "lucide-react";
+import { useState as useReactState, useEffect } from "react";
 import CallbackFormCompact from "@/components/CallbackFormCompact";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { SizeGuideDialog } from "@/components/shop/SizeGuideDialog";
+import UnifiedQuestionnaire from "@/components/questionnaire/UnifiedQuestionnaire";
+import SubscriptionBenefits from "@/components/subscription/SubscriptionBenefits";
+import SubscriptionFAQ from "@/components/faq/SubscriptionFAQ";
 
 import guidedChoiceVideo from "@/assets/guided-choice-video.mov";
 import guidedChoiceImage1 from "@/assets/guided-choice-1.jpeg";
@@ -30,17 +32,15 @@ const GuidedChoice = () => {
 
   const handleVideoEnd = () => {
     setVideoPlayed(true);
-    setCurrentMediaIndex(1); // Move to first image after video
+    setCurrentMediaIndex(1);
   };
 
   useEffect(() => {
     const currentItem = heroMedia[currentMediaIndex];
-    // Only auto-advance for images (skip video index 0 if already played)
     if (currentItem.type === "image") {
       const interval = setInterval(() => {
         setCurrentMediaIndex((prev) => {
           const next = prev + 1;
-          // Skip video (index 0) if already played
           if (next >= heroMedia.length) {
             return videoPlayed ? 1 : 0;
           }
@@ -121,7 +121,6 @@ const GuidedChoice = () => {
                       />
                     )}
                   </AnimatePresence>
-                  {/* Subtle overlay gradient */}
                   <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent pointer-events-none" />
                 </div>
                 
@@ -241,7 +240,10 @@ const GuidedChoice = () => {
           </div>
         </section>
 
-        {/* Size FAQ Section */}
+        {/* Subscription Benefits */}
+        <SubscriptionBenefits variant="full" />
+
+        {/* FAQ Section */}
         <section className="py-16 bg-card border-y border-border">
           <div className="container-main">
             <motion.div
@@ -250,66 +252,16 @@ const GuidedChoice = () => {
               viewport={{ once: true }}
               className="max-w-3xl mx-auto"
             >
-              <div className="text-center mb-8">
-                <h2 className="font-display text-xl md:text-2xl font-bold text-foreground mb-3">
-                  Questions fréquentes sur les tailles
+              <div className="text-center mb-10">
+                <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-3">
+                  Questions fréquentes
                 </h2>
                 <p className="text-muted-foreground">
-                  Trouvez la bonne taille du premier coup
+                  Tout ce que vous devez savoir sur nos produits et l'abonnement
                 </p>
               </div>
 
-              <Accordion type="single" collapsible className="space-y-3">
-                <AccordionItem value="how-to-measure" className="border rounded-xl px-4">
-                  <AccordionTrigger className="text-left hover:no-underline">
-                    Comment mesurer le tour de taille/hanches ?
-                  </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground">
-                    <p>Munissez-vous d'un mètre souple :</p>
-                    <ul className="list-disc pl-5 mt-2 space-y-1">
-                      <li>Mesurez le <strong>tour de taille</strong> au niveau du nombril, sans serrer</li>
-                      <li>Mesurez le <strong>tour de hanches</strong> au point le plus large</li>
-                    </ul>
-                    <p className="mt-2">👉 Retenez toujours la mesure la plus grande.</p>
-                  </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem value="between-sizes" className="border rounded-xl px-4">
-                  <AccordionTrigger className="text-left hover:no-underline">
-                    Je suis entre deux tailles, que faire ?
-                  </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground">
-                    <p>Si vous êtes entre deux tailles, <strong>choisissez la plus petite</strong> :</p>
-                    <ul className="list-disc pl-5 mt-2 space-y-1">
-                      <li>Meilleure tenue</li>
-                      <li>Plus discrète</li>
-                    </ul>
-                    <p className="mt-2">Si la protection semble trop serrée ou inconfortable, passez à la taille au-dessus.</p>
-                  </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem value="wrong-size" className="border rounded-xl px-4">
-                  <AccordionTrigger className="text-left hover:no-underline">
-                    Et si je me trompe de taille ?
-                  </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground">
-                    <p>Pas de panique ! Vous pouvez modifier la taille à tout moment, surtout en abonnement.</p>
-                    <p className="mt-2">Une taille trop grande peut provoquer des fuites. Une taille bien ajustée améliore le confort et la sécurité.</p>
-                  </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem value="size-guide" className="border rounded-xl px-4">
-                  <AccordionTrigger className="text-left hover:no-underline">
-                    Où trouver le guide des tailles complet ?
-                  </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground">
-                    <p>Le guide des tailles détaillé est disponible sur chaque fiche produit et dans votre panier.</p>
-                    <div className="mt-3">
-                      <SizeGuideDialog />
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
+              <SubscriptionFAQ />
             </motion.div>
           </div>
         </section>
@@ -326,10 +278,24 @@ const GuidedChoice = () => {
               <h2 className="font-display text-xl md:text-2xl font-bold text-foreground mb-4">
                 Une chose importante
               </h2>
-              <p className="text-muted-foreground leading-relaxed">
+              <p className="text-muted-foreground leading-relaxed mb-6">
                 Quoi que vous choisissiez, vous pourrez toujours ajuster ensuite. 
                 Changer de produit, de quantité, de fréquence. Sans frais, sans justification.
               </p>
+              <div className="flex flex-wrap items-center justify-center gap-6">
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="w-4 h-4 text-secondary" />
+                  <span className="text-foreground">Sans engagement</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="w-4 h-4 text-secondary" />
+                  <span className="text-foreground">Livraison gratuite dès 49€</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="w-4 h-4 text-secondary" />
+                  <span className="text-foreground">Modifiable à tout moment</span>
+                </div>
+              </div>
             </motion.div>
           </div>
         </section>
