@@ -42,6 +42,7 @@ interface ProductFormData {
   sku: string;
   ean_code: string;
   cnk_code: string;
+  manufacturer_url: string;
   is_active: boolean;
   is_featured: boolean;
   is_coming_soon: boolean;
@@ -72,6 +73,7 @@ const initialFormData: ProductFormData = {
   sku: '',
   ean_code: '',
   cnk_code: '',
+  manufacturer_url: '',
   is_active: true,
   is_featured: false,
   is_coming_soon: false,
@@ -181,6 +183,7 @@ const AdminProducts: React.FC = () => {
         sku: data.sku || null,
         ean_code: data.ean_code || '',
         cnk_code: data.cnk_code || '',
+        manufacturer_url: data.manufacturer_url || null,
         is_active: data.is_active,
         is_featured: data.is_featured,
         is_coming_soon: data.is_coming_soon || false,
@@ -243,6 +246,7 @@ const AdminProducts: React.FC = () => {
         sku: data.sku || null,
         ean_code: data.ean_code || '',
         cnk_code: data.cnk_code || '',
+        manufacturer_url: data.manufacturer_url || null,
         is_active: data.is_active,
         is_featured: data.is_featured,
         is_coming_soon: data.is_coming_soon || false,
@@ -389,6 +393,7 @@ const AdminProducts: React.FC = () => {
       sku: product.sku || '',
       ean_code: product.ean_code || '',
       cnk_code: product.cnk_code || '',
+      manufacturer_url: product.manufacturer_url || '',
       is_active: product.is_active,
       is_featured: product.is_featured,
       is_coming_soon: product.is_coming_soon || false,
@@ -1297,6 +1302,29 @@ const AdminProducts: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, cnk_code: e.target.value })}
                     placeholder="Ex: 123456..."
                   />
+                </div>
+              </div>
+
+              {/* Manufacturer URL */}
+              <div className="space-y-2">
+                <Label>URL fiche produit fabricant</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={formData.manufacturer_url}
+                    onChange={(e) => setFormData({ ...formData, manufacturer_url: e.target.value })}
+                    placeholder="https://www.tena.be/produit/..."
+                    type="url"
+                  />
+                  {formData.manufacturer_url && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => window.open(formData.manufacturer_url, '_blank')}
+                    >
+                      <Link className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
 

@@ -802,6 +802,7 @@ export type Database = {
           is_active: boolean | null
           is_coming_soon: boolean | null
           is_featured: boolean | null
+          manufacturer_url: string | null
           min_order_quantity: number | null
           mobility: Database["public"]["Enums"]["mobility_type"] | null
           mobility_levels: string | null
@@ -836,6 +837,7 @@ export type Database = {
           is_active?: boolean | null
           is_coming_soon?: boolean | null
           is_featured?: boolean | null
+          manufacturer_url?: string | null
           min_order_quantity?: number | null
           mobility?: Database["public"]["Enums"]["mobility_type"] | null
           mobility_levels?: string | null
@@ -870,6 +872,7 @@ export type Database = {
           is_active?: boolean | null
           is_coming_soon?: boolean | null
           is_featured?: boolean | null
+          manufacturer_url?: string | null
           min_order_quantity?: number | null
           mobility?: Database["public"]["Enums"]["mobility_type"] | null
           mobility_levels?: string | null
