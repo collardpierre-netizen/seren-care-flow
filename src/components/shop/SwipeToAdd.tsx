@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { motion, useMotionValue, useTransform, PanInfo } from 'framer-motion';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { motion, useMotionValue, useTransform, animate, PanInfo } from 'framer-motion';
 import { ShoppingCart, ChevronRight, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -17,51 +17,62 @@ const SwipeToAdd: React.FC<SwipeToAddProps> = ({
   isComingSoon = false 
 }) => {
   const [isComplete, setIsComplete] = useState(false);
+  const [maxSwipe, setMaxSwipe] = useState(200);
   const containerRef = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
   
-  // Calculate max swipe distance (container width - button width - padding)
-  const getMaxSwipe = () => {
-    if (!containerRef.current) return 200;
-    return containerRef.current.offsetWidth - 72 - 8; // 72px button, 8px padding
-  };
+  // Update max swipe on mount and resize
+  useEffect(() => {
+    const updateMaxSwipe = () => {
+      if (containerRef.current) {
+        setMaxSwipe(containerRef.current.offsetWidth - 72 - 8);
+      }
+    };
+    updateMaxSwipe();
+    window.addEventListener('resize', updateMaxSwipe);
+    return () => window.removeEventListener('resize', updateMaxSwipe);
+  }, []);
 
-  const progress = useTransform(x, [0, getMaxSwipe()], [0, 1]);
-  const checkOpacity = useTransform(x, [getMaxSwipe() * 0.8, getMaxSwipe()], [0, 1]);
-  const cartOpacity = useTransform(x, [0, getMaxSwipe() * 0.5], [1, 0]);
-  const bgColor = useTransform(
-    x, 
-    [0, getMaxSwipe() * 0.5, getMaxSwipe()], 
-    ['hsl(var(--primary))', 'hsl(var(--primary))', 'hsl(var(--secondary))']
-  );
+  const progress = useTransform(x, [0, maxSwipe], [0, 1]);
+  const checkOpacity = useTransform(x, [maxSwipe * 0.8, maxSwipe], [0, 1]);
+  const cartOpacity = useTransform(x, [0, maxSwipe * 0.5], [1, 0]);
+  const textOpacity = useTransform(x, [0, maxSwipe * 0.3], [1, 0]);
 
   // Trigger haptic feedback (vibration)
-  const triggerHaptic = () => {
-    if (navigator.vibrate) {
-      navigator.vibrate(50); // 50ms vibration
+  const triggerHaptic = useCallback(() => {
+    if ('vibrate' in navigator) {
+      try {
+        navigator.vibrate([50, 30, 50]); // Double pulse
+      } catch (e) {
+        // Vibration not supported
+      }
     }
-  };
+  }, []);
 
-  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const maxSwipe = getMaxSwipe();
-    if (info.offset.x >= maxSwipe * 0.8) {
-      // Complete the swipe - trigger vibration
+  const handleDragEnd = useCallback((_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (isComplete) return;
+    
+    const threshold = maxSwipe * 0.7;
+    
+    if (info.offset.x >= threshold) {
+      // Complete the swipe
       triggerHaptic();
-      x.set(maxSwipe);
+      animate(x, maxSwipe, { type: 'spring', stiffness: 400, damping: 30 });
       setIsComplete(true);
+      
       setTimeout(() => {
         onSwipeComplete();
-        // Reset after a delay
+        // Reset after completion
         setTimeout(() => {
-          x.set(0);
+          animate(x, 0, { type: 'spring', stiffness: 300, damping: 25 });
           setIsComplete(false);
-        }, 500);
-      }, 200);
+        }, 600);
+      }, 150);
     } else {
       // Spring back
-      x.set(0);
+      animate(x, 0, { type: 'spring', stiffness: 400, damping: 30 });
     }
-  };
+  }, [isComplete, maxSwipe, onSwipeComplete, triggerHaptic, x]);
 
   if (isComingSoon) {
     return (
@@ -80,30 +91,28 @@ const SwipeToAdd: React.FC<SwipeToAddProps> = ({
   }
 
   return (
-    <motion.div 
+    <div 
       ref={containerRef}
-      className="relative w-full h-14 bg-muted rounded-full overflow-hidden"
-      style={{ backgroundColor: bgColor }}
+      className="relative w-full h-14 bg-primary rounded-full overflow-hidden select-none"
     >
-      {/* Background progress */}
+      {/* Background progress fill */}
       <motion.div 
-        className="absolute inset-0 bg-secondary/20 rounded-full origin-left"
+        className="absolute inset-0 bg-secondary rounded-full origin-left"
         style={{ scaleX: progress }}
       />
       
-      {/* Text hint */}
+      {/* Text hint - centered */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <motion.span 
-          className="text-primary-foreground font-medium flex items-center gap-2"
-          style={{ opacity: useTransform(x, [0, getMaxSwipe() * 0.3], [1, 0]) }}
+          className="text-primary-foreground font-medium flex items-center gap-2 text-sm sm:text-base"
+          style={{ opacity: textOpacity }}
         >
-          <span className="hidden xs:inline">Glissez pour ajouter</span>
-          <span className="xs:hidden">Glissez</span>
+          <span>Glissez pour ajouter</span>
           <ChevronRight className="h-4 w-4 animate-pulse" />
           <span>{price.toFixed(2)} €</span>
         </motion.span>
         <motion.span 
-          className="text-secondary-foreground font-medium absolute"
+          className="text-secondary-foreground font-semibold absolute"
           style={{ opacity: checkOpacity }}
         >
           Ajouté au panier !
@@ -111,19 +120,21 @@ const SwipeToAdd: React.FC<SwipeToAddProps> = ({
       </div>
 
       {/* Draggable button */}
-      <motion.button
+      <motion.div
         className={cn(
-          "absolute left-1 top-1 bottom-1 w-16 rounded-full",
+          "absolute left-1 top-1 bottom-1 w-14 rounded-full",
           "bg-background shadow-lg flex items-center justify-center",
-          "cursor-grab active:cursor-grabbing touch-none",
+          "cursor-grab active:cursor-grabbing",
           isComplete && "pointer-events-none"
         )}
         style={{ x }}
         drag="x"
-        dragConstraints={{ left: 0, right: getMaxSwipe() }}
-        dragElastic={0.05}
+        dragConstraints={{ left: 0, right: maxSwipe }}
+        dragElastic={0.02}
+        dragMomentum={false}
         onDragEnd={handleDragEnd}
         whileTap={{ scale: 0.95 }}
+        whileHover={{ scale: 1.02 }}
       >
         <motion.div style={{ opacity: cartOpacity }}>
           <ShoppingCart className="h-5 w-5 text-primary" />
@@ -131,8 +142,8 @@ const SwipeToAdd: React.FC<SwipeToAddProps> = ({
         <motion.div className="absolute" style={{ opacity: checkOpacity }}>
           <Check className="h-5 w-5 text-secondary" />
         </motion.div>
-      </motion.button>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 };
 
