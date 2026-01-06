@@ -234,28 +234,37 @@ const ProductPage = () => {
                 {product.brand && (
                   <p className="text-sm text-muted-foreground mb-1">{product.brand.name}</p>
                 )}
-                <h1 className="text-3xl lg:text-4xl font-display font-bold">{product.name}</h1>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <h1 className="text-3xl lg:text-4xl font-display font-bold">{product.name}</h1>
+                  {product.is_coming_soon && (
+                    <Badge className="bg-amber-500 text-white text-sm px-3 py-1">
+                      Prochainement
+                    </Badge>
+                  )}
+                </div>
                 
                 {/* Price display with recommended price */}
-                <div className="mt-4 space-y-2">
-                  {hasRecommendedPrice && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground line-through">
-                        Prix public constaté : {recommendedPrice?.toFixed(2)} €
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex items-baseline gap-3 flex-wrap">
-                    <span className="text-3xl font-bold text-primary">
-                      Prix SerenCare : {basePrice.toFixed(2)} €
-                    </span>
+                {!product.is_coming_soon && (
+                  <div className="mt-4 space-y-2">
                     {hasRecommendedPrice && (
-                      <Badge variant="destructive" className="text-sm px-3 py-1">
-                        -{savingsPercent}% | Vous économisez {savingsValue.toFixed(2)} €
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground line-through">
+                          Prix public constaté : {recommendedPrice?.toFixed(2)} €
+                        </span>
+                      </div>
                     )}
+                    <div className="flex items-baseline gap-3 flex-wrap">
+                      <span className="text-3xl font-bold text-primary">
+                        Prix SerenCare : {basePrice.toFixed(2)} €
+                      </span>
+                      {hasRecommendedPrice && (
+                        <Badge variant="destructive" className="text-sm px-3 py-1">
+                          -{savingsPercent}% | Vous économisez {savingsValue.toFixed(2)} €
+                        </Badge>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Product attributes */}
@@ -436,14 +445,25 @@ const ProductPage = () => {
               </div>
 
               {/* Add to cart */}
-              <Button 
-                className="w-full h-14 text-base" 
-                size="lg"
-                onClick={handleAddToCart}
-              >
-                <ShoppingCart className="h-5 w-5 mr-2" />
-                Ajouter au panier — {(finalPrice * quantity).toFixed(2)} €
-              </Button>
+              {product.is_coming_soon ? (
+                <Button 
+                  className="w-full h-14 text-base" 
+                  size="lg"
+                  disabled
+                >
+                  <Clock className="h-5 w-5 mr-2" />
+                  Bientôt disponible
+                </Button>
+              ) : (
+                <Button 
+                  className="w-full h-14 text-base" 
+                  size="lg"
+                  onClick={handleAddToCart}
+                >
+                  <ShoppingCart className="h-5 w-5 mr-2" />
+                  Ajouter au panier — {(finalPrice * quantity).toFixed(2)} €
+                </Button>
+              )}
 
               {/* Reassurance */}
               <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border">
