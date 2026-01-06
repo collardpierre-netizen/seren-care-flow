@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,6 +11,149 @@ const corsHeaders = {
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[VERIFY-PAYMENT] ${step}${detailsStr}`);
+};
+
+const getOrderConfirmationEmail = (data: {
+  firstName: string;
+  orderNumber: string;
+  items: Array<{ name: string; quantity: number; price: number; size?: string }>;
+  subtotal: number;
+  shipping: number;
+  total: number;
+  shippingAddress: any;
+  hasSubscription: boolean;
+}) => {
+  const itemsHtml = data.items.map(item => `
+    <tr>
+      <td style="padding: 12px 0; border-bottom: 1px solid #E5E5E5;">
+        <strong>${item.name}</strong>${item.size ? ` - Taille ${item.size}` : ''}
+        <br><span style="color: #6B7280; font-size: 14px;">Qté: ${item.quantity}</span>
+      </td>
+      <td style="padding: 12px 0; border-bottom: 1px solid #E5E5E5; text-align: right; font-weight: 600;">
+        ${(item.price * item.quantity).toFixed(2)} €
+      </td>
+    </tr>
+  `).join('');
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #F5F7F6;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #F5F7F6; padding: 40px 20px;">
+        <tr>
+          <td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" style="background-color: #FFFFFF; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
+              <!-- Header -->
+              <tr>
+                <td style="background: linear-gradient(135deg, #2D5A4A 0%, #3D7A6A 100%); padding: 40px 40px 30px; text-align: center;">
+                  <h1 style="color: #FFFFFF; font-size: 28px; margin: 0 0 8px; font-weight: 700;">SerenCare</h1>
+                  <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 0; letter-spacing: 2px; text-transform: uppercase;">Votre bien-être, notre priorité</p>
+                </td>
+              </tr>
+              
+              <!-- Success Icon -->
+              <tr>
+                <td style="padding: 40px 40px 20px; text-align: center;">
+                  <div style="width: 80px; height: 80px; background-color: #E8F5E9; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+                    <span style="font-size: 40px;">✓</span>
+                  </div>
+                  <h2 style="color: #2D5A4A; font-size: 24px; margin: 0 0 10px;">Merci pour votre commande !</h2>
+                  <p style="color: #6B7280; font-size: 16px; margin: 0;">Bonjour ${data.firstName},</p>
+                </td>
+              </tr>
+              
+              <!-- Order Number -->
+              <tr>
+                <td style="padding: 0 40px 30px; text-align: center;">
+                  <div style="background-color: #F5F7F6; border-radius: 12px; padding: 20px; display: inline-block;">
+                    <p style="color: #6B7280; font-size: 14px; margin: 0 0 5px;">Numéro de commande</p>
+                    <p style="color: #2D5A4A; font-size: 24px; font-weight: 700; margin: 0; font-family: monospace;">${data.orderNumber}</p>
+                  </div>
+                </td>
+              </tr>
+              
+              <!-- Order Items -->
+              <tr>
+                <td style="padding: 0 40px 30px;">
+                  <h3 style="color: #2D5A4A; font-size: 18px; margin: 0 0 15px; border-bottom: 2px solid #2D5A4A; padding-bottom: 10px;">Récapitulatif de votre commande</h3>
+                  <table width="100%" cellpadding="0" cellspacing="0">
+                    ${itemsHtml}
+                    <tr>
+                      <td style="padding: 15px 0 5px; color: #6B7280;">Sous-total</td>
+                      <td style="padding: 15px 0 5px; text-align: right; color: #6B7280;">${data.subtotal.toFixed(2)} €</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 5px 0; color: #6B7280;">Livraison</td>
+                      <td style="padding: 5px 0; text-align: right; color: #6B7280;">${data.shipping === 0 ? 'Gratuite' : data.shipping.toFixed(2) + ' €'}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 15px 0; border-top: 2px solid #2D5A4A; font-size: 18px; font-weight: 700; color: #2D5A4A;">Total</td>
+                      <td style="padding: 15px 0; border-top: 2px solid #2D5A4A; text-align: right; font-size: 18px; font-weight: 700; color: #2D5A4A;">${data.total.toFixed(2)} €</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              
+              ${data.hasSubscription ? `
+              <!-- Subscription Info -->
+              <tr>
+                <td style="padding: 0 40px 30px;">
+                  <div style="background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%); border-radius: 12px; padding: 20px; border-left: 4px solid #F9A825;">
+                    <h4 style="color: #F57F17; font-size: 16px; margin: 0 0 10px;">🔄 Abonnement activé</h4>
+                    <p style="color: #5D4037; font-size: 14px; margin: 0;">Votre abonnement mensuel est maintenant actif. Vous recevrez automatiquement vos produits chaque mois avec 15% de réduction.</p>
+                  </div>
+                </td>
+              </tr>
+              ` : ''}
+              
+              <!-- Shipping Address -->
+              <tr>
+                <td style="padding: 0 40px 30px;">
+                  <h3 style="color: #2D5A4A; font-size: 18px; margin: 0 0 15px;">Adresse de livraison</h3>
+                  <div style="background-color: #F5F7F6; border-radius: 12px; padding: 20px;">
+                    <p style="margin: 0; color: #374151; line-height: 1.6;">
+                      ${data.shippingAddress.firstName} ${data.shippingAddress.lastName}<br>
+                      ${data.shippingAddress.address}<br>
+                      ${data.shippingAddress.postalCode} ${data.shippingAddress.city}<br>
+                      ${data.shippingAddress.country}
+                    </p>
+                  </div>
+                </td>
+              </tr>
+              
+              <!-- CTA Button -->
+              <tr>
+                <td style="padding: 0 40px 40px; text-align: center;">
+                  <a href="https://serencare.lovable.app/compte" style="display: inline-block; background: linear-gradient(135deg, #2D5A4A 0%, #3D7A6A 100%); color: #FFFFFF; text-decoration: none; padding: 16px 40px; border-radius: 50px; font-weight: 600; font-size: 16px;">
+                    Suivre ma commande
+                  </a>
+                </td>
+              </tr>
+              
+              <!-- Footer -->
+              <tr>
+                <td style="background-color: #F5F7F6; padding: 30px 40px; text-align: center;">
+                  <p style="color: #6B7280; font-size: 14px; margin: 0 0 10px;">Des questions ? Contactez-nous !</p>
+                  <p style="color: #2D5A4A; font-size: 14px; margin: 0;">
+                    <a href="mailto:contact@serencare.be" style="color: #2D5A4A; text-decoration: none;">contact@serencare.be</a> | 
+                    <a href="tel:+32123456789" style="color: #2D5A4A; text-decoration: none;">+32 123 456 789</a>
+                  </p>
+                  <p style="color: #9CA3AF; font-size: 12px; margin: 20px 0 0;">
+                    © ${new Date().getFullYear()} SerenCare. Tous droits réservés.
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
 };
 
 serve(async (req) => {
@@ -68,16 +212,16 @@ serve(async (req) => {
 
     logStep("Order updated to paid", { orderId: order.id, orderNumber: order.order_number });
 
+    // Get order items for email
+    const { data: orderItems } = await supabase
+      .from("order_items")
+      .select("*")
+      .eq("order_id", orderId);
+
     // Check if this order has subscription items and create subscription record
     const hasSubscription = session.metadata?.has_subscription === 'true';
     if (hasSubscription && order.user_id) {
       logStep("Creating subscription record");
-      
-      // Get order items for subscription
-      const { data: orderItems } = await supabase
-        .from("order_items")
-        .select("*")
-        .eq("order_id", orderId);
 
       // Create subscription
       const nextDelivery = new Date();
@@ -148,6 +292,43 @@ serve(async (req) => {
           prescriberId: prescriber.id, 
           amount: commissionAmount 
         });
+      }
+    }
+
+    // Send confirmation email
+    const resendKey = Deno.env.get("RESEND_API_KEY");
+    if (resendKey && order.shipping_address) {
+      try {
+        const resend = new Resend(resendKey);
+        const shippingAddress = order.shipping_address as any;
+        
+        const emailHtml = getOrderConfirmationEmail({
+          firstName: shippingAddress.firstName || 'Client',
+          orderNumber: order.order_number,
+          items: orderItems?.map(item => ({
+            name: item.product_name,
+            quantity: item.quantity,
+            price: item.unit_price,
+            size: item.product_size,
+          })) || [],
+          subtotal: order.subtotal,
+          shipping: order.shipping_fee || 0,
+          total: order.total,
+          shippingAddress,
+          hasSubscription,
+        });
+
+        await resend.emails.send({
+          from: "SerenCare <noreply@serencare.be>",
+          to: [shippingAddress.email],
+          subject: `Confirmation de commande ${order.order_number} - SerenCare`,
+          html: emailHtml,
+        });
+
+        logStep("Confirmation email sent", { email: shippingAddress.email });
+      } catch (emailError) {
+        logStep("Email sending failed", { error: emailError instanceof Error ? emailError.message : String(emailError) });
+        // Don't throw - email failure shouldn't break the payment flow
       }
     }
 

@@ -27,7 +27,9 @@ import {
   Edit,
   Save,
   X,
-  RotateCcw
+  RotateCcw,
+  CreditCard,
+  ExternalLink
 } from 'lucide-react';
 
 const Account = () => {
@@ -35,6 +37,7 @@ const Account = () => {
   const { addItem, openCart } = useCart();
   const queryClient = useQueryClient();
   const [editingProfile, setEditingProfile] = useState(false);
+  const [isOpeningPortal, setIsOpeningPortal] = useState(false);
   const [profileForm, setProfileForm] = useState({
     first_name: '',
     last_name: '',
@@ -571,6 +574,40 @@ const Account = () => {
                     )}
                   </CardContent>
                 </Card>
+
+                {/* Manage Subscription Button */}
+                {subscriptions && subscriptions.length > 0 && subscriptions.some(s => s.status === 'active') && (
+                  <div className="mt-6">
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      disabled={isOpeningPortal}
+                      onClick={async () => {
+                        setIsOpeningPortal(true);
+                        try {
+                          const { data, error } = await supabase.functions.invoke('customer-portal');
+                          if (error) throw error;
+                          if (data?.url) {
+                            window.open(data.url, '_blank');
+                          }
+                        } catch (err) {
+                          console.error(err);
+                          toast.error('Impossible d\'ouvrir le portail de gestion');
+                        } finally {
+                          setIsOpeningPortal(false);
+                        }
+                      }}
+                    >
+                      {isOpeningPortal ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <CreditCard className="h-4 w-4 mr-2" />
+                      )}
+                      Gérer mes paiements
+                      <ExternalLink className="h-4 w-4 ml-2" />
+                    </Button>
+                  </div>
+                )}
 
                 {/* Reassurance */}
                 <div className="mt-6 p-4 bg-muted/50 rounded-xl">
