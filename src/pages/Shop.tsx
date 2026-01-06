@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import Layout from "@/components/Layout";
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,6 +12,7 @@ import {
   usageTimeFilterOptions, 
   genderFilterOptions 
 } from "@/hooks/useProductFilters";
+import { useUserPreferences, mapProfileToFilters } from "@/hooks/useUserPreferences";
 import ProductCard from "@/components/shop/ProductCard";
 import ProductQuickView from "@/components/shop/ProductQuickView";
 import SearchBar from "@/components/shop/SearchBar";
@@ -40,11 +41,27 @@ const Shop = () => {
   const [showProductSelector, setShowProductSelector] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
+  const [preferencesApplied, setPreferencesApplied] = useState(false);
 
   // Load all products without category/brand filter - we filter client-side
   const { data: products, isLoading: productsLoading } = useProducts();
   const { data: brands } = useBrands();
   const { data: categories } = useCategories({ includeCount: true, includeEmpty: false });
+  const { data: userPreferences } = useUserPreferences();
+
+  // Apply user preferences as default filters (only once on mount)
+  useEffect(() => {
+    if (userPreferences && !preferencesApplied) {
+      const profileFilters = mapProfileToFilters(userPreferences);
+      if (profileFilters) {
+        if (profileFilters.gender) setSelectedGender(profileFilters.gender);
+        if (profileFilters.mobility) setSelectedMobility(profileFilters.mobility);
+        if (profileFilters.incontinenceLevel) setSelectedIncontinence(profileFilters.incontinenceLevel);
+        if (profileFilters.usageTime) setSelectedUsageTime(profileFilters.usageTime);
+      }
+      setPreferencesApplied(true);
+    }
+  }, [userPreferences, preferencesApplied]);
 
   // Use the new multi-tag filter system
   const { filteredProducts, filterCounts } = useProductFilters(products, {

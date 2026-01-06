@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, ArrowLeft, Check, X, Droplet, User, Users, Sun, Moon, Footprints, Armchair, BedDouble, RefreshCw, Package, Truck, Heart } from "lucide-react";
 import { useProducts, Product } from "@/hooks/useProducts";
+import { useUserPreferences, mapProfileToFilters } from "@/hooks/useUserPreferences";
 
 interface QuestionOption {
   id: string;
@@ -94,9 +95,30 @@ const UnifiedQuestionnaire: React.FC<UnifiedQuestionnaireProps> = ({
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [showResult, setShowResult] = useState(false);
+  const [preferencesApplied, setPreferencesApplied] = useState(false);
   const navigate = useNavigate();
 
   const { data: products = [] } = useProducts();
+  const { data: userPreferences } = useUserPreferences();
+
+  // Pre-fill answers from user preferences (only once)
+  useEffect(() => {
+    if (userPreferences && !preferencesApplied) {
+      const profileFilters = mapProfileToFilters(userPreferences);
+      if (profileFilters) {
+        const newAnswers: Record<string, string> = {};
+        if (profileFilters.gender) newAnswers.gender = profileFilters.gender;
+        if (profileFilters.mobility) newAnswers.mobility = profileFilters.mobility;
+        if (profileFilters.incontinenceLevel) newAnswers.incontinenceLevel = profileFilters.incontinenceLevel;
+        if (profileFilters.usageTime) newAnswers.usageTime = profileFilters.usageTime;
+        
+        if (Object.keys(newAnswers).length > 0) {
+          setAnswers(newAnswers);
+        }
+      }
+      setPreferencesApplied(true);
+    }
+  }, [userPreferences, preferencesApplied]);
 
   const currentQuestion = questions[currentStep];
   const progress = ((currentStep + 1) / questions.length) * 100;
