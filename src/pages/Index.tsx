@@ -5,6 +5,7 @@ import HowItWorks from "@/components/home/HowItWorks";
 import TrustSection from "@/components/home/TrustSection";
 import BenefitsSection from "@/components/home/BenefitsSection";
 import CTASection from "@/components/home/CTASection";
+import SubscriptionBenefits from "@/components/subscription/SubscriptionBenefits";
 
 const Index = () => {
   return (
@@ -19,6 +20,7 @@ const Index = () => {
       <Layout>
         <HeroSection />
         <HowItWorks />
+        <SubscriptionBenefits />
         <BenefitsSection />
         <TrustSection />
         <CTASection />
