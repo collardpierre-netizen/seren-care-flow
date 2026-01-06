@@ -92,7 +92,7 @@ const App = () => (
               <Route path="/commande-confirmee" element={<OrderConfirmed />} />
               <Route path="/commande-preparation/:orderId" element={<OrderPreparation />} />
               <Route path="/compte" element={<Account />} />
-              <Route path="/admin/email-preview" element={<ProtectedRoute requireAdmin><EmailPreview /></ProtectedRoute>} />
+              <Route path="/admin/email-preview" element={<EmailPreview />} />
 
               {/* Admin routes */}
               <Route path="/admin" element={
