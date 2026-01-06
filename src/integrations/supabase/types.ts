@@ -790,14 +790,17 @@ export type Database = {
         Row: {
           brand_id: string | null
           category_id: string | null
+          cnk_code: string | null
           created_at: string
           description: string | null
+          ean_code: string | null
           gender: string | null
           id: string
           incontinence_level:
             | Database["public"]["Enums"]["incontinence_level"]
             | null
           is_active: boolean | null
+          is_coming_soon: boolean | null
           is_featured: boolean | null
           min_order_quantity: number | null
           mobility: Database["public"]["Enums"]["mobility_type"] | null
@@ -821,14 +824,17 @@ export type Database = {
         Insert: {
           brand_id?: string | null
           category_id?: string | null
+          cnk_code?: string | null
           created_at?: string
           description?: string | null
+          ean_code?: string | null
           gender?: string | null
           id?: string
           incontinence_level?:
             | Database["public"]["Enums"]["incontinence_level"]
             | null
           is_active?: boolean | null
+          is_coming_soon?: boolean | null
           is_featured?: boolean | null
           min_order_quantity?: number | null
           mobility?: Database["public"]["Enums"]["mobility_type"] | null
@@ -852,14 +858,17 @@ export type Database = {
         Update: {
           brand_id?: string | null
           category_id?: string | null
+          cnk_code?: string | null
           created_at?: string
           description?: string | null
+          ean_code?: string | null
           gender?: string | null
           id?: string
           incontinence_level?:
             | Database["public"]["Enums"]["incontinence_level"]
             | null
           is_active?: boolean | null
+          is_coming_soon?: boolean | null
           is_featured?: boolean | null
           min_order_quantity?: number | null
           mobility?: Database["public"]["Enums"]["mobility_type"] | null
