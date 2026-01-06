@@ -65,12 +65,48 @@ const Shop = () => {
         if (!matchesName && !matchesBrand && !matchesDescription) return false;
       }
       
-      if (selectedIncontinence !== "all" && product.incontinence_level !== selectedIncontinence) return false;
-      if (selectedMobility !== "all" && product.mobility !== selectedMobility) return false;
-      if (selectedUsageTime !== "all" && product.usage_time !== selectedUsageTime) return false;
+      // Only filter if not "all" and product has a value for that attribute
+      if (selectedIncontinence !== "all" && product.incontinence_level && product.incontinence_level !== selectedIncontinence) return false;
+      if (selectedMobility !== "all" && product.mobility && product.mobility !== selectedMobility) return false;
+      if (selectedUsageTime !== "all") {
+        // day_night products should show for both "day" and "night" filters
+        if (product.usage_time === "day_night") {
+          // day_night products match all usage time filters
+        } else if (product.usage_time !== selectedUsageTime) {
+          return false;
+        }
+      }
       return true;
     });
   }, [products, searchQuery, selectedIncontinence, selectedMobility, selectedUsageTime]);
+
+  // Calculate count of products for each filter option
+  const getFilterCounts = useMemo(() => {
+    const counts = {
+      incontinence: {} as Record<string, number>,
+      mobility: {} as Record<string, number>,
+      usageTime: {} as Record<string, number>,
+    };
+    
+    products?.forEach(product => {
+      if (product.incontinence_level) {
+        counts.incontinence[product.incontinence_level] = (counts.incontinence[product.incontinence_level] || 0) + 1;
+      }
+      if (product.mobility) {
+        counts.mobility[product.mobility] = (counts.mobility[product.mobility] || 0) + 1;
+      }
+      if (product.usage_time) {
+        counts.usageTime[product.usage_time] = (counts.usageTime[product.usage_time] || 0) + 1;
+        // day_night also counts for day and night
+        if (product.usage_time === "day_night") {
+          counts.usageTime["day"] = (counts.usageTime["day"] || 0) + 1;
+          counts.usageTime["night"] = (counts.usageTime["night"] || 0) + 1;
+        }
+      }
+    });
+    
+    return counts;
+  }, [products]);
 
   const activeFiltersCount = [
     selectedCategory, 
@@ -111,13 +147,15 @@ const Shop = () => {
     value, 
     onChange, 
     label,
-    showDroplets = false
+    showDroplets = false,
+    counts
   }: { 
     options: { id: string; label: string; icon?: number }[]; 
     value: string; 
     onChange: (v: string) => void; 
     label: string;
     showDroplets?: boolean;
+    counts?: Record<string, number>;
   }) => (
     <div className="relative group">
       <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-card border border-border text-sm font-medium text-foreground hover:border-primary transition-colors">
@@ -125,31 +163,48 @@ const Shop = () => {
         <ChevronDown className="w-4 h-4 text-muted-foreground" />
       </button>
       <div className="absolute top-full left-0 mt-2 w-56 bg-card rounded-xl border border-border shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
-        {options.map((option) => (
-          <button
-            key={option.id}
-            onClick={() => onChange(option.id)}
-            className={`w-full text-left px-4 py-2.5 text-sm first:rounded-t-xl last:rounded-b-xl transition-colors flex items-center justify-between ${
-              value === option.id ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"
-            }`}
-          >
-            <span>{option.label}</span>
-            {showDroplets && option.icon && (
-              <div className="flex items-center gap-0.5">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <Droplet
-                    key={i}
-                    className={`w-3 h-3 ${
-                      i < option.icon! 
-                        ? value === option.id ? 'fill-primary-foreground text-primary-foreground' : 'fill-primary text-primary'
-                        : value === option.id ? 'fill-primary-foreground/30 text-primary-foreground/30' : 'fill-muted text-muted'
-                    }`}
-                  />
-                ))}
-              </div>
-            )}
-          </button>
-        ))}
+        {options.map((option) => {
+          const count = option.id === "all" ? products?.length : counts?.[option.id];
+          const hasProducts = option.id === "all" || (count && count > 0);
+          
+          return (
+            <button
+              key={option.id}
+              onClick={() => onChange(option.id)}
+              disabled={!hasProducts}
+              className={`w-full text-left px-4 py-2.5 text-sm first:rounded-t-xl last:rounded-b-xl transition-colors flex items-center justify-between ${
+                !hasProducts
+                  ? "text-muted-foreground/50 cursor-not-allowed"
+                  : value === option.id 
+                    ? "bg-primary text-primary-foreground" 
+                    : "text-foreground hover:bg-muted"
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                {option.label}
+                {counts && option.id !== "all" && (
+                  <span className={`text-xs ${value === option.id ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                    ({count || 0})
+                  </span>
+                )}
+              </span>
+              {showDroplets && option.icon && (
+                <div className="flex items-center gap-0.5">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <Droplet
+                      key={i}
+                      className={`w-3 h-3 ${
+                        i < option.icon! 
+                          ? value === option.id ? 'fill-primary-foreground text-primary-foreground' : 'fill-primary text-primary'
+                          : value === option.id ? 'fill-primary-foreground/30 text-primary-foreground/30' : 'fill-muted text-muted'
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
@@ -240,9 +295,9 @@ const Shop = () => {
             <div className="hidden lg:flex flex-wrap items-center gap-3 mb-8">
               <FilterButton options={categoryOptions} value={selectedCategory} onChange={setSelectedCategory} label="Catégorie" />
               <FilterButton options={brandOptions} value={selectedBrand} onChange={setSelectedBrand} label="Marque" />
-              <FilterButton options={incontinenceLevelOptions} value={selectedIncontinence} onChange={setSelectedIncontinence} label="Absorption" showDroplets />
-              <FilterButton options={mobilityOptions} value={selectedMobility} onChange={setSelectedMobility} label="Mobilité" />
-              <FilterButton options={usageTimeOptions} value={selectedUsageTime} onChange={setSelectedUsageTime} label="Moment" />
+              <FilterButton options={incontinenceLevelOptions} value={selectedIncontinence} onChange={setSelectedIncontinence} label="Absorption" showDroplets counts={getFilterCounts.incontinence} />
+              <FilterButton options={mobilityOptions} value={selectedMobility} onChange={setSelectedMobility} label="Mobilité" counts={getFilterCounts.mobility} />
+              <FilterButton options={usageTimeOptions} value={selectedUsageTime} onChange={setSelectedUsageTime} label="Moment" counts={getFilterCounts.usageTime} />
               
               {activeFiltersCount > 0 && (
                 <button
