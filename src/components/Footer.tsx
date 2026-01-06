@@ -48,9 +48,9 @@ const Footer = () => {
                 +32 02 648 42 22
                 <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
               </a>
-              <a href="mailto:ohall@noralphar.com" className="flex items-center gap-3 text-sm text-background/80 hover:text-background transition-colors group">
+              <a href="mailto:info@serencare.be" className="flex items-center gap-3 text-sm text-background/80 hover:text-background transition-colors group">
                 <Mail className="w-4 h-4" />
-                ohall@noralphar.com
+                info@serencare.be
                 <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
               </a>
               <div className="flex items-center gap-3 text-sm text-background/80">

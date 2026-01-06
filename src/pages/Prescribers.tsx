@@ -410,8 +410,8 @@ const Prescribers = () => {
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Email</p>
-                      <a href="mailto:ohall@noralphar.com" className="font-medium text-foreground hover:text-primary transition-colors">
-                        ohall@noralphar.com
+                      <a href="mailto:pro@serencare.be" className="font-medium text-foreground hover:text-primary transition-colors">
+                        pro@serencare.be
                       </a>
                     </div>
                   </div>

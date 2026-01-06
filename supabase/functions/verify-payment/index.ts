@@ -137,9 +137,9 @@ const getOrderConfirmationEmail = (data: {
               <!-- Footer -->
               <tr>
                 <td style="background-color: #F5F7F6; padding: 30px 40px; text-align: center;">
-                  <p style="color: #6B7280; font-size: 14px; margin: 0 0 10px;">Des questions ? Contactez-nous !</p>
+                  <p style="color: #6B7280; font-size: 14px; margin: 0 0 10px;">Des questions sur votre commande ?</p>
                   <p style="color: #2D5A4A; font-size: 14px; margin: 0;">
-                    <a href="mailto:contact@serencare.be" style="color: #2D5A4A; text-decoration: none;">contact@serencare.be</a> | 
+                    <a href="mailto:orders@serencare.be" style="color: #2D5A4A; text-decoration: none;">orders@serencare.be</a> |
                     <a href="tel:+32123456789" style="color: #2D5A4A; text-decoration: none;">+32 123 456 789</a>
                   </p>
                   <p style="color: #9CA3AF; font-size: 12px; margin: 20px 0 0;">
@@ -319,13 +319,82 @@ serve(async (req) => {
         });
 
         await resend.emails.send({
-          from: "SerenCare <noreply@serencare.be>",
+          from: "SerenCare <orders@serencare.be>",
           to: [shippingAddress.email],
           subject: `Confirmation de commande ${order.order_number} - SerenCare`,
           html: emailHtml,
         });
 
         logStep("Confirmation email sent", { email: shippingAddress.email });
+
+        // Send notification to the team
+        const notificationHtml = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          </head>
+          <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #F5F7F6;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #F5F7F6; padding: 40px 20px;">
+              <tr>
+                <td align="center">
+                  <table width="600" cellpadding="0" cellspacing="0" style="background-color: #FFFFFF; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
+                    <tr>
+                      <td style="background: linear-gradient(135deg, #2D5A4A 0%, #3D7A6A 100%); padding: 30px; text-align: center;">
+                        <h1 style="color: #FFFFFF; font-size: 24px; margin: 0;">🛒 Nouvelle commande !</h1>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 30px;">
+                        <h2 style="color: #2D5A4A; margin: 0 0 20px;">Commande ${order.order_number}</h2>
+                        
+                        <div style="background-color: #F5F7F6; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                          <h3 style="color: #2D5A4A; margin: 0 0 15px; font-size: 16px;">📦 Client</h3>
+                          <p style="margin: 0; color: #374151; line-height: 1.6;">
+                            <strong>${shippingAddress.firstName} ${shippingAddress.lastName}</strong><br>
+                            ${shippingAddress.email}<br>
+                            ${shippingAddress.phone || 'Non renseigné'}
+                          </p>
+                        </div>
+                        
+                        <div style="background-color: #F5F7F6; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                          <h3 style="color: #2D5A4A; margin: 0 0 15px; font-size: 16px;">📍 Adresse de livraison</h3>
+                          <p style="margin: 0; color: #374151; line-height: 1.6;">
+                            ${shippingAddress.address}<br>
+                            ${shippingAddress.postalCode} ${shippingAddress.city}<br>
+                            ${shippingAddress.country}
+                          </p>
+                        </div>
+                        
+                        <div style="background-color: #E8F5E9; border-radius: 12px; padding: 20px; border-left: 4px solid #2D5A4A;">
+                          <h3 style="color: #2D5A4A; margin: 0 0 10px; font-size: 16px;">💰 Montant</h3>
+                          <p style="margin: 0; color: #2D5A4A; font-size: 24px; font-weight: bold;">${order.total.toFixed(2)} €</p>
+                          ${hasSubscription ? '<p style="margin: 10px 0 0; color: #F57F17; font-size: 14px;">🔄 Inclut un abonnement</p>' : ''}
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="background-color: #F5F7F6; padding: 20px; text-align: center;">
+                        <a href="https://serencare.lovable.app/admin/orders" style="display: inline-block; background: linear-gradient(135deg, #2D5A4A 0%, #3D7A6A 100%); color: #FFFFFF; text-decoration: none; padding: 12px 30px; border-radius: 50px; font-weight: 600;">Voir la commande</a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </body>
+          </html>
+        `;
+
+        await resend.emails.send({
+          from: "SerenCare <orders@serencare.be>",
+          to: ["orders@serencare.be"],
+          subject: `🛒 Nouvelle commande ${order.order_number} - ${order.total.toFixed(2)} €`,
+          html: notificationHtml,
+        });
+
+        logStep("Team notification email sent");
       } catch (emailError) {
         logStep("Email sending failed", { error: emailError instanceof Error ? emailError.message : String(emailError) });
         // Don't throw - email failure shouldn't break the payment flow
