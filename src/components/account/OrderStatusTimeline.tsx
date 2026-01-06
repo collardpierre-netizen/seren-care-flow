@@ -11,13 +11,13 @@ interface OrderStatusTimelineProps {
 
 const statusSteps = [
   { 
-    key: 'pending', 
+    key: 'order_received', 
     label: 'Reçue', 
     icon: Clock,
     description: 'Commande enregistrée'
   },
   { 
-    key: 'paid', 
+    key: 'payment_confirmed', 
     label: 'Confirmée', 
     icon: CreditCard,
     description: 'Paiement validé'
