@@ -382,6 +382,53 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_outbox: {
+        Row: {
+          channel: string
+          created_at: string
+          id: string
+          last_error: string | null
+          order_id: string | null
+          payload_json: Json
+          sent_at: string | null
+          status: string
+          template: string
+          user_id: string | null
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          order_id?: string | null
+          payload_json?: Json
+          sent_at?: string | null
+          status?: string
+          template: string
+          user_id?: string | null
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          order_id?: string | null
+          payload_json?: Json
+          sent_at?: string | null
+          status?: string
+          template?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_outbox_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_access_tokens: {
         Row: {
           accessed_at: string | null
@@ -471,32 +518,38 @@ export type Database = {
           },
         ]
       }
-      order_status_history: {
+      order_status_events: {
         Row: {
-          changed_by: string | null
           created_at: string
+          created_by: string | null
           id: string
-          notes: string | null
+          is_visible_to_customer: boolean | null
+          message_internal: string | null
+          message_public: string | null
           notification_sent: boolean | null
           notification_type: string | null
           order_id: string
           status: string
         }
         Insert: {
-          changed_by?: string | null
           created_at?: string
+          created_by?: string | null
           id?: string
-          notes?: string | null
+          is_visible_to_customer?: boolean | null
+          message_internal?: string | null
+          message_public?: string | null
           notification_sent?: boolean | null
           notification_type?: string | null
           order_id: string
           status: string
         }
         Update: {
-          changed_by?: string | null
           created_at?: string
+          created_by?: string | null
           id?: string
-          notes?: string | null
+          is_visible_to_customer?: boolean | null
+          message_internal?: string | null
+          message_public?: string | null
           notification_sent?: boolean | null
           notification_type?: string | null
           order_id?: string
@@ -512,12 +565,38 @@ export type Database = {
           },
         ]
       }
+      order_status_transitions: {
+        Row: {
+          description: string | null
+          from_status: string
+          id: string
+          is_exception: boolean | null
+          to_status: string
+        }
+        Insert: {
+          description?: string | null
+          from_status: string
+          id?: string
+          is_exception?: boolean | null
+          to_status: string
+        }
+        Update: {
+          description?: string | null
+          from_status?: string
+          id?: string
+          is_exception?: boolean | null
+          to_status?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           billing_address: Json | null
           carrier: string | null
           created_at: string
+          currency: string | null
           discount_amount: number | null
+          eta_date: string | null
           id: string
           is_subscription_order: boolean | null
           notes: string | null
@@ -540,7 +619,9 @@ export type Database = {
           billing_address?: Json | null
           carrier?: string | null
           created_at?: string
+          currency?: string | null
           discount_amount?: number | null
+          eta_date?: string | null
           id?: string
           is_subscription_order?: boolean | null
           notes?: string | null
@@ -563,7 +644,9 @@ export type Database = {
           billing_address?: Json | null
           carrier?: string | null
           created_at?: string
+          currency?: string | null
           discount_amount?: number | null
+          eta_date?: string | null
           id?: string
           is_subscription_order?: boolean | null
           notes?: string | null
@@ -1239,12 +1322,41 @@ export type Database = {
         Returns: boolean
       }
       is_admin_or_manager: { Args: { _user_id: string }; Returns: boolean }
+      set_order_status: {
+        Args: {
+          p_carrier?: string
+          p_eta_date?: string
+          p_message_internal?: string
+          p_message_public?: string
+          p_new_status: string
+          p_notify_customer?: boolean
+          p_order_id: string
+          p_tracking_number?: string
+          p_tracking_url?: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "manager" | "user"
       incontinence_level: "light" | "moderate" | "heavy" | "very_heavy"
       mobility_type: "mobile" | "reduced" | "bedridden"
-      order_status: "pending" | "paid" | "shipped" | "delivered" | "cancelled"
+      order_status:
+        | "order_received"
+        | "payment_confirmed"
+        | "processing"
+        | "preparing"
+        | "packed"
+        | "shipped"
+        | "out_for_delivery"
+        | "delivered"
+        | "closed"
+        | "on_hold"
+        | "delayed"
+        | "partially_shipped"
+        | "cancelled"
+        | "returned"
+        | "refunded"
       subscription_status: "active" | "paused" | "cancelled"
       usage_time: "day" | "night" | "day_night"
     }
@@ -1377,7 +1489,23 @@ export const Constants = {
       app_role: ["admin", "manager", "user"],
       incontinence_level: ["light", "moderate", "heavy", "very_heavy"],
       mobility_type: ["mobile", "reduced", "bedridden"],
-      order_status: ["pending", "paid", "shipped", "delivered", "cancelled"],
+      order_status: [
+        "order_received",
+        "payment_confirmed",
+        "processing",
+        "preparing",
+        "packed",
+        "shipped",
+        "out_for_delivery",
+        "delivered",
+        "closed",
+        "on_hold",
+        "delayed",
+        "partially_shipped",
+        "cancelled",
+        "returned",
+        "refunded",
+      ],
       subscription_status: ["active", "paused", "cancelled"],
       usage_time: ["day", "night", "day_night"],
     },
