@@ -50,6 +50,18 @@ const ProductPage = () => {
     }
   }, [product]);
 
+  // Auto-carousel for images
+  useEffect(() => {
+    const images = product?.images?.length ? product.images : [];
+    if (images.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    }, 4000); // Change image every 4 seconds
+
+    return () => clearInterval(interval);
+  }, [product?.images]);
+
   if (isLoading) {
     return (
       <Layout>

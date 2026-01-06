@@ -17,6 +17,7 @@ import ProductQuickView from "@/components/shop/ProductQuickView";
 import SearchBar from "@/components/shop/SearchBar";
 import ProductSelector from "@/components/shop/ProductSelector";
 import { Link } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const incontinenceLevelOptions = [
   { id: "all", label: "Tous" },
@@ -27,6 +28,7 @@ const incontinenceLevelOptions = [
 ];
 
 const Shop = () => {
+  const isMobile = useIsMobile();
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
   const [selectedIncontinence, setSelectedIncontinence] = useState<string>("all");
@@ -447,7 +449,7 @@ const Shop = () => {
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 lg:gap-5">
                 {filteredProducts?.map((product, index) => (
                   <motion.div
                     key={product.id}
@@ -458,7 +460,8 @@ const Shop = () => {
                   >
                     <ProductCard 
                       product={product} 
-                      onClick={() => handleProductClick(product)} 
+                      onClick={() => handleProductClick(product)}
+                      compact={isMobile}
                     />
                   </motion.div>
                 ))}
