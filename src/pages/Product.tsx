@@ -283,7 +283,6 @@ const ProductPage = () => {
                 <p className="text-muted-foreground leading-relaxed">{product.description}</p>
               )}
 
-              {/* Size selection */}
               {/* Size Guide Modal */}
               <SizeGuideModal
                 open={sizeGuideOpen}
@@ -294,12 +293,13 @@ const ProductPage = () => {
                 onSelectSize={setSelectedSize}
               />
 
-              {sizes.length > 0 && (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">Taille</Label>
-                    <SizeGuideButton onClick={() => setSizeGuideOpen(true)} />
-                  </div>
+              {/* Size selection */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium">Taille</Label>
+                  <SizeGuideButton onClick={() => setSizeGuideOpen(true)} />
+                </div>
+                {sizes.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {sizes.map((size) => (
                       <button
@@ -316,8 +316,10 @@ const ProductPage = () => {
                       </button>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <p className="text-sm text-muted-foreground">Taille unique</p>
+                )}
+              </div>
 
               {/* Purchase mode */}
               <div className="space-y-3">

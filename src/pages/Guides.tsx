@@ -65,6 +65,11 @@ const Guides = () => {
           </div>
         </section>
 
+        {/* Video Tutorials Section - En premier */}
+        <div className="bg-muted/20">
+          <VideoTutorials maxItems={4} />
+        </div>
+
         {isLoading ? (
           <section className="py-12 md:py-16">
             <div className="container-main">
@@ -195,11 +200,6 @@ const Guides = () => {
             )}
           </>
         )}
-
-        {/* Video Tutorials Section */}
-        <div className="bg-muted/20">
-          <VideoTutorials maxItems={4} />
-        </div>
 
         {/* CTA */}
         <section className="py-16 md:py-24">
