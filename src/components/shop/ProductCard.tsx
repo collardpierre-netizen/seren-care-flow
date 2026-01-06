@@ -22,7 +22,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
 
   return (
     <Card 
-      className="group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+      className="group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 h-full flex flex-col"
       onClick={onClick}
     >
       <Link 
@@ -53,7 +53,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
           )}
         </div>
       </Link>
-      <CardContent className="p-4">
+      <CardContent className="p-4 flex-1 flex flex-col">
         <div className="flex items-center justify-between mb-1">
           {product.brand && (
             <p className="text-xs text-muted-foreground">{product.brand.name}</p>
@@ -62,10 +62,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
             <AbsorptionDroplets level={product.incontinence_level} />
           )}
         </div>
-        <h3 className="font-medium line-clamp-2 mb-2 group-hover:text-primary transition-colors">
+        <h3 className="font-medium line-clamp-2 mb-2 group-hover:text-primary transition-colors min-h-[2.5rem]">
           {product.name}
         </h3>
-        <div className="space-y-1">
+        <div className="space-y-1 mt-auto">
           {hasRecommendedPrice && (
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground line-through">

@@ -1,13 +1,16 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import Layout from "@/components/Layout";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Filter, X, ChevronDown, Loader2, Package, Droplet, Moon, Sun, Footprints } from "lucide-react";
+import { Filter, X, ChevronDown, Loader2, Package, Droplet, Moon, Sun, Footprints, Sparkles } from "lucide-react";
 import { useProducts, useBrands, useCategories, Product } from "@/hooks/useProducts";
 import ProductCard from "@/components/shop/ProductCard";
 import ProductQuickView from "@/components/shop/ProductQuickView";
+import SearchBar from "@/components/shop/SearchBar";
+import ProductSelector from "@/components/shop/ProductSelector";
+import { Link } from "react-router-dom";
 
 const incontinenceLevelOptions = [
   { id: "all", label: "Tous" },
@@ -37,7 +40,9 @@ const Shop = () => {
   const [selectedIncontinence, setSelectedIncontinence] = useState<string>("all");
   const [selectedMobility, setSelectedMobility] = useState<string>("all");
   const [selectedUsageTime, setSelectedUsageTime] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [showProductSelector, setShowProductSelector] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
 
@@ -48,13 +53,24 @@ const Shop = () => {
   const { data: brands } = useBrands();
   const { data: categories } = useCategories();
 
-  // Filter products by incontinence, mobility, and usage time
-  const filteredProducts = products?.filter(product => {
-    if (selectedIncontinence !== "all" && product.incontinence_level !== selectedIncontinence) return false;
-    if (selectedMobility !== "all" && product.mobility !== selectedMobility) return false;
-    if (selectedUsageTime !== "all" && product.usage_time !== selectedUsageTime) return false;
-    return true;
-  });
+  // Filter products by search, incontinence, mobility, and usage time
+  const filteredProducts = useMemo(() => {
+    return products?.filter(product => {
+      // Search filter
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesName = product.name.toLowerCase().includes(query);
+        const matchesBrand = product.brand?.name.toLowerCase().includes(query);
+        const matchesDescription = product.short_description?.toLowerCase().includes(query);
+        if (!matchesName && !matchesBrand && !matchesDescription) return false;
+      }
+      
+      if (selectedIncontinence !== "all" && product.incontinence_level !== selectedIncontinence) return false;
+      if (selectedMobility !== "all" && product.mobility !== selectedMobility) return false;
+      if (selectedUsageTime !== "all" && product.usage_time !== selectedUsageTime) return false;
+      return true;
+    });
+  }, [products, searchQuery, selectedIncontinence, selectedMobility, selectedUsageTime]);
 
   const activeFiltersCount = [
     selectedCategory, 
@@ -70,11 +86,24 @@ const Shop = () => {
     setSelectedIncontinence("all");
     setSelectedMobility("all");
     setSelectedUsageTime("all");
+    setSearchQuery("");
   };
 
   const handleProductClick = (product: Product) => {
     setSelectedProduct(product);
     setIsQuickViewOpen(true);
+  };
+
+  const handleSelectorFiltersApply = (filters: {
+    gender?: string;
+    usageTime?: string;
+    mobility?: string;
+    incontinenceLevel?: string;
+  }) => {
+    if (filters.usageTime) setSelectedUsageTime(filters.usageTime);
+    if (filters.mobility) setSelectedMobility(filters.mobility);
+    if (filters.incontinenceLevel) setSelectedIncontinence(filters.incontinenceLevel);
+    setShowProductSelector(false);
   };
 
   const FilterButton = ({ 
@@ -148,7 +177,7 @@ const Shop = () => {
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              className="max-w-2xl"
+              className="max-w-2xl mb-8"
             >
               <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
                 Nos produits
@@ -157,8 +186,52 @@ const Shop = () => {
                 Sélectionnez les protections adaptées. Filtrez par besoin, nous vous recommandons les meilleures options.
               </p>
             </motion.div>
+
+            {/* Search & Product Selector CTA */}
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1 max-w-xl">
+                <SearchBar 
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  placeholder="Rechercher un produit, une marque..."
+                  resultCount={searchQuery ? filteredProducts?.length : undefined}
+                />
+              </div>
+              <Button 
+                onClick={() => setShowProductSelector(true)}
+                className="gap-2 h-12"
+                variant="outline"
+              >
+                <Sparkles className="w-4 h-4" />
+                Aide au choix guidé
+              </Button>
+            </div>
           </div>
         </section>
+
+        {/* Product Selector Modal */}
+        <AnimatePresence>
+          {showProductSelector && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="w-full max-w-2xl"
+              >
+                <ProductSelector 
+                  onFiltersApply={handleSelectorFiltersApply}
+                  onClose={() => setShowProductSelector(false)}
+                />
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Filters & Products */}
         <section className="py-8 md:py-12">
@@ -352,7 +425,8 @@ const Shop = () => {
                     key={product.id}
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: index * 0.05 }}
+                    transition={{ duration: 0.4, delay: Math.min(index * 0.03, 0.5) }}
+                    className="h-full"
                   >
                     <ProductCard 
                       product={product} 
@@ -362,6 +436,46 @@ const Shop = () => {
                 ))}
               </div>
             )}
+          </div>
+        </section>
+
+        {/* Guides CTA Section */}
+        <section className="py-12 md:py-16 bg-muted/30 border-t border-border">
+          <div className="container-main">
+            <div className="text-center mb-8">
+              <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">
+                Besoin d'aide pour choisir ?
+              </h2>
+              <p className="text-muted-foreground">
+                Consultez nos guides pratiques pour faire le bon choix.
+              </p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-4">
+              <Link to="/guides/comment-choisir-le-bon-produit" className="block">
+                <div className="p-6 bg-card rounded-xl border border-border hover:border-primary hover:shadow-md transition-all text-center group">
+                  <Droplet className="w-8 h-8 mx-auto mb-3 text-primary" />
+                  <h3 className="font-medium text-foreground group-hover:text-primary transition-colors">
+                    Choisir le bon produit
+                  </h3>
+                </div>
+              </Link>
+              <Link to="/guides/comment-choisir-la-bonne-taille" className="block">
+                <div className="p-6 bg-card rounded-xl border border-border hover:border-primary hover:shadow-md transition-all text-center group">
+                  <Footprints className="w-8 h-8 mx-auto mb-3 text-primary" />
+                  <h3 className="font-medium text-foreground group-hover:text-primary transition-colors">
+                    Choisir la bonne taille
+                  </h3>
+                </div>
+              </Link>
+              <Link to="/guides" className="block">
+                <div className="p-6 bg-card rounded-xl border border-border hover:border-primary hover:shadow-md transition-all text-center group">
+                  <Sparkles className="w-8 h-8 mx-auto mb-3 text-primary" />
+                  <h3 className="font-medium text-foreground group-hover:text-primary transition-colors">
+                    Tous nos guides
+                  </h3>
+                </div>
+              </Link>
+            </div>
           </div>
         </section>
 
