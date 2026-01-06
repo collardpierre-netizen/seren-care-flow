@@ -96,6 +96,22 @@ serve(async (req) => {
     // Build line items for Stripe
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
 
+    // Helper to validate and fix image URLs
+    const getValidImageUrl = (imageUrl: string | undefined): string[] | undefined => {
+      if (!imageUrl) return undefined;
+      // Skip placeholder images and relative URLs
+      if (imageUrl.includes('placeholder') || imageUrl.startsWith('/')) {
+        return undefined;
+      }
+      // Only use absolute URLs
+      try {
+        new URL(imageUrl);
+        return [imageUrl];
+      } catch {
+        return undefined;
+      }
+    };
+
     // Add one-time items
     for (const item of oneTimeItems) {
       lineItems.push({
@@ -103,7 +119,7 @@ serve(async (req) => {
           currency: "eur",
           product_data: {
             name: item.productName + (item.size ? ` - Taille ${item.size}` : ''),
-            images: item.productImage ? [item.productImage] : undefined,
+            images: getValidImageUrl(item.productImage),
             metadata: {
               product_id: item.productId,
               size: item.size || '',
@@ -125,7 +141,7 @@ serve(async (req) => {
           product_data: {
             name: item.productName + (item.size ? ` - Taille ${item.size}` : '') + ' (Abonnement)',
             description: 'Livraison mensuelle automatique avec -10%',
-            images: item.productImage ? [item.productImage] : undefined,
+            images: getValidImageUrl(item.productImage),
             metadata: {
               product_id: item.productId,
               size: item.size || '',

@@ -35,10 +35,18 @@ const SwipeToAdd: React.FC<SwipeToAddProps> = ({
     ['hsl(var(--primary))', 'hsl(var(--primary))', 'hsl(var(--secondary))']
   );
 
+  // Trigger haptic feedback (vibration)
+  const triggerHaptic = () => {
+    if (navigator.vibrate) {
+      navigator.vibrate(50); // 50ms vibration
+    }
+  };
+
   const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const maxSwipe = getMaxSwipe();
     if (info.offset.x >= maxSwipe * 0.8) {
-      // Complete the swipe
+      // Complete the swipe - trigger vibration
+      triggerHaptic();
       x.set(maxSwipe);
       setIsComplete(true);
       setTimeout(() => {
