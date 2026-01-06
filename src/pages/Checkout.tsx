@@ -124,7 +124,7 @@ const Checkout = () => {
           subtotal: subtotal,
           shipping_fee: shippingCost,
           total: total,
-          status: 'pending',
+          status: 'order_received',
           referral_code: referralValid ? referralCode.toUpperCase() : null,
           is_subscription_order: hasSubscription,
           shipping_address: shippingAddress as any,

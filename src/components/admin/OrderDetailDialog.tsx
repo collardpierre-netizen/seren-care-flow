@@ -18,6 +18,8 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import OrderStatusHistory from '@/components/account/OrderStatusHistory';
+import OrderStatusManager from '@/components/admin/OrderStatusManager';
+import { statusConfig, OrderStatus } from '@/lib/orderStatus';
 import {
   Loader2,
   Send,
@@ -162,12 +164,21 @@ const OrderDetailDialog: React.FC<OrderDetailDialogProps> = ({ orderId, onClose 
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : order ? (
-          <Tabs defaultValue="details" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-3">
+          <Tabs defaultValue="status" className="space-y-4">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="status">Statut</TabsTrigger>
               <TabsTrigger value="details">Détails</TabsTrigger>
               <TabsTrigger value="tracking">Suivi</TabsTrigger>
               <TabsTrigger value="preparer">Préparateur</TabsTrigger>
             </TabsList>
+
+            <TabsContent value="status" className="space-y-4">
+              <OrderStatusManager 
+                orderId={orderId} 
+                currentStatus={order.status as OrderStatus}
+                onSuccess={() => queryClient.invalidateQueries({ queryKey: ['admin-order-detail', orderId] })}
+              />
+            </TabsContent>
 
             <TabsContent value="details" className="space-y-4">
               {/* Customer Info */}

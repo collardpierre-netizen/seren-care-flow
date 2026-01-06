@@ -3,33 +3,37 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Clock, CheckCircle, CreditCard, Truck, Package, XCircle, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { statusConfig, OrderStatus } from '@/lib/orderStatus';
 
 interface OrderStatusHistoryProps {
   orderId: string;
   className?: string;
 }
 
-const statusConfig: Record<string, { icon: React.ElementType; label: string; color: string }> = {
-  pending: { icon: Clock, label: 'Commande reçue', color: 'text-amber-500' },
-  paid: { icon: CreditCard, label: 'Paiement confirmé', color: 'text-emerald-500' },
-  shipped: { icon: Truck, label: 'Commande expédiée', color: 'text-blue-500' },
-  delivered: { icon: Package, label: 'Commande livrée', color: 'text-green-600' },
-  cancelled: { icon: XCircle, label: 'Commande annulée', color: 'text-destructive' },
-};
+interface StatusEvent {
+  id: string;
+  status: string;
+  message_public: string | null;
+  message_internal: string | null;
+  created_at: string;
+  is_visible_to_customer: boolean | null;
+  notification_sent: boolean | null;
+  notification_type: string | null;
+}
 
 const OrderStatusHistory: React.FC<OrderStatusHistoryProps> = ({ orderId, className }) => {
   const { data: history, isLoading } = useQuery({
-    queryKey: ['order-status-history', orderId],
+    queryKey: ['order-status-events', orderId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('order_status_history')
+        .from('order_status_events')
         .select('*')
         .eq('order_id', orderId)
         .order('created_at', { ascending: true });
       if (error) throw error;
-      return data;
+      return data as StatusEvent[];
     },
   });
 
@@ -56,7 +60,7 @@ const OrderStatusHistory: React.FC<OrderStatusHistoryProps> = ({ orderId, classN
       </h4>
       <div className="space-y-2">
         {history.map((entry, index) => {
-          const config = statusConfig[entry.status] || statusConfig.pending;
+          const config = statusConfig[entry.status as OrderStatus] || statusConfig.order_received;
           const Icon = config.icon;
           
           return (
@@ -66,7 +70,8 @@ const OrderStatusHistory: React.FC<OrderStatusHistoryProps> = ({ orderId, classN
             >
               <div className="flex flex-col items-center">
                 <div className={cn(
-                  "h-8 w-8 rounded-full flex items-center justify-center bg-muted",
+                  "h-8 w-8 rounded-full flex items-center justify-center",
+                  config.bgColor,
                   config.color
                 )}>
                   <Icon className="h-4 w-4" />
@@ -80,8 +85,8 @@ const OrderStatusHistory: React.FC<OrderStatusHistoryProps> = ({ orderId, classN
                 <p className="text-xs text-muted-foreground">
                   {format(new Date(entry.created_at), 'dd MMM yyyy à HH:mm', { locale: fr })}
                 </p>
-                {entry.notes && (
-                  <p className="text-xs text-muted-foreground mt-1">{entry.notes}</p>
+                {entry.message_public && (
+                  <p className="text-xs text-muted-foreground mt-1">{entry.message_public}</p>
                 )}
                 {entry.notification_sent && entry.notification_type && (
                   <p className="text-xs text-primary mt-1">
