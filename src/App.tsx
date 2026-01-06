@@ -43,6 +43,7 @@ import AdminSettings from "./pages/admin/Settings";
 import AdminPrescribers from "./pages/admin/Prescribers";
 import AdminCommissions from "./pages/admin/Commissions";
 import AdminPrescriberApplications from "./pages/admin/PrescriberApplications";
+import AdminGuides from "./pages/admin/Guides";
 
 const queryClient = new QueryClient();
 
@@ -94,6 +95,7 @@ const App = () => (
                 <Route path="candidatures" element={<AdminPrescriberApplications />} />
                 <Route path="commissions" element={<AdminCommissions />} />
                 <Route path="pages" element={<AdminPages />} />
+                <Route path="guides" element={<AdminGuides />} />
                 <Route path="medias" element={<AdminMedia />} />
                 <Route path="hero-media" element={<AdminHeroMedia />} />
                 <Route path="parametres" element={<AdminSettings />} />
