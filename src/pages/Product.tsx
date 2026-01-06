@@ -289,6 +289,9 @@ const ProductPage = () => {
                 open={sizeGuideOpen}
                 onOpenChange={setSizeGuideOpen}
                 brand={product.brand?.name}
+                availableSizes={sizes.map(s => s.size)}
+                selectedSize={selectedSize}
+                onSelectSize={setSelectedSize}
               />
 
               {sizes.length > 0 && (
