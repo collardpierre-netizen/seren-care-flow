@@ -202,23 +202,36 @@ const CartDrawer: React.FC = () => {
                       style={{ width: `${Math.min(100, (subtotal / minimumOrderAmount) * 100)}%` }}
                     />
                   </div>
-                </div>
+              </div>
               )}
               
-              <Button 
-                className="w-full h-12" 
-                size="lg" 
-                asChild={isMinimumMet}
-                disabled={!isMinimumMet}
-              >
-                {isMinimumMet ? (
-                  <Link to="/checkout" onClick={closeCart}>
-                    Passer commande
+              <div className="space-y-2">
+                <Button 
+                  className="w-full h-12" 
+                  size="lg" 
+                  asChild={isMinimumMet}
+                  disabled={!isMinimumMet}
+                >
+                  {isMinimumMet ? (
+                    <Link to="/checkout" onClick={closeCart}>
+                      Passer commande
+                    </Link>
+                  ) : (
+                    <span>Passer commande</span>
+                  )}
+                </Button>
+                
+                <Button 
+                  variant="ghost" 
+                  className="w-full h-10 text-muted-foreground hover:text-foreground" 
+                  onClick={closeCart}
+                  asChild
+                >
+                  <Link to="/boutique">
+                    Continuer mes achats
                   </Link>
-                ) : (
-                  <span>Passer commande</span>
-                )}
-              </Button>
+                </Button>
+              </div>
             </div>
           </>
         )}
