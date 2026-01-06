@@ -1087,47 +1087,71 @@ export type Database = {
         Row: {
           address_line1: string | null
           address_line2: string | null
+          age_range: string | null
+          buying_for: string | null
           city: string | null
           country: string | null
           created_at: string
           email: string | null
           first_name: string | null
+          gender: string | null
           id: string
+          incontinence_level: string | null
           last_name: string | null
+          mobility_level: string | null
+          newsletter_subscribed: boolean | null
+          onboarding_completed: boolean | null
           phone: string | null
           postal_code: string | null
           preferred_size: string | null
           updated_at: string
+          usage_time: string | null
         }
         Insert: {
           address_line1?: string | null
           address_line2?: string | null
+          age_range?: string | null
+          buying_for?: string | null
           city?: string | null
           country?: string | null
           created_at?: string
           email?: string | null
           first_name?: string | null
+          gender?: string | null
           id: string
+          incontinence_level?: string | null
           last_name?: string | null
+          mobility_level?: string | null
+          newsletter_subscribed?: boolean | null
+          onboarding_completed?: boolean | null
           phone?: string | null
           postal_code?: string | null
           preferred_size?: string | null
           updated_at?: string
+          usage_time?: string | null
         }
         Update: {
           address_line1?: string | null
           address_line2?: string | null
+          age_range?: string | null
+          buying_for?: string | null
           city?: string | null
           country?: string | null
           created_at?: string
           email?: string | null
           first_name?: string | null
+          gender?: string | null
           id?: string
+          incontinence_level?: string | null
           last_name?: string | null
+          mobility_level?: string | null
+          newsletter_subscribed?: boolean | null
+          onboarding_completed?: boolean | null
           phone?: string | null
           postal_code?: string | null
           preferred_size?: string | null
           updated_at?: string
+          usage_time?: string | null
         }
         Relationships: []
       }

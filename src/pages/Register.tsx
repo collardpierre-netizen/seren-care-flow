@@ -34,7 +34,7 @@ const RegisterPage: React.FC = () => {
     toast.success('Inscription réussie', {
       description: 'Bienvenue chez SerenCare !',
     });
-    navigate('/');
+    navigate('/onboarding');
   };
 
   return (
