@@ -96,7 +96,8 @@ const EmailPreview = () => {
                     <table width="100%" cellpadding="0" cellspacing="0">
                       <tr>
                         <td align="center">
-                          <div style="background: rgba(255,255,255,0.15); border-radius: 16px; padding: 16px 28px; display: inline-block; margin-bottom: 20px;">
+                          <img src="https://obkfkygjisxvgrmclhnb.supabase.co/storage/v1/object/public/media/logo.png" alt="SerenCare" style="height: 50px; width: auto; margin-bottom: 20px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                          <div style="background: rgba(255,255,255,0.15); border-radius: 16px; padding: 16px 28px; display: none; margin-bottom: 20px;">
                             <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 26px; color: #FFFFFF; letter-spacing: -0.5px;">SerenCare</span>
                           </div>
                           <h1 style="color: #FFFFFF; font-size: 28px; margin: 0 0 8px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.5px;">Merci pour votre commande !</h1>
@@ -341,7 +342,8 @@ const EmailPreview = () => {
                 <!-- Header -->
                 <tr>
                   <td style="background: linear-gradient(135deg, ${brand.primary} 0%, ${brand.primaryDark} 100%); padding: 48px 40px; text-align: center;">
-                    <div style="background: rgba(255,255,255,0.15); border-radius: 16px; padding: 16px 28px; display: inline-block; margin-bottom: 16px;">
+                    <img src="https://obkfkygjisxvgrmclhnb.supabase.co/storage/v1/object/public/media/logo.png" alt="SerenCare" style="height: 50px; width: auto; margin-bottom: 16px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                    <div style="background: rgba(255,255,255,0.15); border-radius: 16px; padding: 16px 28px; display: none; margin-bottom: 16px;">
                       <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 26px; color: #FFFFFF;">SerenCare</span>
                     </div>
                   </td>

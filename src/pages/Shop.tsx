@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Filter, X, ChevronDown, Loader2, Package, Droplet, Moon, Sun, Footprints, Sparkles, User } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useProducts, useBrands, useCategories, Product } from "@/hooks/useProducts";
 import { 
   useProductFilters, 
@@ -111,6 +112,8 @@ const Shop = () => {
     setShowProductSelector(false);
   };
 
+  const isFilterActive = (value: string) => value !== "all";
+
   const FilterButton = ({ 
     options, 
     value, 
@@ -125,59 +128,81 @@ const Shop = () => {
     label: string;
     showDroplets?: boolean;
     counts?: Record<string, number>;
-  }) => (
-    <div className="relative group">
-      <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-card border border-border text-sm font-medium text-foreground hover:border-primary transition-colors">
-        {label}: {options.find(o => o.id === value)?.label || 'Tous'}
-        <ChevronDown className="w-4 h-4 text-muted-foreground" />
-      </button>
-      <div className="absolute top-full left-0 mt-2 w-56 bg-card rounded-xl border border-border shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
-        {options.map((option) => {
-          const count = option.id === "all" ? products?.length : counts?.[option.id];
-          // If no counts are provided (like for category/brand), always enable the option
-          const hasProducts = option.id === "all" || !counts || (count && count > 0);
-          
-          return (
+  }) => {
+    const active = isFilterActive(value);
+    const selectedOption = options.find(o => o.id === value);
+    
+    return (
+      <div className="relative group">
+        <button className={cn(
+          "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all",
+          active 
+            ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/20" 
+            : "bg-card border border-border text-foreground hover:border-primary"
+        )}>
+          <span className={cn(active && "font-semibold")}>
+            {active ? selectedOption?.label : `${label}: Tous`}
+          </span>
+          {active && (
             <button
-              key={option.id}
-              onClick={() => onChange(option.id)}
-              disabled={!hasProducts}
-              className={`w-full text-left px-4 py-2.5 text-sm first:rounded-t-xl last:rounded-b-xl transition-colors flex items-center justify-between ${
-                !hasProducts
-                  ? "text-muted-foreground/50 cursor-not-allowed"
-                  : value === option.id 
-                    ? "bg-primary text-primary-foreground" 
-                    : "text-foreground hover:bg-muted"
-              }`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onChange("all");
+              }}
+              className="ml-1 p-0.5 rounded-full hover:bg-primary-foreground/20 transition-colors"
             >
-              <span className="flex items-center gap-2">
-                {option.label}
-                {counts && option.id !== "all" && (
-                  <span className={`text-xs ${value === option.id ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
-                    ({count || 0})
-                  </span>
-                )}
-              </span>
-              {showDroplets && option.icon && (
-                <div className="flex items-center gap-0.5">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <Droplet
-                      key={i}
-                      className={`w-3 h-3 ${
-                        i < option.icon! 
-                          ? value === option.id ? 'fill-primary-foreground text-primary-foreground' : 'fill-primary text-primary'
-                          : value === option.id ? 'fill-primary-foreground/30 text-primary-foreground/30' : 'fill-muted text-muted'
-                      }`}
-                    />
-                  ))}
-                </div>
-              )}
+              <X className="w-3 h-3" />
             </button>
-          );
-        })}
+          )}
+          {!active && <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+        </button>
+        <div className="absolute top-full left-0 mt-2 w-56 bg-card rounded-xl border border-border shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+          {options.map((option) => {
+            const count = option.id === "all" ? products?.length : counts?.[option.id];
+            const hasProducts = option.id === "all" || !counts || (count && count > 0);
+            
+            return (
+              <button
+                key={option.id}
+                onClick={() => onChange(option.id)}
+                disabled={!hasProducts}
+                className={`w-full text-left px-4 py-2.5 text-sm first:rounded-t-xl last:rounded-b-xl transition-colors flex items-center justify-between ${
+                  !hasProducts
+                    ? "text-muted-foreground/50 cursor-not-allowed"
+                    : value === option.id 
+                      ? "bg-primary text-primary-foreground" 
+                      : "text-foreground hover:bg-muted"
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  {option.label}
+                  {counts && option.id !== "all" && (
+                    <span className={`text-xs ${value === option.id ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                      ({count || 0})
+                    </span>
+                  )}
+                </span>
+                {showDroplets && option.icon && (
+                  <div className="flex items-center gap-0.5">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <Droplet
+                        key={i}
+                        className={`w-3 h-3 ${
+                          i < option.icon! 
+                            ? value === option.id ? 'fill-primary-foreground text-primary-foreground' : 'fill-primary text-primary'
+                            : value === option.id ? 'fill-primary-foreground/30 text-primary-foreground/30' : 'fill-muted text-muted'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const categoryOptions = [
     { id: "all", label: "Toutes" },
