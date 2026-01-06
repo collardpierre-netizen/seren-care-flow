@@ -33,6 +33,7 @@ interface ProductFormData {
   recommended_price: number;
   price: number;
   subscription_price: number;
+  subscription_discount_percent: number;
   purchase_price: number;
   units_per_product: number;
   min_order_quantity: number;
@@ -62,6 +63,7 @@ const initialFormData: ProductFormData = {
   recommended_price: 0,
   price: 0,
   subscription_price: 0,
+  subscription_discount_percent: 10,
   purchase_price: 0,
   units_per_product: 1,
   min_order_quantity: 1,
@@ -378,6 +380,7 @@ const AdminProducts: React.FC = () => {
       recommended_price: product.recommended_price || 0,
       price: product.price,
       subscription_price: product.subscription_price || 0,
+      subscription_discount_percent: product.subscription_discount_percent || 10,
       purchase_price: product.purchase_price || 0,
       units_per_product: product.units_per_product || 1,
       min_order_quantity: product.min_order_quantity || 1,
@@ -504,6 +507,46 @@ const AdminProducts: React.FC = () => {
   const marginPercent = formData.purchase_price > 0 && formData.price > 0
     ? Math.round(((formData.price - formData.purchase_price) / formData.price) * 100)
     : 0;
+
+  // Calculate margin for subscription price
+  const subscriptionMarginValue = formData.subscription_price > 0 && formData.purchase_price > 0
+    ? formData.subscription_price - formData.purchase_price
+    : 0;
+  const subscriptionMarginPercent = formData.purchase_price > 0 && formData.subscription_price > 0
+    ? Math.round(((formData.subscription_price - formData.purchase_price) / formData.subscription_price) * 100)
+    : 0;
+
+  // Auto-calculate subscription price based on discount
+  const handlePriceChange = (newPrice: number) => {
+    const discountPercent = formData.subscription_discount_percent || 10;
+    const autoSubscriptionPrice = newPrice * (1 - discountPercent / 100);
+    setFormData({ 
+      ...formData, 
+      price: newPrice,
+      subscription_price: Math.round(autoSubscriptionPrice * 100) / 100
+    });
+  };
+
+  const handleDiscountChange = (newDiscount: number) => {
+    const autoSubscriptionPrice = formData.price * (1 - newDiscount / 100);
+    setFormData({ 
+      ...formData, 
+      subscription_discount_percent: newDiscount,
+      subscription_price: Math.round(autoSubscriptionPrice * 100) / 100
+    });
+  };
+
+  const handleSubscriptionPriceChange = (newSubPrice: number) => {
+    // Recalculate discount based on new subscription price
+    const autoDiscount = formData.price > 0 
+      ? Math.round(((formData.price - newSubPrice) / formData.price) * 100)
+      : 10;
+    setFormData({ 
+      ...formData, 
+      subscription_price: newSubPrice,
+      subscription_discount_percent: autoDiscount
+    });
+  };
 
   const filteredProducts = products?.filter(p => 
     p.name.toLowerCase().includes(search.toLowerCase())
@@ -1053,7 +1096,7 @@ const AdminProducts: React.FC = () => {
               <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
                 <h4 className="font-semibold">Tarification</h4>
                 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="recommended_price">Prix public recommandé (€)</Label>
                     <Input
@@ -1071,18 +1114,8 @@ const AdminProducts: React.FC = () => {
                       type="number"
                       step="0.01"
                       value={formData.price || ''}
-                      onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
+                      onChange={(e) => handlePriceChange(parseFloat(e.target.value) || 0)}
                       required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="subscription_price">Prix abonnement (€)</Label>
-                    <Input
-                      id="subscription_price"
-                      type="number"
-                      step="0.01"
-                      value={formData.subscription_price || ''}
-                      onChange={(e) => setFormData({ ...formData, subscription_price: parseFloat(e.target.value) || 0 })}
                     />
                   </div>
                 </div>
@@ -1098,6 +1131,48 @@ const AdminProducts: React.FC = () => {
                     </span>
                   </div>
                 )}
+
+                {/* Subscription pricing */}
+                <div className="p-4 bg-secondary/10 rounded-lg border border-secondary/30 space-y-4">
+                  <h5 className="font-medium text-sm flex items-center gap-2">
+                    <span className="text-secondary">💳</span> Prix abonnement
+                  </h5>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="subscription_discount_percent">Réduction (%)</Label>
+                      <Input
+                        id="subscription_discount_percent"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={formData.subscription_discount_percent || ''}
+                        onChange={(e) => handleDiscountChange(parseInt(e.target.value) || 0)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="subscription_price">Prix abonnement (€)</Label>
+                      <Input
+                        id="subscription_price"
+                        type="number"
+                        step="0.01"
+                        value={formData.subscription_price || ''}
+                        onChange={(e) => handleSubscriptionPriceChange(parseFloat(e.target.value) || 0)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Économie abonnement</Label>
+                      <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-sm">
+                        {formData.price > 0 && formData.subscription_price > 0 ? (
+                          <span className="text-secondary font-medium">
+                            -{(formData.price - formData.subscription_price).toFixed(2)} € / commande
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
                 {/* Units and unit price */}
                 <div className="grid grid-cols-3 gap-4">
@@ -1122,7 +1197,7 @@ const AdminProducts: React.FC = () => {
                 {/* Purchase price (admin only) */}
                 <div className="border-t pt-4 mt-4">
                   <p className="text-xs text-muted-foreground mb-3">🔒 Données internes (non visibles en boutique)</p>
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-4 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="purchase_price">Prix d'achat (€)</Label>
                       <Input
@@ -1134,13 +1209,28 @@ const AdminProducts: React.FC = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Marge nette</Label>
+                      <Label>Marge SerenCare</Label>
                       <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-sm gap-2">
                         {marginValue > 0 ? (
                           <>
                             <span className="text-green-600 font-medium">{marginValue.toFixed(2)} €</span>
                             <Badge variant="outline" className="text-green-600 border-green-600">
                               {marginPercent}%
+                            </Badge>
+                          </>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Marge Abonnement</Label>
+                      <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-sm gap-2">
+                        {subscriptionMarginValue > 0 ? (
+                          <>
+                            <span className="text-secondary font-medium">{subscriptionMarginValue.toFixed(2)} €</span>
+                            <Badge variant="outline" className="text-secondary border-secondary">
+                              {subscriptionMarginPercent}%
                             </Badge>
                           </>
                         ) : (
