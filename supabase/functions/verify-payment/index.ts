@@ -198,7 +198,7 @@ serve(async (req) => {
     const { data: order, error: updateError } = await supabase
       .from("orders")
       .update({ 
-        status: "paid",
+        status: "payment_confirmed",
         stripe_payment_intent_id: session.payment_intent as string,
       })
       .eq("id", orderId)
