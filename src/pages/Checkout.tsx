@@ -9,8 +9,8 @@ import { useCart } from '@/hooks/useCart';
 import { useStoreSettings } from '@/hooks/useProducts';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingBag, ArrowLeft, CreditCard, Truck, RefreshCw, Tag, Check, Loader2, CheckCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ShoppingBag, ArrowLeft, CreditCard, Truck, RefreshCw, Tag, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { SizeGuideDialog } from '@/components/shop/SizeGuideDialog';
@@ -31,14 +31,11 @@ const Checkout = () => {
   const { items, getSubtotal, getSubscriptionSavings, updateSize, clearCart } = useCart();
   const { data: settings } = useStoreSettings();
   const { user } = useAuth();
-  const navigate = useNavigate();
   
   const [referralCode, setReferralCode] = useState('');
   const [referralValid, setReferralValid] = useState<boolean | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [orderComplete, setOrderComplete] = useState(false);
-  const [orderNumber, setOrderNumber] = useState('');
   
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     firstName: '',
@@ -118,7 +115,7 @@ const Checkout = () => {
       const newOrderNumber = generateOrderNumber();
       const hasSubscription = items.some(item => item.isSubscription);
       
-      // Create order in database
+      // Create order in database first
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
@@ -155,76 +152,43 @@ const Checkout = () => {
       
       if (itemsError) throw itemsError;
       
-      // Send confirmation email
-      try {
-        await supabase.functions.invoke('send-confirmation-email', {
-          body: {
-            type: 'order',
-            to: shippingAddress.email,
-            data: {
-              orderNumber: newOrderNumber,
-              firstName: shippingAddress.firstName,
-              lastName: shippingAddress.lastName,
-              total: total.toFixed(2),
-              itemsCount: items.length,
-            }
-          }
-        });
-      } catch (emailError) {
-        console.error('Email sending failed:', emailError);
+      // Create Stripe checkout session
+      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
+        body: {
+          items: items.map(item => ({
+            productId: item.productId,
+            productName: item.productName,
+            productImage: item.productImage,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            subscriptionPrice: item.subscriptionPrice,
+            size: item.size,
+            isSubscription: item.isSubscription,
+          })),
+          shippingAddress,
+          shippingCost,
+          referralCode: referralValid ? referralCode.toUpperCase() : null,
+          orderId: order.id,
+        }
+      });
+
+      if (checkoutError) throw checkoutError;
+
+      if (checkoutData?.url) {
+        // Clear cart before redirect
+        clearCart();
+        // Redirect to Stripe Checkout
+        window.location.href = checkoutData.url;
+      } else {
+        throw new Error('No checkout URL returned');
       }
-      
-      // Clear cart and show success
-      clearCart();
-      setOrderNumber(newOrderNumber);
-      setOrderComplete(true);
       
     } catch (error) {
       console.error('Order submission error:', error);
       toast.error('Une erreur est survenue. Veuillez réessayer.');
-    } finally {
       setIsSubmitting(false);
     }
   };
-
-  // Order complete view
-  if (orderComplete) {
-    return (
-      <>
-        <Helmet>
-          <title>Commande confirmée | SerenCare</title>
-        </Helmet>
-        <Layout>
-          <div className="min-h-[60vh] flex flex-col items-center justify-center py-16">
-            <div className="w-20 h-20 rounded-full bg-secondary/20 flex items-center justify-center mb-6">
-              <CheckCircle className="h-10 w-10 text-secondary" />
-            </div>
-            <h1 className="text-2xl md:text-3xl font-display font-bold mb-2 text-center">Commande confirmée !</h1>
-            <p className="text-muted-foreground mb-2 text-center">
-              Merci pour votre commande
-            </p>
-            <p className="text-lg font-mono font-bold text-primary mb-6">{orderNumber}</p>
-            <div className="bg-card border border-border rounded-xl p-6 max-w-md text-center mb-8">
-              <p className="text-sm text-muted-foreground mb-4">
-                Un email de confirmation a été envoyé à <strong>{shippingAddress.email}</strong>
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Notre équipe vous contactera sous 24h pour finaliser le paiement et organiser la livraison.
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button asChild variant="outline">
-                <Link to="/boutique">Continuer mes achats</Link>
-              </Button>
-              <Button asChild>
-                <Link to="/">Retour à l'accueil</Link>
-              </Button>
-            </div>
-          </div>
-        </Layout>
-      </>
-    );
-  }
 
   if (items.length === 0) {
     return (
@@ -446,15 +410,18 @@ const Checkout = () => {
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <CreditCard className="h-5 w-5" />
-                    Paiement
+                    Paiement sécurisé
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="p-6 bg-muted/30 rounded-xl">
+                  <div className="p-6 bg-muted/30 rounded-xl space-y-3">
                     <p className="text-sm text-muted-foreground">
-                      Après validation de votre commande, notre équipe vous contactera pour organiser le paiement sécurisé 
-                      (carte bancaire, Bancontact ou virement).
+                      Vous serez redirigé vers notre plateforme de paiement sécurisée Stripe pour finaliser votre commande.
                     </p>
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" alt="Stripe" className="h-6" />
+                      <span>Carte bancaire • Bancontact</span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -518,15 +485,15 @@ const Checkout = () => {
                     {isSubmitting ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Traitement en cours...
+                        Redirection vers le paiement...
                       </>
                     ) : (
-                      `Confirmer la commande • ${total.toFixed(2)} €`
+                      `Payer • ${total.toFixed(2)} €`
                     )}
                   </Button>
                   
                   <p className="text-xs text-center text-muted-foreground">
-                    Paiement sécurisé • Livraison en 48-72h
+                    Paiement sécurisé par Stripe • Livraison en 48-72h
                   </p>
                 </CardContent>
               </Card>
