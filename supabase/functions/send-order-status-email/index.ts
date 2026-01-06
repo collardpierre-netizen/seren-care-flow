@@ -17,6 +17,7 @@ interface StatusEmailRequest {
   trackingNumber?: string;
   trackingUrl?: string;
   carrier?: string;
+  estimatedDeliveryDate?: string;
 }
 
 const statusConfig: Record<string, { title: string; message: string; emoji: string; color: string }> = {
@@ -34,7 +35,7 @@ const statusConfig: Record<string, { title: string; message: string; emoji: stri
   },
   shipped: {
     title: 'Commande expédiée',
-    message: 'Votre commande est en route ! Vous la recevrez très bientôt.',
+    message: 'Votre commande est en route !',
     emoji: '🚚',
     color: '#3b82f6'
   },
@@ -103,7 +104,7 @@ const getStatusTimeline = (currentStatus: string) => {
 };
 
 const getTrackingSection = (data: StatusEmailRequest) => {
-  if (!data.trackingNumber && !data.trackingUrl) {
+  if (!data.trackingNumber && !data.trackingUrl && !data.estimatedDeliveryDate) {
     return '';
   }
 
@@ -120,9 +121,17 @@ const getTrackingSection = (data: StatusEmailRequest) => {
         </p>
       ` : ''}
       ${data.trackingNumber ? `
-        <p style="margin: 0 0 12px; color: #374151; font-size: 14px;">
+        <p style="margin: 0 0 8px; color: #374151; font-size: 14px;">
           <strong>N° de suivi :</strong> <span style="font-family: monospace; background: #dbeafe; padding: 2px 8px; border-radius: 4px;">${data.trackingNumber}</span>
         </p>
+      ` : ''}
+      ${data.estimatedDeliveryDate ? `
+        <div style="background: #dcfce7; border-radius: 8px; padding: 12px; margin: 12px 0; border: 1px solid #bbf7d0;">
+          <p style="margin: 0; color: #166534; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 18px;">📅</span>
+            <span><strong>Livraison estimée :</strong> ${data.estimatedDeliveryDate}</span>
+          </p>
+        </div>
       ` : ''}
       ${data.trackingUrl ? `
         <a href="${data.trackingUrl}" style="
@@ -134,6 +143,7 @@ const getTrackingSection = (data: StatusEmailRequest) => {
           text-decoration: none;
           font-weight: 600;
           font-size: 14px;
+          margin-top: 8px;
         ">Suivre mon colis →</a>
       ` : ''}
     </div>
