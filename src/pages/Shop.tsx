@@ -65,15 +65,22 @@ const Shop = () => {
         if (!matchesName && !matchesBrand && !matchesDescription) return false;
       }
       
-      // Only filter if not "all" and product has a value for that attribute
-      if (selectedIncontinence !== "all" && product.incontinence_level && product.incontinence_level !== selectedIncontinence) return false;
-      if (selectedMobility !== "all" && product.mobility && product.mobility !== selectedMobility) return false;
+      // Only exclude if filter is active AND product has a DIFFERENT value (not null)
+      // Products with null values pass through all filters (they match everything)
+      if (selectedIncontinence !== "all") {
+        if (product.incontinence_level !== null && product.incontinence_level !== selectedIncontinence) return false;
+      }
+      if (selectedMobility !== "all") {
+        if (product.mobility !== null && product.mobility !== selectedMobility) return false;
+      }
       if (selectedUsageTime !== "all") {
-        // day_night products should show for both "day" and "night" filters
-        if (product.usage_time === "day_night") {
-          // day_night products match all usage time filters
-        } else if (product.usage_time !== selectedUsageTime) {
-          return false;
+        if (product.usage_time !== null) {
+          // day_night products should show for both "day" and "night" filters
+          if (product.usage_time === "day_night") {
+            // day_night products match all usage time filters
+          } else if (product.usage_time !== selectedUsageTime) {
+            return false;
+          }
         }
       }
       return true;
