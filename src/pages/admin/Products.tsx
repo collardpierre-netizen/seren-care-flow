@@ -947,6 +947,93 @@ const AdminProducts: React.FC = () => {
                 </div>
               </div>
 
+              {/* Multi-tag filters section */}
+              <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border">
+                <h4 className="font-semibold text-sm flex items-center gap-2">
+                  <CheckSquare className="h-4 w-4" />
+                  Filtres multi-tags (pour le filtrage front)
+                </h4>
+                
+                {/* Mobility Levels */}
+                <div className="space-y-2">
+                  <Label className="text-sm">Niveaux de mobilité</Label>
+                  <div className="flex flex-wrap gap-4">
+                    {mobilityLevelOptions.map((option) => {
+                      const isChecked = formData.mobility_levels.split('|').includes(option.value);
+                      return (
+                        <label key={option.value} className="flex items-center gap-2 cursor-pointer">
+                          <Checkbox
+                            checked={isChecked}
+                            onCheckedChange={(checked) => {
+                              const currentTags = formData.mobility_levels.split('|').filter(t => t);
+                              const newTags = checked
+                                ? [...currentTags, option.value]
+                                : currentTags.filter(t => t !== option.value);
+                              setFormData({ ...formData, mobility_levels: newTags.join('|') });
+                            }}
+                          />
+                          <span className="text-sm">{option.label}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Usage Times */}
+                <div className="space-y-2">
+                  <Label className="text-sm">Moments d'utilisation</Label>
+                  <div className="flex flex-wrap gap-4">
+                    {usageTimesOptions.map((option) => {
+                      const isChecked = formData.usage_times.split('|').includes(option.value);
+                      return (
+                        <label key={option.value} className="flex items-center gap-2 cursor-pointer">
+                          <Checkbox
+                            checked={isChecked}
+                            onCheckedChange={(checked) => {
+                              const currentTags = formData.usage_times.split('|').filter(t => t);
+                              const newTags = checked
+                                ? [...currentTags, option.value]
+                                : currentTags.filter(t => t !== option.value);
+                              setFormData({ ...formData, usage_times: newTags.join('|') });
+                            }}
+                          />
+                          <span className="text-sm">{option.label}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Gender */}
+                <div className="space-y-2">
+                  <Label className="text-sm">Genre</Label>
+                  <div className="flex flex-wrap gap-4">
+                    {genderOptions.map((option) => {
+                      const isChecked = formData.gender.split('|').includes(option.value);
+                      return (
+                        <label key={option.value} className="flex items-center gap-2 cursor-pointer">
+                          <Checkbox
+                            checked={isChecked}
+                            onCheckedChange={(checked) => {
+                              const currentTags = formData.gender.split('|').filter(t => t);
+                              const newTags = checked
+                                ? [...currentTags, option.value]
+                                : currentTags.filter(t => t !== option.value);
+                              setFormData({ ...formData, gender: newTags.join('|') });
+                            }}
+                          />
+                          <span className="text-sm">{option.label}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <p className="text-xs text-muted-foreground">
+                  Ces tags permettent un filtrage multi-valeurs côté boutique. Si vides, les valeurs sont calculées automatiquement.
+                </p>
+              </div>
+
               {/* Pricing Section */}
               <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
                 <h4 className="font-semibold">Tarification</h4>
