@@ -65,7 +65,7 @@ const getEmailContent = (type: string, data: EmailRequest["data"]) => {
               ${content}
               <div class="footer">
                 <p>Des questions ? Contactez-nous !</p>
-                <p><a href="mailto:contact@serencare.be">contact@serencare.be</a> | <a href="tel:+32123456789">+32 123 456 789</a></p>
+                <p><a href="mailto:info@serencare.be">info@serencare.be</a> | <a href="tel:+3202648422">+32 02 648 42 22</a></p>
                 <p style="color: #9CA3AF; font-size: 12px; margin-top: 20px;">© ${new Date().getFullYear()} SerenCare. Tous droits réservés.</p>
               </div>
             </div>
