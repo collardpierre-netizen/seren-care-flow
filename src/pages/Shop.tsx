@@ -117,7 +117,8 @@ const Shop = () => {
       <div className="absolute top-full left-0 mt-2 w-56 bg-card rounded-xl border border-border shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
         {options.map((option) => {
           const count = option.id === "all" ? products?.length : counts?.[option.id];
-          const hasProducts = option.id === "all" || (count && count > 0);
+          // If no counts are provided (like for category/brand), always enable the option
+          const hasProducts = option.id === "all" || !counts || (count && count > 0);
           
           return (
             <button
