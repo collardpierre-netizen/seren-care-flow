@@ -31,6 +31,7 @@ import Contact from "./pages/Contact";
 import Guides from "./pages/Guides";
 import GuideArticle from "./pages/GuideArticle";
 import FAQ from "./pages/FAQ";
+import OrderConfirmed from "./pages/OrderConfirmed";
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminProducts from "./pages/admin/Products";
@@ -81,6 +82,8 @@ const App = () => (
               <Route path="/guides" element={<Guides />} />
               <Route path="/guides/:slug" element={<GuideArticle />} />
               <Route path="/faq" element={<FAQ />} />
+              <Route path="/commande-confirmee" element={<OrderConfirmed />} />
+              <Route path="/compte" element={<Account />} />
 
               {/* Admin routes */}
               <Route path="/admin" element={
