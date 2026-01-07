@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -7,15 +7,19 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { 
   Search, 
   Loader2, 
   ShoppingCart, 
   Eye, 
-  Truck
+  Truck,
+  FileText,
+  Trash2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { toast } from 'sonner';
 import OrderDetailDialog from '@/components/admin/OrderDetailDialog';
 import { statusConfig, OrderStatus, getStatusBadgeVariant, normalFlow } from '@/lib/orderStatus';
 
@@ -24,6 +28,35 @@ const AdminOrders: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const queryClient = useQueryClient();
+
+  // Mutation pour supprimer une commande
+  const deleteOrderMutation = useMutation({
+    mutationFn: async (orderId: string) => {
+      // Supprimer les order_items d'abord
+      await supabase.from('order_items').delete().eq('order_id', orderId);
+      // Supprimer les order_status_events
+      await supabase.from('order_status_events').delete().eq('order_id', orderId);
+      // Supprimer les notifications
+      await supabase.from('notification_outbox').delete().eq('order_id', orderId);
+      // Supprimer les tokens d'accès
+      await supabase.from('order_access_tokens').delete().eq('order_id', orderId);
+      // Enfin supprimer la commande
+      const { error } = await supabase.from('orders').delete().eq('id', orderId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      toast.success('Commande supprimée avec succès');
+    },
+    onError: (error) => {
+      console.error('Delete error:', error);
+      toast.error('Erreur lors de la suppression');
+    }
+  });
+
+  const openPreparationPage = (orderId: string) => {
+    window.open(`${window.location.origin}/commande-preparation/${orderId}`, '_blank');
+  };
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ['admin-orders'],
@@ -158,26 +191,66 @@ const AdminOrders: React.FC = () => {
                           {config.shortLabel}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center gap-1 justify-end">
-                          {order.tracking_number && (
-                            <Button variant="ghost" size="icon" asChild title="Suivi transporteur">
-                              <a href={order.tracking_url || '#'} target="_blank" rel="noopener noreferrer">
-                                <Truck className="h-4 w-4 text-primary" />
-                              </a>
+                        <TableCell className="text-right">
+                          <div className="flex items-center gap-1 justify-end">
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => openPreparationPage(order.id)}
+                              title="Fiche préparateur (PDF)"
+                            >
+                              <FileText className="h-4 w-4" />
                             </Button>
-                          )}
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => setSelectedOrderId(order.id)} 
-                            title="Voir les détails"
-                          >
-                            <Eye className="h-4 w-4 mr-1" />
-                            Gérer
-                          </Button>
-                        </div>
-                      </TableCell>
+                            {order.tracking_number && (
+                              <Button variant="ghost" size="icon" asChild title="Suivi transporteur">
+                                <a href={order.tracking_url || '#'} target="_blank" rel="noopener noreferrer">
+                                  <Truck className="h-4 w-4 text-primary" />
+                                </a>
+                              </Button>
+                            )}
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => setSelectedOrderId(order.id)} 
+                              title="Voir les détails"
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              Gérer
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="text-destructive hover:text-destructive"
+                                  title="Supprimer"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Supprimer cette commande ?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Cette action est irréversible. La commande {order.order_number} et toutes les données associées seront définitivement supprimées.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => deleteOrderMutation.mutate(order.id)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    {deleteOrderMutation.isPending ? (
+                                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                    ) : null}
+                                    Supprimer
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </TableCell>
                     </TableRow>
                   );
                 })}
