@@ -18,14 +18,13 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { toast } from 'sonner';
 import { useCart } from '@/hooks/useCart';
 import OrderStatusTimeline from '@/components/account/OrderStatusTimeline';
+import SubscriptionManager from '@/components/account/SubscriptionManager';
 import { 
   User, 
   Package, 
-  RefreshCw, 
+  RefreshCw,
   Loader2, 
   ShoppingBag,
-  Pause,
-  Play,
   Edit,
   Save,
   X,
@@ -142,23 +141,6 @@ const Account = () => {
     }
   });
 
-  // Update subscription status
-  const updateSubscription = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: 'active' | 'paused' | 'cancelled' }) => {
-      const { error } = await supabase
-        .from('subscriptions')
-        .update({ status })
-        .eq('id', id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-subscriptions'] });
-      toast.success('Abonnement mis à jour');
-    },
-    onError: () => {
-      toast.error('Erreur lors de la mise à jour');
-    }
-  });
 
   // Initialize form when profile loads
   if (profile && !editingProfile && profileForm.first_name !== (profile.first_name || '')) {
@@ -526,94 +508,32 @@ const Account = () => {
 
               {/* Subscriptions Tab */}
               <TabsContent value="subscriptions">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Mes abonnements</CardTitle>
-                    <CardDescription>Gérez vos livraisons régulières</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {subsLoading ? (
-                      <div className="flex justify-center py-8">
-                        <Loader2 className="h-6 w-6 animate-spin" />
-                      </div>
-                    ) : subscriptions?.length === 0 ? (
-                      <div className="text-center py-12">
-                        <RefreshCw className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                        <p className="text-muted-foreground mb-4">Aucun abonnement actif</p>
-                        <Button asChild>
-                          <Link to="/boutique">Découvrir nos produits</Link>
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {subscriptions?.map((sub) => (
-                          <div 
-                            key={sub.id} 
-                            className="p-4 border rounded-xl space-y-4"
-                          >
-                            <div className="flex items-start justify-between gap-4">
-                              <div>
-                                <div className="flex items-center gap-2 mb-2">
-                                  <Badge variant={statusLabels[sub.status]?.variant || 'outline'}>
-                                    {statusLabels[sub.status]?.label || sub.status}
-                                  </Badge>
-                                </div>
-                                {sub.next_delivery_date && (
-                                  <p className="text-sm text-muted-foreground">
-                                    Prochaine livraison: {format(new Date(sub.next_delivery_date), 'dd MMMM yyyy', { locale: fr })}
-                                  </p>
-                                )}
-                                {sub.total_savings && sub.total_savings > 0 && (
-                                  <p className="text-sm text-secondary font-medium">
-                                    Économies totales: {sub.total_savings.toFixed(2)} €
-                                  </p>
-                                )}
-                              </div>
-                              <div className="flex gap-2">
-                                {sub.status === 'active' && (
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => updateSubscription.mutate({ id: sub.id, status: 'paused' })}
-                                    disabled={updateSubscription.isPending}
-                                  >
-                                    <Pause className="h-4 w-4 mr-1" />
-                                    Pause
-                                  </Button>
-                                )}
-                                {sub.status === 'paused' && (
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => updateSubscription.mutate({ id: sub.id, status: 'active' })}
-                                    disabled={updateSubscription.isPending}
-                                  >
-                                    <Play className="h-4 w-4 mr-1" />
-                                    Reprendre
-                                  </Button>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Subscription items */}
-                            {sub.items && sub.items.length > 0 && (
-                              <div className="border-t pt-4 space-y-2">
-                                {sub.items.map((item: any) => (
-                                  <div key={item.id} className="flex items-center justify-between text-sm">
-                                    <span>{item.products?.name || 'Produit'} {item.product_size && `(${item.product_size})`}</span>
-                                    <span className="text-muted-foreground">
-                                      x{item.quantity} — {(item.unit_price * item.quantity).toFixed(2)} €
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                {subsLoading ? (
+                  <Card>
+                    <CardContent className="flex justify-center py-12">
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                    </CardContent>
+                  </Card>
+                ) : subscriptions?.length === 0 ? (
+                  <Card>
+                    <CardContent className="text-center py-12">
+                      <RefreshCw className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                      <p className="text-muted-foreground mb-4">Aucun abonnement actif</p>
+                      <p className="text-sm text-muted-foreground mb-6">
+                        Ajoutez des produits en abonnement pour économiser 10% et recevoir vos livraisons automatiquement.
+                      </p>
+                      <Button asChild>
+                        <Link to="/boutique">Découvrir nos produits</Link>
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-6">
+                    {subscriptions?.map((sub) => (
+                      <SubscriptionManager key={sub.id} subscription={sub as any} />
+                    ))}
+                  </div>
+                )}
 
                 {/* Manage Subscription Button */}
                 {subscriptions && subscriptions.length > 0 && subscriptions.some(s => s.status === 'active') && (
