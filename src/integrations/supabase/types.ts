@@ -467,6 +467,60 @@ export type Database = {
           },
         ]
       }
+      order_item_preparation: {
+        Row: {
+          created_at: string
+          id: string
+          is_available: boolean | null
+          notes: string | null
+          order_id: string
+          order_item_id: string
+          prepared_at: string | null
+          prepared_by: string | null
+          prepared_quantity: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_available?: boolean | null
+          notes?: string | null
+          order_id: string
+          order_item_id: string
+          prepared_at?: string | null
+          prepared_by?: string | null
+          prepared_quantity?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_available?: boolean | null
+          notes?: string | null
+          order_id?: string
+          order_item_id?: string
+          prepared_at?: string | null
+          prepared_by?: string | null
+          prepared_quantity?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_item_preparation_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_item_preparation_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: true
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
