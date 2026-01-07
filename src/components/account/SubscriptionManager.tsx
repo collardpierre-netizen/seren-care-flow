@@ -512,9 +512,10 @@ export const SubscriptionManager = ({ subscription, userPreferences }: Subscript
               <span>Total par livraison</span>
               <span>{currentSubtotal.toFixed(2)} €</span>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Minimum d'abonnement: {minimumAmount} €
-            </p>
+            <div className="text-xs text-muted-foreground space-y-1 mt-2">
+              <p>✓ Minimum d'abonnement: {minimumAmount} € (inclut {settings?.subscription.included_deliveries || 1} livraison{(settings?.subscription.included_deliveries || 1) > 1 ? 's' : ''} / mois)</p>
+              <p>📦 Livraison supplémentaire: {(settings?.subscription.extra_delivery_fee || 4.90).toFixed(2)} €</p>
+            </div>
           </div>
 
           {/* Info box */}

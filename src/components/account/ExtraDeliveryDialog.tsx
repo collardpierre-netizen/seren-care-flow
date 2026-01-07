@@ -67,9 +67,9 @@ export const ExtraDeliveryDialog = ({
     return sum + (item.unit_price * qty);
   }, 0);
 
-  const shippingFee = subtotal >= (settings?.shipping.free_shipping_threshold || 49) 
-    ? 0 
-    : (settings?.shipping.standard_shipping_fee || 4.90);
+  // Extra delivery always costs shipping (uses subscription extra delivery fee)
+  const extraDeliveryFee = settings?.subscription.extra_delivery_fee || settings?.shipping.standard_shipping_fee || 4.90;
+  const shippingFee = extraDeliveryFee;
 
   const total = subtotal + shippingFee;
 
@@ -177,7 +177,10 @@ export const ExtraDeliveryDialog = ({
             Livraison ponctuelle
           </DialogTitle>
           <DialogDescription>
-            Commandez une livraison supplémentaire avec les produits de votre choix
+            Commandez une livraison supplémentaire avec les produits de votre choix.
+            <span className="block mt-1 text-primary font-medium">
+              Frais de livraison: {extraDeliveryFee.toFixed(2)} €
+            </span>
           </DialogDescription>
         </DialogHeader>
 
@@ -241,18 +244,12 @@ export const ExtraDeliveryDialog = ({
               <span>{subtotal.toFixed(2)} €</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Livraison</span>
-              {shippingFee === 0 ? (
-                <Badge variant="secondary">Gratuite</Badge>
-              ) : (
-                <span>{shippingFee.toFixed(2)} €</span>
-              )}
+              <span className="text-muted-foreground">Livraison supplémentaire</span>
+              <span>{shippingFee.toFixed(2)} €</span>
             </div>
-            {shippingFee > 0 && (
-              <p className="text-xs text-muted-foreground">
-                Livraison gratuite dès {settings?.shipping.free_shipping_threshold || 49} €
-              </p>
-            )}
+            <p className="text-xs text-muted-foreground">
+              Cette livraison est en plus de celle incluse dans votre abonnement mensuel.
+            </p>
             <div className="flex justify-between font-medium text-base pt-2 border-t">
               <span>Total</span>
               <span>{total.toFixed(2)} €</span>
