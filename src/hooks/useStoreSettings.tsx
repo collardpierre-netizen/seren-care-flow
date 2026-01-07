@@ -9,6 +9,8 @@ interface StoreSettings {
   subscription: {
     discount_percent: number;
     minimum_amount: number;
+    included_deliveries: number;
+    extra_delivery_fee: number;
     default_frequency_days: number;
   };
   checkout: {
@@ -27,6 +29,8 @@ const defaultSettings: StoreSettings = {
   subscription: {
     discount_percent: 10,
     minimum_amount: 69,
+    included_deliveries: 1,
+    extra_delivery_fee: 4.90,
     default_frequency_days: 30,
   },
   checkout: {
