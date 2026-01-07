@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -15,7 +16,8 @@ import {
   Eye, 
   Truck,
   FileText,
-  Trash2
+  Trash2,
+  ExternalLink
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -28,6 +30,7 @@ const AdminOrders: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   // Mutation pour supprimer une commande
   const deleteOrderMutation = useMutation({
@@ -55,7 +58,8 @@ const AdminOrders: React.FC = () => {
   });
 
   const openPreparationPage = (orderId: string) => {
-    window.open(`${window.location.origin}/commande-preparation/${orderId}`, '_blank');
+    // Navigate in same tab to preserve auth context
+    navigate(`/commande-preparation/${orderId}`);
   };
 
   const { data: orders, isLoading } = useQuery({
