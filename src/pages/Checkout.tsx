@@ -114,48 +114,8 @@ const Checkout = () => {
     setIsSubmitting(true);
     
     try {
-      const newOrderNumber = generateOrderNumber();
-      const hasSubscription = items.some(item => item.isSubscription);
-      
-      // Create order in database first
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          order_number: newOrderNumber,
-          user_id: user?.id || null,
-          subtotal: subtotal,
-          shipping_fee: shippingCost,
-          total: total,
-          status: 'order_received',
-          referral_code: referralValid ? referralCode.toUpperCase() : null,
-          is_subscription_order: hasSubscription,
-          shipping_address: shippingAddress as any,
-          billing_address: shippingAddress as any,
-        })
-        .select()
-        .single();
-      
-      if (orderError) throw orderError;
-      
-      // Create order items
-      const orderItems = items.map(item => ({
-        order_id: order.id,
-        product_id: item.productId,
-        product_name: item.productName,
-        product_size: item.size || null,
-        quantity: item.quantity,
-        unit_price: item.isSubscription && item.subscriptionPrice ? item.subscriptionPrice : item.unitPrice,
-        total_price: (item.isSubscription && item.subscriptionPrice ? item.subscriptionPrice : item.unitPrice) * item.quantity,
-      }));
-      
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
-      
-      if (itemsError) throw itemsError;
-      
-      // Create Stripe checkout session
-      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
+      // Create order via secure edge function (validates prices server-side)
+      const { data: orderData, error: orderError } = await supabase.functions.invoke('create-order', {
         body: {
           items: items.map(item => ({
             productId: item.productId,
@@ -169,8 +129,32 @@ const Checkout = () => {
           })),
           shippingAddress,
           shippingCost,
+          subtotal,
+          total,
           referralCode: referralValid ? referralCode.toUpperCase() : null,
-          orderId: order.id,
+        }
+      });
+
+      if (orderError) throw orderError;
+      if (!orderData?.orderId) throw new Error('Order creation failed');
+      
+      // Create Stripe checkout session
+      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
+        body: {
+          items: orderData.items.map((item: any) => ({
+            productId: item.productId,
+            productName: item.productName,
+            productImage: item.productImage,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            subscriptionPrice: item.subscriptionPrice,
+            size: item.size,
+            isSubscription: item.isSubscription,
+          })),
+          shippingAddress,
+          shippingCost,
+          referralCode: referralValid ? referralCode.toUpperCase() : null,
+          orderId: orderData.orderId,
         }
       });
 
