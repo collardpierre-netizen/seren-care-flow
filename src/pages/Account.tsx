@@ -530,7 +530,15 @@ const Account = () => {
                 ) : (
                   <div className="space-y-6">
                     {subscriptions?.map((sub) => (
-                      <SubscriptionManager key={sub.id} subscription={sub as any} />
+                      <SubscriptionManager 
+                        key={sub.id} 
+                        subscription={sub as any} 
+                        userPreferences={{
+                          incontinence_level: profile?.incontinence_level || undefined,
+                          gender: profile?.gender || undefined,
+                          usage_time: profile?.usage_time || undefined,
+                        }}
+                      />
                     ))}
                   </div>
                 )}
