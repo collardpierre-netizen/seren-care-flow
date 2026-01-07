@@ -77,6 +77,7 @@ serve(async (req) => {
         order_number: order.order_number,
         status: order.status,
         created_at: order.created_at,
+        eta_date: order.eta_date,
         notes: order.notes,
         shipping_address: order.shipping_address,
         customer_name: customerName,
