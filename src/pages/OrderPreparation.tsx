@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { motion } from 'framer-motion';
@@ -23,13 +24,42 @@ import {
   User,
   Phone,
   AlertCircle,
+  Printer,
 } from 'lucide-react';
 
 const OrderPreparation = () => {
   const { orderId } = useParams();
+  const [searchParams] = useSearchParams();
+  const { user } = useAuth();
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
+  const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
+
+  // Check if user is admin - bypass password if so
+  const { data: isAdmin } = useQuery({
+    queryKey: ['user-is-admin', user?.id],
+    queryFn: async () => {
+      if (!user) return false;
+      const { data } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .in('role', ['admin', 'manager']);
+      return (data?.length || 0) > 0;
+    },
+    enabled: !!user,
+  });
+
+  // Auto-authenticate admin users
+  useEffect(() => {
+    if (isAdmin === true) {
+      setIsAuthenticated(true);
+      setIsCheckingAdmin(false);
+    } else if (isAdmin === false) {
+      setIsCheckingAdmin(false);
+    }
+  }, [isAdmin]);
 
   const verifyAccess = useMutation({
     mutationFn: async () => {
@@ -49,14 +79,41 @@ const OrderPreparation = () => {
     },
   });
 
+  // Direct query for admin access (no edge function needed)
   const { data: order, isLoading } = useQuery({
-    queryKey: ['preparer-order', orderId],
+    queryKey: ['preparer-order', orderId, isAdmin],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('get-order-for-preparer', {
-        body: { orderId },
-      });
-      if (error) throw error;
-      return data;
+      if (isAdmin) {
+        // Admin direct access
+        const { data: orderData, error: orderError } = await supabase
+          .from('orders')
+          .select('*, order_items(*)')
+          .eq('id', orderId)
+          .single();
+        
+        if (orderError) throw orderError;
+        
+        const shippingAddress = orderData.shipping_address as any;
+        return {
+          ...orderData,
+          customer_name: shippingAddress ? `${shippingAddress.firstName} ${shippingAddress.lastName}` : 'Client',
+          customer_phone: shippingAddress?.phone,
+          items: orderData.order_items,
+          shipping_address: shippingAddress ? {
+            address_line1: shippingAddress.address,
+            address_line2: shippingAddress.address2,
+            postal_code: shippingAddress.postalCode,
+            city: shippingAddress.city,
+          } : null,
+        };
+      } else {
+        // Preparer access via edge function
+        const { data, error } = await supabase.functions.invoke('get-order-for-preparer', {
+          body: { orderId },
+        });
+        if (error) throw error;
+        return data;
+      }
     },
     enabled: isAuthenticated,
   });
@@ -69,6 +126,15 @@ const OrderPreparation = () => {
   };
 
   const allItemsChecked = order?.items?.every((item: any) => checkedItems[item.id]);
+
+  // Show loading while checking admin status
+  if (isCheckingAdmin && user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
@@ -151,11 +217,11 @@ const OrderPreparation = () => {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
               >
-                <Card className="border-primary/20">
+                <Card className="border-primary/20 print:border-0 print:shadow-none">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                        <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center print:hidden">
                           <Package className="h-6 w-6 text-primary" />
                         </div>
                         <div>
@@ -165,9 +231,22 @@ const OrderPreparation = () => {
                           </CardDescription>
                         </div>
                       </div>
-                      <Badge variant="outline" className="text-lg px-4 py-2">
-                        {order.status === 'paid' ? 'À préparer' : order.status}
-                      </Badge>
+                      <div className="flex items-center gap-3">
+                        <Badge variant="outline" className="text-lg px-4 py-2">
+                          {order.status === 'paid' || order.status === 'payment_confirmed' ? 'À préparer' : order.status}
+                        </Badge>
+                        {isAdmin && (
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => window.print()}
+                            className="print:hidden"
+                          >
+                            <Printer className="h-4 w-4 mr-2" />
+                            Imprimer
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </CardHeader>
                 </Card>
