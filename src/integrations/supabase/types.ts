@@ -1011,6 +1011,57 @@ export type Database = {
           },
         ]
       }
+      product_suppliers: {
+        Row: {
+          created_at: string
+          id: string
+          is_preferred: boolean | null
+          lead_time_days: number | null
+          min_order_quantity: number | null
+          product_id: string
+          purchase_price: number | null
+          supplier_id: string
+          supplier_sku: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_preferred?: boolean | null
+          lead_time_days?: number | null
+          min_order_quantity?: number | null
+          product_id: string
+          purchase_price?: number | null
+          supplier_id: string
+          supplier_sku?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_preferred?: boolean | null
+          lead_time_days?: number | null
+          min_order_quantity?: number | null
+          product_id?: string
+          purchase_price?: number | null
+          supplier_id?: string
+          supplier_sku?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_suppliers_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_suppliers_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           brand_id: string | null
@@ -1209,6 +1260,101 @@ export type Database = {
         }
         Relationships: []
       }
+      reorder_items: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          product_size: string | null
+          quantity: number
+          received_quantity: number | null
+          reorder_request_id: string
+          unit_price: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          product_size?: string | null
+          quantity: number
+          received_quantity?: number | null
+          reorder_request_id: string
+          unit_price?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          product_size?: string | null
+          quantity?: number
+          received_quantity?: number | null
+          reorder_request_id?: string
+          unit_price?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reorder_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reorder_items_reorder_request_id_fkey"
+            columns: ["reorder_request_id"]
+            isOneToOne: false
+            referencedRelation: "reorder_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reorder_requests: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          ordered_at: string | null
+          received_at: string | null
+          status: string
+          supplier_id: string
+          total_amount: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          ordered_at?: string | null
+          received_at?: string | null
+          status?: string
+          supplier_id: string
+          total_amount?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          ordered_at?: string | null
+          received_at?: string | null
+          status?: string
+          supplier_id?: string
+          total_amount?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reorder_requests_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stock_alerts: {
         Row: {
           created_at: string
@@ -1240,6 +1386,57 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "stock_alerts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean | null
+          message: string | null
+          notification_type: string
+          order_id: string | null
+          product_id: string
+          product_size: string | null
+          resolved_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          notification_type: string
+          order_id?: string | null
+          product_id: string
+          product_size?: string | null
+          resolved_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          notification_type?: string
+          order_id?: string | null
+          product_id?: string
+          product_size?: string | null
+          resolved_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_notifications_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_notifications_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
@@ -1368,6 +1565,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      suppliers: {
+        Row: {
+          address: string | null
+          contact_name: string | null
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          notes: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          contact_name?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          contact_name?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

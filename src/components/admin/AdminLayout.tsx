@@ -21,18 +21,25 @@ import {
   Euro,
   FolderOpen,
   BookOpen,
-  Star
+  Star,
+  Building2,
+  PackageSearch,
+  BarChart3
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+import StockNotifications from './StockNotifications';
 
 const navItems = [
   { label: 'Tableau de bord', href: '/admin', icon: LayoutDashboard },
   { label: 'Préparations', href: '/admin/preparations', icon: Package },
+  { label: 'Analytics Prép.', href: '/admin/analytics-preparations', icon: BarChart3 },
   { label: 'Produits', href: '/admin/produits', icon: Package },
   { label: 'Catégories', href: '/admin/categories', icon: FolderOpen },
   { label: 'Commandes', href: '/admin/commandes', icon: ShoppingCart },
   { label: 'Abonnements', href: '/admin/abonnements', icon: RefreshCw },
+  { label: 'Fournisseurs', href: '/admin/fournisseurs', icon: Building2 },
+  { label: 'Réassort', href: '/admin/reassort', icon: PackageSearch },
   { label: 'Clients', href: '/admin/clients', icon: Users },
   { label: 'Avis clients', href: '/admin/avis', icon: Star },
   { label: 'Prescripteurs', href: '/admin/prescripteurs', icon: UserCheck },
@@ -63,7 +70,7 @@ const AdminLayout: React.FC = () => {
           <Menu className="h-5 w-5" />
         </Button>
         <span className="font-display font-bold text-lg">SerenCare Admin</span>
-        <div className="w-10" />
+        <StockNotifications />
       </header>
 
       {/* Sidebar overlay */}
