@@ -15,6 +15,7 @@ import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Loader2, Search, Package, Upload, Link, X, Image as ImageIcon, Download, FileUp, Copy, CheckSquare } from 'lucide-react';
+import { ProductSizesManager } from '@/components/admin/ProductSizesManager';
 
 interface ProductFormData {
   name: string;
@@ -1332,6 +1333,12 @@ const AdminProducts: React.FC = () => {
                   )}
                 </div>
               </div>
+
+              {/* Product Sizes Manager */}
+              <ProductSizesManager 
+                productId={editingProduct?.id || null}
+                productSku={formData.sku}
+              />
 
               <div className="flex items-center gap-6 flex-wrap">
                 <div className="flex items-center gap-2">
