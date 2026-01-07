@@ -28,6 +28,7 @@ import { useState } from 'react';
 
 const navItems = [
   { label: 'Tableau de bord', href: '/admin', icon: LayoutDashboard },
+  { label: 'Préparations', href: '/admin/preparations', icon: Package },
   { label: 'Produits', href: '/admin/produits', icon: Package },
   { label: 'Catégories', href: '/admin/categories', icon: FolderOpen },
   { label: 'Commandes', href: '/admin/commandes', icon: ShoppingCart },
