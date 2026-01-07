@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.get-order-for-preparer]
 verify_jwt = false
+
+[functions.update-preparation-status]
+verify_jwt = false
