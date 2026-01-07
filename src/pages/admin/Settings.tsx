@@ -32,6 +32,8 @@ const AdminSettings: React.FC = () => {
   const [subscriptionDiscount, setSubscriptionDiscount] = React.useState('');
   const [minimumOrderAmount, setMinimumOrderAmount] = React.useState('');
   const [minimumSubscriptionAmount, setMinimumSubscriptionAmount] = React.useState('');
+  const [subscriptionIncludedDeliveries, setSubscriptionIncludedDeliveries] = React.useState('');
+  const [subscriptionExtraDeliveryFee, setSubscriptionExtraDeliveryFee] = React.useState('');
   const [deliveryDelay, setDeliveryDelay] = React.useState('');
 
   React.useEffect(() => {
@@ -40,6 +42,8 @@ const AdminSettings: React.FC = () => {
       setShippingFee(settings.shipping?.standard_shipping_fee?.toString() || '4.90');
       setSubscriptionDiscount(settings.subscription?.discount_percent?.toString() || '10');
       setMinimumSubscriptionAmount(settings.subscription?.minimum_amount?.toString() || '69');
+      setSubscriptionIncludedDeliveries(settings.subscription?.included_deliveries?.toString() || '1');
+      setSubscriptionExtraDeliveryFee(settings.subscription?.extra_delivery_fee?.toString() || '4.90');
       setMinimumOrderAmount(settings.checkout?.minimum_order_amount?.toString() || '25');
       setDeliveryDelay(settings.delivery?.working_days_delay?.toString() || '3');
     }
@@ -62,6 +66,8 @@ const AdminSettings: React.FC = () => {
             value: {
               discount_percent: parseInt(subscriptionDiscount),
               minimum_amount: parseFloat(minimumSubscriptionAmount),
+              included_deliveries: parseInt(subscriptionIncludedDeliveries),
+              extra_delivery_fee: parseFloat(subscriptionExtraDeliveryFee),
               default_frequency_days: 30
             }
           },
@@ -202,6 +208,32 @@ const AdminSettings: React.FC = () => {
             </div>
             <p className="text-xs text-muted-foreground">
               Les clients ne peuvent souscrire à un abonnement qu'à partir de ce montant minimum.
+            </p>
+            
+            <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+              <div className="space-y-2">
+                <Label htmlFor="includedDeliveries">Livraisons incluses / mois</Label>
+                <Input
+                  id="includedDeliveries"
+                  type="number"
+                  min="1"
+                  value={subscriptionIncludedDeliveries}
+                  onChange={(e) => setSubscriptionIncludedDeliveries(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="extraDeliveryFee">Frais livraison supplémentaire (€)</Label>
+                <Input
+                  id="extraDeliveryFee"
+                  type="number"
+                  step="0.01"
+                  value={subscriptionExtraDeliveryFee}
+                  onChange={(e) => setSubscriptionExtraDeliveryFee(e.target.value)}
+                />
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Le montant minimum inclut le nombre de livraisons spécifié. Chaque livraison supplémentaire sera facturée au tarif indiqué.
             </p>
           </CardContent>
         </Card>
