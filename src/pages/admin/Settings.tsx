@@ -31,6 +31,7 @@ const AdminSettings: React.FC = () => {
   const [shippingFee, setShippingFee] = React.useState('');
   const [subscriptionDiscount, setSubscriptionDiscount] = React.useState('');
   const [minimumOrderAmount, setMinimumOrderAmount] = React.useState('');
+  const [minimumSubscriptionAmount, setMinimumSubscriptionAmount] = React.useState('');
   const [deliveryDelay, setDeliveryDelay] = React.useState('');
 
   React.useEffect(() => {
@@ -38,6 +39,7 @@ const AdminSettings: React.FC = () => {
       setShippingThreshold(settings.shipping?.free_shipping_threshold?.toString() || '49');
       setShippingFee(settings.shipping?.standard_shipping_fee?.toString() || '4.90');
       setSubscriptionDiscount(settings.subscription?.discount_percent?.toString() || '10');
+      setMinimumSubscriptionAmount(settings.subscription?.minimum_amount?.toString() || '69');
       setMinimumOrderAmount(settings.checkout?.minimum_order_amount?.toString() || '25');
       setDeliveryDelay(settings.delivery?.working_days_delay?.toString() || '3');
     }
@@ -59,6 +61,7 @@ const AdminSettings: React.FC = () => {
             key: 'subscription',
             value: {
               discount_percent: parseInt(subscriptionDiscount),
+              minimum_amount: parseFloat(minimumSubscriptionAmount),
               default_frequency_days: 30
             }
           },
@@ -173,19 +176,33 @@ const AdminSettings: React.FC = () => {
         <Card>
           <CardHeader>
             <CardTitle>Abonnements</CardTitle>
-            <CardDescription>Configurez les remises sur les abonnements</CardDescription>
+            <CardDescription>Configurez les remises et conditions des abonnements</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="discount">Réduction abonnement (%)</Label>
-              <Input
-                id="discount"
-                type="number"
-                value={subscriptionDiscount}
-                onChange={(e) => setSubscriptionDiscount(e.target.value)}
-                className="max-w-[200px]"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="discount">Réduction abonnement (%)</Label>
+                <Input
+                  id="discount"
+                  type="number"
+                  value={subscriptionDiscount}
+                  onChange={(e) => setSubscriptionDiscount(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="minSubscription">Montant minimum (€ TTC)</Label>
+                <Input
+                  id="minSubscription"
+                  type="number"
+                  step="0.01"
+                  value={minimumSubscriptionAmount}
+                  onChange={(e) => setMinimumSubscriptionAmount(e.target.value)}
+                />
+              </div>
             </div>
+            <p className="text-xs text-muted-foreground">
+              Les clients ne peuvent souscrire à un abonnement qu'à partir de ce montant minimum.
+            </p>
           </CardContent>
         </Card>
 
