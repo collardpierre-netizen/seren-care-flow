@@ -35,7 +35,7 @@ import GuideArticle from "./pages/GuideArticle";
 import FAQ from "./pages/FAQ";
 import OrderConfirmed from "./pages/OrderConfirmed";
 import OrderPreparation from "./pages/OrderPreparation";
-import EmailPreview from "./pages/EmailPreview";
+import EmailPreview from "./pages/admin/EmailPreview";
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminProducts from "./pages/admin/Products";
