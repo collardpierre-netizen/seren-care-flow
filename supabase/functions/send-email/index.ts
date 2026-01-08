@@ -66,7 +66,7 @@ const brand = {
   supportEmail: "contact@serencare.be",
   supportPhone: "+32 2 123 45 67",
   website: "https://serencare.be",
-  senderEmail: "noreply@send.serencare.be",
+  senderEmail: "onboarding@resend.dev", // TODO: Changer pour noreply@send.serencare.be une fois le domaine vérifié
   senderName: "SerenCare",
 };
 
