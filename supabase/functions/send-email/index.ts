@@ -46,23 +46,24 @@ const corsHeaders = {
 const brand = {
   name: "SerenCare",
   colors: {
-    primary: "#1a5f4a",      // Calm forest green
-    primaryLight: "#e8f5f0", // Soft mint background
-    secondary: "#2d7a62",    // Slightly lighter green
-    text: "#2d3748",         // Dark gray for readability
-    textMuted: "#718096",    // Muted gray
-    background: "#fafafa",   // Warm off-white
+    primary: "#3366FF",      // Deep confident blue (HSL 220 70% 45%)
+    primaryLight: "#EEF2FF", // Light blue tint (HSL 220 60% 95%)
+    secondary: "#52A37A",    // Soft sage green (HSL 160 30% 50%)
+    accent: "#E86B4A",       // Warm coral-peach for CTAs (HSL 15 80% 60%)
+    text: "#1A2233",         // Dark foreground (HSL 220 30% 12%)
+    textMuted: "#6B7A8F",    // Muted text (HSL 220 15% 45%)
+    background: "#F8F9FC",   // Light background (HSL 220 20% 98%)
     white: "#ffffff",
-    border: "#e2e8f0",       // Subtle border
-    success: "#38a169",      // Confirmation green
-    warning: "#d69e2e",      // Soft amber
-    error: "#c53030",        // Muted red
+    border: "#E4E8EF",       // Subtle border (HSL 220 15% 90%)
+    success: "#52A37A",      // Same as secondary
+    warning: "#E8A74A",      // Warm amber
+    error: "#E85454",        // Muted red
   },
   fonts: {
-    primary: "Georgia, 'Times New Roman', serif",
-    secondary: "Arial, Helvetica, sans-serif",
+    primary: "'Plus Jakarta Sans', system-ui, sans-serif",
+    secondary: "'Inter', system-ui, sans-serif",
   },
-  logo: "https://obkfkygjisxvgrmclhnb.lovable.app/images/serencare-logo-email.png",
+  logo: "https://serencare.be/images/serencare-logo-email.png",
   supportEmail: "contact@serencare.be",
   supportPhone: "+32 2 123 45 67",
   website: "https://serencare.be",
