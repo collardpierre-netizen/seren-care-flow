@@ -748,37 +748,655 @@ function getOrderStatusEmail(data: TemplateData): { subject: string; html: strin
   };
 }
 
-// SUBSCRIPTION TEMPLATES
+// ============================================
+// PHASE 2: PAYMENT & INVOICE TEMPLATES
+// ============================================
 
-function getSubscriptionCreatedEmail(data: TemplateData): { subject: string; html: string; text: string } {
+function getPaymentFailedEmail(data: TemplateData): { subject: string; html: string; text: string } {
   const firstName = data.firstName || "Cher client";
-  const nextDeliveryDate = data.nextDeliveryDate || "";
-  const frequency = data.frequency || "mensuelle";
+  const orderNumber = data.orderNumber || "";
+  const reason = data.reason || "Votre banque a refusé la transaction.";
   
   const content = `
-    <p class="greeting">Merci, ${firstName}</p>
+    <p class="greeting">Bonjour, ${firstName}</p>
     
     <div class="content">
-      <p>Votre abonnement ${brand.name} est maintenant actif. Vous n'aurez plus à vous soucier de vos commandes – nous nous occupons de tout.</p>
+      <p>Nous n'avons malheureusement pas pu traiter votre paiement${orderNumber ? ` pour la commande n° ${orderNumber}` : ''}.</p>
       
-      <div style="text-align: center; margin: 24px 0;">
-        <span class="status-badge status-success">Abonnement actif</span>
+      <div class="info-box" style="border-left-color: ${brand.colors.warning};">
+        <p><strong>Raison :</strong> ${reason}</p>
+      </div>
+      
+      <p>Pas d'inquiétude, cela peut arriver. Voici quelques solutions :</p>
+      
+      <ul style="margin: 16px 0; padding-left: 20px;">
+        <li>Vérifiez que votre carte est valide et dispose de fonds suffisants</li>
+        <li>Essayez une autre méthode de paiement</li>
+        <li>Contactez votre banque si le problème persiste</li>
+      </ul>
+      
+      <div class="cta-section">
+        <a href="${brand.website}/checkout" class="cta-button">Réessayer le paiement</a>
+      </div>
+      
+      <p style="font-size: 14px; color: ${brand.colors.textMuted};">Votre panier a été sauvegardé. Vous pouvez reprendre votre commande à tout moment.</p>
+    </div>
+    
+    <div class="signature">
+      <p>À votre service,</p>
+      <p><strong>L'équipe ${brand.name}</strong></p>
+    </div>
+  `;
+  
+  return {
+    subject: `Paiement non abouti${orderNumber ? ` - Commande ${orderNumber}` : ''} - ${brand.name}`,
+    html: wrapEmail(content, "Paiement"),
+    text: `Bonjour ${firstName},\n\nNous n'avons pas pu traiter votre paiement.\n\nRaison: ${reason}\n\nRéessayez sur: ${brand.website}/checkout\n\nL'équipe ${brand.name}`
+  };
+}
+
+function getInvoiceAvailableEmail(data: TemplateData): { subject: string; html: string; text: string } {
+  const firstName = data.firstName || "Cher client";
+  const orderNumber = data.orderNumber || "";
+  const invoiceNumber = data.invoiceNumber || "";
+  const invoiceUrl = data.invoiceUrl || `${brand.website}/compte/factures`;
+  const total = data.total || 0;
+  
+  const content = `
+    <p class="greeting">Bonjour, ${firstName}</p>
+    
+    <div class="content">
+      <p>Votre facture${invoiceNumber ? ` n° ${invoiceNumber}` : ''} est disponible.</p>
+      
+      <div class="order-details">
+        <h3>Détails de la facture</h3>
+        ${orderNumber ? `
+        <div class="order-item">
+          <span>Commande</span>
+          <span>n° ${orderNumber}</span>
+        </div>
+        ` : ''}
+        ${invoiceNumber ? `
+        <div class="order-item">
+          <span>Facture</span>
+          <span>n° ${invoiceNumber}</span>
+        </div>
+        ` : ''}
+        ${total > 0 ? `
+        <div class="order-total">
+          <span>Montant</span>
+          <span>${total.toFixed(2)} €</span>
+        </div>
+        ` : ''}
+      </div>
+      
+      <div class="cta-section">
+        <a href="${invoiceUrl}" class="cta-button">Télécharger ma facture</a>
       </div>
       
       <div class="info-box">
-        <p><strong>Ce que cela signifie pour vous :</strong></p>
-        <p>• Livraison automatique ${frequency}</p>
-        <p>• Tarifs préférentiels sur tous vos produits</p>
-        <p>• Possibilité de modifier ou suspendre à tout moment</p>
-        ${nextDeliveryDate ? `<p>• Prochaine livraison prévue : ${nextDeliveryDate}</p>` : ''}
+        <p>Vos factures sont conservées dans votre espace client pendant 10 ans.</p>
       </div>
+    </div>
+    
+    <div class="signature">
+      <p>Cordialement,</p>
+      <p><strong>L'équipe ${brand.name}</strong></p>
+    </div>
+  `;
+  
+  return {
+    subject: `Votre facture${invoiceNumber ? ` n° ${invoiceNumber}` : ''} est disponible - ${brand.name}`,
+    html: wrapEmail(content, "Facture"),
+    text: `Bonjour ${firstName},\n\nVotre facture${invoiceNumber ? ` n° ${invoiceNumber}` : ''} est disponible.\n\nTéléchargez-la: ${invoiceUrl}\n\nL'équipe ${brand.name}`
+  };
+}
+
+function getRefundConfirmationEmail(data: TemplateData): { subject: string; html: string; text: string } {
+  const firstName = data.firstName || "Cher client";
+  const orderNumber = data.orderNumber || "";
+  const refundAmount = data.refundAmount || 0;
+  const reason = data.reason || "";
+  
+  const content = `
+    <p class="greeting">Bonjour, ${firstName}</p>
+    
+    <div class="content">
+      <p>Nous vous confirmons le remboursement de votre commande${orderNumber ? ` n° ${orderNumber}` : ''}.</p>
+      
+      <div class="order-details">
+        <h3>Détails du remboursement</h3>
+        <div class="order-total">
+          <span>Montant remboursé</span>
+          <span style="color: ${brand.colors.success};">${refundAmount.toFixed(2)} €</span>
+        </div>
+      </div>
+      
+      ${reason ? `
+      <div class="info-box">
+        <p><strong>Motif :</strong> ${reason}</p>
+      </div>
+      ` : ''}
+      
+      <p>Le remboursement sera crédité sur votre moyen de paiement d'origine sous 5 à 10 jours ouvrés, selon votre banque.</p>
+      
+      <div class="reassurance-block">
+        <p>"Nous espérons vous revoir bientôt. N'hésitez pas à nous contacter pour toute question."</p>
+      </div>
+    </div>
+    
+    <div class="signature">
+      <p>À votre service,</p>
+      <p><strong>L'équipe ${brand.name}</strong></p>
+    </div>
+  `;
+  
+  return {
+    subject: `Confirmation de remboursement${orderNumber ? ` - Commande ${orderNumber}` : ''} - ${brand.name}`,
+    html: wrapEmail(content, "Remboursement"),
+    text: `Bonjour ${firstName},\n\nVotre remboursement de ${refundAmount.toFixed(2)} € a été effectué.\n\nIl sera crédité sous 5-10 jours ouvrés.\n\nL'équipe ${brand.name}`
+  };
+}
+
+// ============================================
+// PHASE 2: DELIVERY ISSUE TEMPLATES
+// ============================================
+
+function getDeliveryDelayEmail(data: TemplateData): { subject: string; html: string; text: string } {
+  const firstName = data.firstName || "Cher client";
+  const orderNumber = data.orderNumber || "";
+  const originalDate = data.originalDate || "";
+  const newDate = data.newDate || "";
+  const reason = data.reason || "Un imprévu logistique";
+  
+  const content = `
+    <p class="greeting">Bonjour, ${firstName}</p>
+    
+    <div class="content">
+      <p>Nous devons vous informer d'un retard concernant votre commande${orderNumber ? ` n° ${orderNumber}` : ''}.</p>
+      
+      <div class="info-box" style="border-left-color: ${brand.colors.warning};">
+        <p><strong>Raison :</strong> ${reason}</p>
+        ${originalDate ? `<p style="margin-top: 8px;">Date initiale : ${originalDate}</p>` : ''}
+        ${newDate ? `<p><strong>Nouvelle date estimée : ${newDate}</strong></p>` : ''}
+      </div>
+      
+      <p>Nous sommes sincèrement désolés pour ce désagrément. Soyez assuré(e) que nous faisons tout notre possible pour vous livrer dans les meilleurs délais.</p>
+      
+      <div class="cta-section">
+        <a href="${brand.website}/compte/commandes" class="cta-button">Suivre ma commande</a>
+      </div>
+      
+      <div class="reassurance-block">
+        <p>"Votre satisfaction est notre priorité. Nous vous remercions pour votre patience."</p>
+      </div>
+    </div>
+    
+    <div class="signature">
+      <p>Avec toutes nos excuses,</p>
+      <p><strong>L'équipe ${brand.name}</strong></p>
+    </div>
+  `;
+  
+  return {
+    subject: `Information livraison - Commande ${orderNumber} - ${brand.name}`,
+    html: wrapEmail(content, "Livraison"),
+    text: `Bonjour ${firstName},\n\nNous vous informons d'un retard pour votre commande ${orderNumber}.\n\nRaison: ${reason}\n${newDate ? `Nouvelle date: ${newDate}` : ''}\n\nL'équipe ${brand.name}`
+  };
+}
+
+function getPartialDeliveryEmail(data: TemplateData): { subject: string; html: string; text: string } {
+  const firstName = data.firstName || "Cher client";
+  const orderNumber = data.orderNumber || "";
+  const deliveredItems = data.deliveredItems || [];
+  const pendingItems = data.pendingItems || [];
+  const pendingDeliveryDate = data.pendingDeliveryDate || "";
+  
+  let deliveredHtml = deliveredItems.map((item: any) => 
+    `<li>${item.name}${item.size ? ` (${item.size})` : ''} × ${item.quantity}</li>`
+  ).join('');
+  
+  let pendingHtml = pendingItems.map((item: any) => 
+    `<li>${item.name}${item.size ? ` (${item.size})` : ''} × ${item.quantity}</li>`
+  ).join('');
+  
+  const content = `
+    <p class="greeting">Bonjour, ${firstName}</p>
+    
+    <div class="content">
+      <p>Une partie de votre commande${orderNumber ? ` n° ${orderNumber}` : ''} est en cours de livraison.</p>
+      
+      ${deliveredItems.length > 0 ? `
+      <div class="order-details">
+        <h3 style="color: ${brand.colors.success};">Articles livrés / en livraison</h3>
+        <ul style="margin: 12px 0; padding-left: 20px;">${deliveredHtml}</ul>
+      </div>
+      ` : ''}
+      
+      ${pendingItems.length > 0 ? `
+      <div class="info-box" style="border-left-color: ${brand.colors.warning};">
+        <p><strong>Articles en attente :</strong></p>
+        <ul style="margin: 12px 0 0 0; padding-left: 20px;">${pendingHtml}</ul>
+        ${pendingDeliveryDate ? `<p style="margin-top: 12px;">Livraison prévue : ${pendingDeliveryDate}</p>` : ''}
+      </div>
+      ` : ''}
+      
+      <p>Vous serez notifié(e) dès l'expédition des articles restants.</p>
+      
+      <div class="cta-section">
+        <a href="${brand.website}/compte/commandes" class="cta-button">Voir ma commande</a>
+      </div>
+    </div>
+    
+    <div class="signature">
+      <p>Cordialement,</p>
+      <p><strong>L'équipe ${brand.name}</strong></p>
+    </div>
+  `;
+  
+  return {
+    subject: `Livraison partielle - Commande ${orderNumber} - ${brand.name}`,
+    html: wrapEmail(content, "Livraison partielle"),
+    text: `Bonjour ${firstName},\n\nUne partie de votre commande ${orderNumber} est en cours de livraison.\n\nL'équipe ${brand.name}`
+  };
+}
+
+function getOrderCancelledEmail(data: TemplateData): { subject: string; html: string; text: string } {
+  const firstName = data.firstName || "Cher client";
+  const orderNumber = data.orderNumber || "";
+  const reason = data.reason || "";
+  const cancelledBy = data.cancelledBy || "serencare"; // "serencare" or "customer"
+  const refundInfo = data.refundInfo || "";
+  
+  const isCustomerCancel = cancelledBy === "customer";
+  
+  const content = `
+    <p class="greeting">Bonjour, ${firstName}</p>
+    
+    <div class="content">
+      <p>${isCustomerCancel 
+        ? `Nous confirmons l'annulation de votre commande n° ${orderNumber}, comme vous l'avez demandé.`
+        : `Nous sommes au regret de vous informer que votre commande n° ${orderNumber} a été annulée.`
+      }</p>
+      
+      ${reason ? `
+      <div class="info-box">
+        <p><strong>Raison :</strong> ${reason}</p>
+      </div>
+      ` : ''}
+      
+      ${refundInfo ? `
+      <div class="order-details">
+        <h3>Remboursement</h3>
+        <p>${refundInfo}</p>
+      </div>
+      ` : `
+      <p>Si un paiement a été effectué, vous serez remboursé(e) sous 5 à 10 jours ouvrés.</p>
+      `}
+      
+      ${!isCustomerCancel ? `
+      <div class="reassurance-block">
+        <p>"Nous sommes sincèrement désolés pour ce désagrément et restons à votre disposition."</p>
+      </div>
+      ` : ''}
+      
+      <div class="cta-section">
+        <a href="${brand.website}/boutique" class="cta-button">Voir nos produits</a>
+      </div>
+    </div>
+    
+    <div class="signature">
+      <p>${isCustomerCancel ? 'À bientôt,' : 'Avec toutes nos excuses,'}</p>
+      <p><strong>L'équipe ${brand.name}</strong></p>
+    </div>
+  `;
+  
+  return {
+    subject: `Annulation de commande n° ${orderNumber} - ${brand.name}`,
+    html: wrapEmail(content, "Commande annulée"),
+    text: `Bonjour ${firstName},\n\nVotre commande n° ${orderNumber} a été annulée.\n\n${reason ? `Raison: ${reason}\n\n` : ''}L'équipe ${brand.name}`
+  };
+}
+
+// ============================================
+// PHASE 2: SUBSCRIPTION TEMPLATES
+// ============================================
+
+function getSubscriptionRenewalReminderEmail(data: TemplateData): { subject: string; html: string; text: string } {
+  const firstName = data.firstName || "Cher client";
+  const renewalDate = data.renewalDate || "";
+  const amount = data.amount || 0;
+  const items = data.items || [];
+  
+  let itemsHtml = items.map((item: any) => 
+    `<li>${item.name}${item.size ? ` (${item.size})` : ''} × ${item.quantity}</li>`
+  ).join('');
+  
+  const content = `
+    <p class="greeting">Bonjour, ${firstName}</p>
+    
+    <div class="content">
+      <p>Votre prochaine livraison ${brand.name} approche.</p>
+      
+      <div class="order-details">
+        <h3>Prochain renouvellement</h3>
+        <div class="order-item">
+          <span>Date</span>
+          <span>${renewalDate}</span>
+        </div>
+        ${amount > 0 ? `
+        <div class="order-total">
+          <span>Montant</span>
+          <span>${amount.toFixed(2)} €</span>
+        </div>
+        ` : ''}
+      </div>
+      
+      ${items.length > 0 ? `
+      <div class="info-box">
+        <p><strong>Articles inclus :</strong></p>
+        <ul style="margin: 12px 0 0 0; padding-left: 20px;">${itemsHtml}</ul>
+      </div>
+      ` : ''}
+      
+      <p>Vous souhaitez modifier votre abonnement ou les produits ? C'est simple et rapide depuis votre espace client.</p>
+      
+      <div class="cta-section">
+        <a href="${brand.website}/compte/abonnement" class="cta-button">Gérer mon abonnement</a>
+      </div>
+    </div>
+    
+    <div class="signature">
+      <p>À très bientôt,</p>
+      <p><strong>L'équipe ${brand.name}</strong></p>
+    </div>
+  `;
+  
+  return {
+    subject: `Votre prochaine livraison le ${renewalDate} - ${brand.name}`,
+    html: wrapEmail(content, "Rappel"),
+    text: `Bonjour ${firstName},\n\nVotre prochaine livraison ${brand.name} est prévue le ${renewalDate}.\n\nMontant: ${amount.toFixed(2)} €\n\nGérer: ${brand.website}/compte/abonnement\n\nL'équipe ${brand.name}`
+  };
+}
+
+function getSubscriptionRenewedEmail(data: TemplateData): { subject: string; html: string; text: string } {
+  const firstName = data.firstName || "Cher client";
+  const orderNumber = data.orderNumber || "";
+  const nextDeliveryDate = data.nextDeliveryDate || "";
+  const amount = data.amount || 0;
+  
+  const content = `
+    <p class="greeting">Bonjour, ${firstName}</p>
+    
+    <div class="content">
+      <p>Votre abonnement ${brand.name} a été renouvelé avec succès.</p>
+      
+      <div style="text-align: center; margin: 24px 0;">
+        <span class="status-badge status-success">Renouvellement confirmé</span>
+      </div>
+      
+      <div class="order-details">
+        <h3>Détails</h3>
+        ${orderNumber ? `
+        <div class="order-item">
+          <span>Commande</span>
+          <span>n° ${orderNumber}</span>
+        </div>
+        ` : ''}
+        ${amount > 0 ? `
+        <div class="order-item">
+          <span>Montant</span>
+          <span>${amount.toFixed(2)} €</span>
+        </div>
+        ` : ''}
+        ${nextDeliveryDate ? `
+        <div class="order-item">
+          <span>Prochaine livraison</span>
+          <span>${nextDeliveryDate}</span>
+        </div>
+        ` : ''}
+      </div>
+      
+      <p>Votre colis sera préparé et expédié dans les plus brefs délais.</p>
+      
+      <div class="cta-section">
+        <a href="${brand.website}/compte/commandes" class="cta-button">Suivre ma commande</a>
+      </div>
+    </div>
+    
+    <div class="signature">
+      <p>Merci pour votre confiance,</p>
+      <p><strong>L'équipe ${brand.name}</strong></p>
+    </div>
+  `;
+  
+  return {
+    subject: `Renouvellement confirmé${orderNumber ? ` - Commande ${orderNumber}` : ''} - ${brand.name}`,
+    html: wrapEmail(content, "Renouvellement"),
+    text: `Bonjour ${firstName},\n\nVotre abonnement a été renouvelé.\n\n${orderNumber ? `Commande: ${orderNumber}\n` : ''}${amount > 0 ? `Montant: ${amount.toFixed(2)} €\n` : ''}\n\nL'équipe ${brand.name}`
+  };
+}
+
+function getSubscriptionPausedEmail(data: TemplateData): { subject: string; html: string; text: string } {
+  const firstName = data.firstName || "Cher client";
+  const resumeDate = data.resumeDate || "";
+  
+  const content = `
+    <p class="greeting">Bonjour, ${firstName}</p>
+    
+    <div class="content">
+      <p>Votre abonnement ${brand.name} est maintenant en pause.</p>
+      
+      <div style="text-align: center; margin: 24px 0;">
+        <span class="status-badge status-warning">Abonnement en pause</span>
+      </div>
+      
+      ${resumeDate ? `
+      <div class="info-box">
+        <p>Votre abonnement reprendra automatiquement le <strong>${resumeDate}</strong>.</p>
+      </div>
+      ` : `
+      <div class="info-box">
+        <p>Vous pouvez réactiver votre abonnement à tout moment depuis votre espace client.</p>
+      </div>
+      `}
+      
+      <p>Pendant cette pause, vous ne serez pas débité(e) et aucune livraison ne sera effectuée.</p>
       
       <div class="cta-section">
         <a href="${brand.website}/compte/abonnement" class="cta-button">Gérer mon abonnement</a>
       </div>
       
       <div class="reassurance-block">
-        <p>"La tranquillité d'esprit, c'est de ne plus avoir à y penser."</p>
+        <p>"Nous restons à votre disposition. N'hésitez pas à nous contacter si vous avez des questions."</p>
+      </div>
+    </div>
+    
+    <div class="signature">
+      <p>À bientôt,</p>
+      <p><strong>L'équipe ${brand.name}</strong></p>
+    </div>
+  `;
+  
+  return {
+    subject: `Votre abonnement est en pause - ${brand.name}`,
+    html: wrapEmail(content, "Pause"),
+    text: `Bonjour ${firstName},\n\nVotre abonnement ${brand.name} est en pause.\n\n${resumeDate ? `Reprise prévue: ${resumeDate}\n` : ''}\n\nL'équipe ${brand.name}`
+  };
+}
+
+function getSubscriptionCancelledEmail(data: TemplateData): { subject: string; html: string; text: string } {
+  const firstName = data.firstName || "Cher client";
+  const reason = data.reason || "";
+  
+  const content = `
+    <p class="greeting">Bonjour, ${firstName}</p>
+    
+    <div class="content">
+      <p>Nous confirmons la résiliation de votre abonnement ${brand.name}.</p>
+      
+      ${reason ? `
+      <div class="info-box">
+        <p>${reason}</p>
+      </div>
+      ` : ''}
+      
+      <p>Nous sommes sincèrement désolés de vous voir partir. Si vous changez d'avis, vous pourrez toujours créer un nouvel abonnement depuis notre site.</p>
+      
+      <p>Vos informations de compte restent accessibles si vous souhaitez effectuer des commandes ponctuelles.</p>
+      
+      <div class="cta-section">
+        <a href="${brand.website}/boutique" class="cta-button">Voir nos produits</a>
+      </div>
+      
+      <div class="reassurance-block">
+        <p>"Merci pour la confiance que vous nous avez accordée. Nous espérons vous revoir bientôt."</p>
+      </div>
+    </div>
+    
+    <div class="signature">
+      <p>Avec toute notre gratitude,</p>
+      <p><strong>L'équipe ${brand.name}</strong></p>
+    </div>
+  `;
+  
+  return {
+    subject: `Confirmation de résiliation - ${brand.name}`,
+    html: wrapEmail(content, "Résiliation"),
+    text: `Bonjour ${firstName},\n\nVotre abonnement ${brand.name} a été résilié.\n\nMerci pour votre confiance.\n\nL'équipe ${brand.name}`
+  };
+}
+
+function getSubscriptionModifiedEmail(data: TemplateData): { subject: string; html: string; text: string } {
+  const firstName = data.firstName || "Cher client";
+  const changes = data.changes || "";
+  const nextDeliveryDate = data.nextDeliveryDate || "";
+  
+  const content = `
+    <p class="greeting">Bonjour, ${firstName}</p>
+    
+    <div class="content">
+      <p>Les modifications apportées à votre abonnement ${brand.name} ont été enregistrées.</p>
+      
+      ${changes ? `
+      <div class="info-box">
+        <p><strong>Modifications :</strong></p>
+        <p>${changes}</p>
+      </div>
+      ` : ''}
+      
+      ${nextDeliveryDate ? `
+      <p>Ces changements prendront effet à partir de votre prochaine livraison le <strong>${nextDeliveryDate}</strong>.</p>
+      ` : ''}
+      
+      <div class="cta-section">
+        <a href="${brand.website}/compte/abonnement" class="cta-button">Voir mon abonnement</a>
+      </div>
+    </div>
+    
+    <div class="signature">
+      <p>Cordialement,</p>
+      <p><strong>L'équipe ${brand.name}</strong></p>
+    </div>
+  `;
+  
+  return {
+    subject: `Modification de votre abonnement - ${brand.name}`,
+    html: wrapEmail(content, "Modification"),
+    text: `Bonjour ${firstName},\n\nVotre abonnement a été modifié.\n\n${changes ? `Modifications: ${changes}\n` : ''}\n\nL'équipe ${brand.name}`
+  };
+}
+
+// ============================================
+// PHASE 2: SUPPORT & CARE TEMPLATES
+// ============================================
+
+function getOutOfStockNotificationEmail(data: TemplateData): { subject: string; html: string; text: string } {
+  const firstName = data.firstName || "Cher client";
+  const orderNumber = data.orderNumber || "";
+  const outOfStockItems = data.outOfStockItems || [];
+  const alternatives = data.alternatives || [];
+  const proposedAction = data.proposedAction || "";
+  
+  let itemsHtml = outOfStockItems.map((item: any) => 
+    `<li>${item.name}${item.size ? ` (${item.size})` : ''}</li>`
+  ).join('');
+  
+  let alternativesHtml = alternatives.map((item: any) => 
+    `<li><strong>${item.name}</strong> - ${item.description || ''}</li>`
+  ).join('');
+  
+  const content = `
+    <p class="greeting">Bonjour, ${firstName}</p>
+    
+    <div class="content">
+      <p>Nous vous contactons concernant votre commande${orderNumber ? ` n° ${orderNumber}` : ''}.</p>
+      
+      <div class="info-box" style="border-left-color: ${brand.colors.warning};">
+        <p><strong>Article(s) temporairement indisponible(s) :</strong></p>
+        <ul style="margin: 12px 0 0 0; padding-left: 20px;">${itemsHtml}</ul>
+      </div>
+      
+      ${alternatives.length > 0 ? `
+      <div class="order-details">
+        <h3>Alternatives proposées</h3>
+        <ul style="margin: 12px 0; padding-left: 20px;">${alternativesHtml}</ul>
+      </div>
+      ` : ''}
+      
+      ${proposedAction ? `
+      <p><strong>Notre proposition :</strong> ${proposedAction}</p>
+      ` : ''}
+      
+      <p>Notre équipe va vous contacter prochainement pour trouver ensemble la meilleure solution.</p>
+      
+      <div class="reassurance-block">
+        <p>"Votre satisfaction est notre priorité. Nous ferons tout pour que vous receviez les produits adaptés à vos besoins."</p>
+      </div>
+    </div>
+    
+    <div class="signature">
+      <p>À votre service,</p>
+      <p><strong>L'équipe ${brand.name}</strong></p>
+    </div>
+  `;
+  
+  return {
+    subject: `Information importante - Commande ${orderNumber} - ${brand.name}`,
+    html: wrapEmail(content, "Information"),
+    text: `Bonjour ${firstName},\n\nCertains articles de votre commande ${orderNumber} sont temporairement indisponibles.\n\nNotre équipe vous contactera prochainement.\n\nL'équipe ${brand.name}`
+  };
+}
+
+function getCareFollowUpEmail(data: TemplateData): { subject: string; html: string; text: string } {
+  const firstName = data.firstName || "Cher client";
+  const message = data.message || "";
+  const ctaText = data.ctaText || "Voir les conseils";
+  const ctaUrl = data.ctaUrl || `${brand.website}/guides`;
+  
+  const content = `
+    <p class="greeting">Bonjour, ${firstName}</p>
+    
+    <div class="content">
+      ${message ? `<p>${message}</p>` : `
+      <p>Nous espérons que les produits reçus répondent à vos attentes.</p>
+      
+      <p>Notre équipe de conseillers spécialisés est à votre disposition pour vous accompagner et répondre à toutes vos questions concernant l'utilisation de vos produits.</p>
+      `}
+      
+      <div class="info-box">
+        <p><strong>Nos ressources pour vous :</strong></p>
+        <p>• Guides d'utilisation détaillés</p>
+        <p>• Conseils personnalisés</p>
+        <p>• Assistance téléphonique dédiée</p>
+      </div>
+      
+      <div class="cta-section">
+        <a href="${ctaUrl}" class="cta-button">${ctaText}</a>
+      </div>
+      
+      <div class="reassurance-block">
+        <p>"Vous n'êtes pas seul(e). Notre équipe est là pour vous accompagner au quotidien."</p>
       </div>
     </div>
     
@@ -789,9 +1407,139 @@ function getSubscriptionCreatedEmail(data: TemplateData): { subject: string; htm
   `;
   
   return {
-    subject: `Votre abonnement ${brand.name} est actif`,
-    html: wrapEmail(content, "Abonnement activé"),
-    text: `Merci ${firstName}!\n\nVotre abonnement ${brand.name} est maintenant actif.\n\nLivraison ${frequency}${nextDeliveryDate ? `, prochaine livraison: ${nextDeliveryDate}` : ''}.\n\nL'équipe ${brand.name}`
+    subject: `Nous sommes là pour vous - ${brand.name}`,
+    html: wrapEmail(content, "Suivi"),
+    text: `Bonjour ${firstName},\n\n${message || 'Nous espérons que les produits reçus vous conviennent.'}\n\nN'hésitez pas à consulter nos guides: ${ctaUrl}\n\nL'équipe ${brand.name}`
+  };
+}
+
+function getSatisfactionCheckEmail(data: TemplateData): { subject: string; html: string; text: string } {
+  const firstName = data.firstName || "Cher client";
+  const orderNumber = data.orderNumber || "";
+  const feedbackUrl = data.feedbackUrl || `${brand.website}/avis`;
+  
+  const content = `
+    <p class="greeting">Bonjour, ${firstName}</p>
+    
+    <div class="content">
+      <p>Nous espérons que votre expérience avec ${brand.name} a été à la hauteur de vos attentes.</p>
+      
+      <p>Votre avis compte beaucoup pour nous et nous aide à améliorer nos services. Seriez-vous disponible pour partager brièvement votre ressenti ?</p>
+      
+      <div class="cta-section">
+        <a href="${feedbackUrl}" class="cta-button">Donner mon avis</a>
+      </div>
+      
+      <div class="info-box">
+        <p><strong>Un souci avec votre commande${orderNumber ? ` n° ${orderNumber}` : ''} ?</strong></p>
+        <p style="margin-top: 8px;">Contactez-nous directement, notre équipe fera le nécessaire pour vous satisfaire.</p>
+      </div>
+      
+      <div class="reassurance-block">
+        <p>"Chaque retour nous aide à mieux vous servir. Merci de prendre quelques instants."</p>
+      </div>
+    </div>
+    
+    <div class="signature">
+      <p>Avec gratitude,</p>
+      <p><strong>L'équipe ${brand.name}</strong></p>
+    </div>
+  `;
+  
+  return {
+    subject: `Votre avis nous intéresse - ${brand.name}`,
+    html: wrapEmail(content, "Votre avis"),
+    text: `Bonjour ${firstName},\n\nVotre avis nous intéresse. Partagez votre expérience: ${feedbackUrl}\n\nMerci!\n\nL'équipe ${brand.name}`
+  };
+}
+
+function getFirstDeliveryReassuranceEmail(data: TemplateData): { subject: string; html: string; text: string } {
+  const firstName = data.firstName || "Cher client";
+  
+  const content = `
+    <p class="greeting">Bienvenue dans la famille ${brand.name}, ${firstName}</p>
+    
+    <div class="content">
+      <p>Vous venez de recevoir votre première commande, et nous voulions prendre un moment pour vous accompagner.</p>
+      
+      <p>Nous comprenons que choisir les bons produits peut parfois sembler complexe. C'est pourquoi nous sommes là pour vous guider à chaque étape.</p>
+      
+      <div class="info-box">
+        <p><strong>Vous avez des questions ?</strong></p>
+        <p>• Sur l'utilisation des produits</p>
+        <p>• Sur les tailles ou l'ajustement</p>
+        <p>• Sur la fréquence des changements</p>
+        <p style="margin-top: 12px;">Notre équipe spécialisée est là pour vous répondre avec bienveillance.</p>
+      </div>
+      
+      <div class="cta-section">
+        <a href="${brand.website}/guides" class="cta-button">Consulter nos guides</a>
+      </div>
+      
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="tel:${brand.supportPhone}" style="color: ${brand.colors.primary}; text-decoration: none;">
+          Ou appelez-nous : ${brand.supportPhone}
+        </a>
+      </p>
+      
+      <div class="reassurance-block">
+        <p>"Vous n'êtes pas seul(e). Des milliers de familles nous font confiance chaque jour."</p>
+      </div>
+    </div>
+    
+    <div class="signature">
+      <p>Chaleureusement,</p>
+      <p><strong>L'équipe ${brand.name}</strong></p>
+    </div>
+  `;
+  
+  return {
+    subject: `Bienvenue - Nous sommes là pour vous - ${brand.name}`,
+    html: wrapEmail(content, "Bienvenue"),
+    text: `Bienvenue ${firstName}!\n\nVous venez de recevoir votre première commande ${brand.name}.\n\nN'hésitez pas à consulter nos guides: ${brand.website}/guides\n\nOu appelez-nous: ${brand.supportPhone}\n\nL'équipe ${brand.name}`
+  };
+}
+
+function getAccountApprovedEmail(data: TemplateData): { subject: string; html: string; text: string } {
+  const firstName = data.firstName || "Cher partenaire";
+  const organizationName = data.organizationName || "";
+  const loginUrl = data.loginUrl || `${brand.website}/connexion`;
+  
+  const content = `
+    <p class="greeting">Félicitations, ${firstName}</p>
+    
+    <div class="content">
+      <p>Votre demande de compte professionnel ${brand.name}${organizationName ? ` pour ${organizationName}` : ''} a été approuvée.</p>
+      
+      <div style="text-align: center; margin: 24px 0;">
+        <span class="status-badge status-success">Compte activé</span>
+      </div>
+      
+      <div class="info-box">
+        <p><strong>Vos avantages professionnels :</strong></p>
+        <p>• Tarifs préférentiels sur tout notre catalogue</p>
+        <p>• Accès à votre espace dédié</p>
+        <p>• Suivi des commissions et parrainages</p>
+        <p>• Support prioritaire</p>
+      </div>
+      
+      <div class="cta-section">
+        <a href="${loginUrl}" class="cta-button">Accéder à mon espace pro</a>
+      </div>
+      
+      <p>Un conseiller dédié vous contactera prochainement pour vous présenter l'ensemble de nos services.</p>
+    </div>
+    
+    <div class="signature">
+      <p>Bienvenue dans notre réseau,</p>
+      <p><strong>L'équipe ${brand.name}</strong></p>
+    </div>
+  `;
+  
+  return {
+    subject: `Votre compte professionnel est activé - ${brand.name}`,
+    html: wrapEmail(content, "Compte approuvé"),
+    text: `Félicitations ${firstName}!\n\nVotre compte professionnel ${brand.name} a été approuvé.\n\nConnectez-vous: ${loginUrl}\n\nL'équipe ${brand.name}`
   };
 }
 
@@ -846,6 +1594,7 @@ function getTeamOrderNotificationEmail(data: TemplateData): { subject: string; h
   };
 }
 
+
 // ============================================
 // TEMPLATE REGISTRY
 // ============================================
@@ -862,9 +1611,31 @@ const templates: { [key: string]: (data: TemplateData) => { subject: string; htm
   order_shipped: getOrderShippedEmail,
   order_delivered: getOrderDeliveredEmail,
   order_status: getOrderStatusEmail,
+  order_cancelled: getOrderCancelledEmail,
+  
+  // Payment
+  payment_failed: getPaymentFailedEmail,
+  invoice_available: getInvoiceAvailableEmail,
+  refund_confirmation: getRefundConfirmationEmail,
+  
+  // Delivery
+  delivery_delay: getDeliveryDelayEmail,
+  partial_delivery: getPartialDeliveryEmail,
   
   // Subscriptions
-  subscription_created: getSubscriptionCreatedEmail,
+  subscription_created: getSubscriptionRenewedEmail,
+  subscription_renewal_reminder: getSubscriptionRenewalReminderEmail,
+  subscription_renewed: getSubscriptionRenewedEmail,
+  subscription_paused: getSubscriptionPausedEmail,
+  subscription_cancelled: getSubscriptionCancelledEmail,
+  subscription_modified: getSubscriptionModifiedEmail,
+  
+  // Support & Care
+  out_of_stock: getOutOfStockNotificationEmail,
+  care_followup: getCareFollowUpEmail,
+  satisfaction_check: getSatisfactionCheckEmail,
+  first_delivery_reassurance: getFirstDeliveryReassuranceEmail,
+  account_approved: getAccountApprovedEmail,
   
   // Internal
   team_order_notification: getTeamOrderNotificationEmail,
