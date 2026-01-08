@@ -26,7 +26,7 @@ const brand = {
     primary: "Georgia, 'Times New Roman', serif",
     secondary: "Arial, Helvetica, sans-serif",
   },
-  logo: "https://obkfkygjisxvgrmclhnb.supabase.co/storage/v1/object/public/media/serencare-logo.png",
+  logo: "https://obkfkygjisxvgrmclhnb.lovable.app/images/serencare-logo-email.png",
   supportEmail: "contact@serencare.be",
   supportPhone: "+32 2 123 45 67",
   website: "https://serencare.be",
