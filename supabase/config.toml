@@ -1,6 +1,6 @@
 project_id = "obkfkygjisxvgrmclhnb"
 
-[functions.send-confirmation-email]
+[functions.send-email]
 verify_jwt = false
 
 [functions.create-checkout]
@@ -10,12 +10,6 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.customer-portal]
-verify_jwt = false
-
-[functions.send-order-status-email]
-verify_jwt = false
-
-[functions.send-order-to-preparer]
 verify_jwt = false
 
 [functions.verify-preparer-access]
