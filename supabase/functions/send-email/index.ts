@@ -71,7 +71,7 @@ const brand = {
   supportEmailPro: "pro@serencare.be",        // Professionnels
   supportPhone: "+32 2 123 45 67",
   website: "https://serencare.be",
-  senderEmail: "noreply@send.serencare.be", // Domaine Resend vérifié
+  senderEmail: "noreply@serencare.be", // Domaine Resend vérifié
   senderName: "SerenCare",
 };
 
