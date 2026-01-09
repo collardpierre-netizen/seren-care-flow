@@ -1710,6 +1710,8 @@ interface EmailRequest {
   html?: string;
   text?: string;
   replyTo?: string;
+  // Preview mode - returns HTML without sending
+  preview?: boolean;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -1720,9 +1722,9 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const request: EmailRequest = await req.json();
-    const { to, template, data = {}, subject, html, text, replyTo } = request;
+    const { to, template, data = {}, subject, html, text, replyTo, preview = false } = request;
 
-    console.log(`[SerenCare Email] Sending ${template || 'custom'} email to ${Array.isArray(to) ? to.join(', ') : to}`);
+    console.log(`[SerenCare Email] ${preview ? 'Previewing' : 'Sending'} ${template || 'custom'} email${!preview ? ` to ${Array.isArray(to) ? to.join(', ') : to}` : ''}`);
 
     let emailSubject: string;
     let emailHtml: string;
@@ -1742,6 +1744,24 @@ const handler = async (req: Request): Promise<Response> => {
       emailText = text || "";
     } else {
       throw new Error(`Invalid request: template '${template}' not found and no direct content provided`);
+    }
+
+    // If preview mode, return the HTML without sending
+    if (preview) {
+      console.log(`[SerenCare Email] Preview mode - returning HTML for template: ${template}`);
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          preview: true,
+          subject: emailSubject,
+          html: emailHtml,
+          text: emailText,
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
     }
 
     // Determine Reply-To based on template type (B2B vs B2C)

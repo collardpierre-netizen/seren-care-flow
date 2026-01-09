@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Send, Mail, CheckCircle, Package, Truck, User } from "lucide-react";
+import { ArrowLeft, Send, Mail, CheckCircle, Package, Truck, User, AlertTriangle, RefreshCw, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,13 +12,16 @@ import { supabase } from "@/integrations/supabase/client";
 const EmailPreview = () => {
   const [testEmail, setTestEmail] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState("welcome");
+  const [previewHtml, setPreviewHtml] = useState<string>("");
   const { toast } = useToast();
 
   // Sample data for previews
-  const sampleData = {
+  const sampleData: Record<string, Record<string, unknown>> = {
     welcome: {
       firstName: "Marie",
+      ctaUrl: "https://serencare.be/compte",
     },
     order_confirmation: {
       firstName: "Marie",
@@ -53,6 +56,12 @@ const EmailPreview = () => {
       firstName: "Marie",
       orderNumber: "SC-2026-001234",
     },
+    order_status: {
+      firstName: "Marie",
+      orderNumber: "SC-2026-001234",
+      status: "preparing",
+      message: "Votre commande est en cours de préparation dans notre entrepôt.",
+    },
     subscription_created: {
       firstName: "Marie",
       nextDeliveryDate: "15 février 2026",
@@ -68,6 +77,14 @@ const EmailPreview = () => {
       ],
       isSubscription: true,
     },
+    password_reset: {
+      firstName: "Marie",
+      resetUrl: "https://serencare.be/reset-password?token=abc123",
+    },
+    email_verification: {
+      firstName: "Marie",
+      verificationUrl: "https://serencare.be/verify?token=abc123",
+    },
   };
 
   const templates = [
@@ -75,9 +92,51 @@ const EmailPreview = () => {
     { id: "order_confirmation", name: "Confirmation commande", icon: CheckCircle, description: "Confirmation après paiement" },
     { id: "order_shipped", name: "Colis expédié", icon: Truck, description: "Notification d'expédition" },
     { id: "order_delivered", name: "Colis livré", icon: Package, description: "Confirmation de livraison" },
+    { id: "order_status", name: "Statut commande", icon: AlertTriangle, description: "Mise à jour du statut" },
     { id: "subscription_created", name: "Abonnement créé", icon: Mail, description: "Confirmation d'abonnement" },
     { id: "team_order_notification", name: "Notification équipe", icon: Mail, description: "Alerte interne nouvelle commande" },
+    { id: "password_reset", name: "Mot de passe", icon: Mail, description: "Réinitialisation mot de passe" },
+    { id: "email_verification", name: "Vérification email", icon: Mail, description: "Confirmation adresse email" },
   ];
+
+  // Generate real HTML preview by calling edge function with preview mode
+  const generatePreview = async () => {
+    setIsLoadingPreview(true);
+    try {
+      const templateData = sampleData[selectedTemplate] || {};
+      
+      const { data, error } = await supabase.functions.invoke("send-email", {
+        body: {
+          to: "preview@example.com",
+          template: selectedTemplate,
+          data: templateData,
+          preview: true, // Request preview mode - don't actually send
+        },
+      });
+
+      if (error) throw error;
+      
+      if (data?.html) {
+        setPreviewHtml(data.html);
+      }
+    } catch (error: unknown) {
+      console.error("Error generating preview:", error);
+      // Fallback: show placeholder
+      setPreviewHtml(`
+        <div style="padding: 40px; text-align: center; font-family: sans-serif;">
+          <p style="color: #666;">Impossible de charger l'aperçu.</p>
+          <p style="color: #999; font-size: 14px;">Envoyez un email de test pour voir le rendu réel.</p>
+        </div>
+      `);
+    } finally {
+      setIsLoadingPreview(false);
+    }
+  };
+
+  // Load preview when template changes
+  useEffect(() => {
+    generatePreview();
+  }, [selectedTemplate]);
 
   const handleSendTest = async () => {
     if (!testEmail) {
@@ -91,7 +150,7 @@ const EmailPreview = () => {
 
     setIsSending(true);
     try {
-      const templateData = sampleData[selectedTemplate as keyof typeof sampleData] || {};
+      const templateData = sampleData[selectedTemplate] || {};
       
       const { data, error } = await supabase.functions.invoke("send-email", {
         body: {
@@ -105,7 +164,7 @@ const EmailPreview = () => {
 
       toast({
         title: "Email envoyé",
-        description: `L'email de test "${selectedTemplate}" a été envoyé à ${testEmail}.`,
+        description: `L'email de test "${templates.find(t => t.id === selectedTemplate)?.name}" a été envoyé à ${testEmail}.`,
       });
     } catch (error: unknown) {
       console.error("Error sending test email:", error);
@@ -203,16 +262,30 @@ const EmailPreview = () => {
 
             {/* Main Content - Preview */}
             <Card>
-              <CardHeader>
-                <CardTitle>Prévisualisation</CardTitle>
-                <CardDescription>
-                  Aperçu du template "{templates.find(t => t.id === selectedTemplate)?.name}"
-                </CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Prévisualisation HTML réelle</CardTitle>
+                  <CardDescription>
+                    Aperçu du template "{templates.find(t => t.id === selectedTemplate)?.name}"
+                  </CardDescription>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={generatePreview}
+                  disabled={isLoadingPreview}
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${isLoadingPreview ? 'animate-spin' : ''}`} />
+                  Actualiser
+                </Button>
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="desktop">
                   <TabsList className="mb-4">
-                    <TabsTrigger value="desktop">Desktop</TabsTrigger>
+                    <TabsTrigger value="desktop">
+                      <Eye className="h-4 w-4 mr-2" />
+                      Desktop
+                    </TabsTrigger>
                     <TabsTrigger value="mobile">Mobile</TabsTrigger>
                     <TabsTrigger value="data">Données</TabsTrigger>
                   </TabsList>
@@ -225,65 +298,23 @@ const EmailPreview = () => {
                           <div className="w-3 h-3 rounded-full bg-yellow-500" />
                           <div className="w-3 h-3 rounded-full bg-green-500" />
                         </div>
-                        <span className="text-xs text-muted-foreground ml-2">Email Preview</span>
+                        <span className="text-xs text-muted-foreground ml-2">
+                          {templates.find(t => t.id === selectedTemplate)?.name} - Preview
+                        </span>
                       </div>
-                      <div className="p-4 bg-[#fafafa] min-h-[600px]">
-                        <div className="max-w-[600px] mx-auto bg-white rounded-lg shadow-sm overflow-hidden">
-                          {/* Email Header */}
-                          <div className="bg-[#1a5f4a] px-8 py-6 text-center">
-                            <div className="text-white text-xl font-serif">SerenCare</div>
-                            <div className="text-white/80 text-sm mt-1">
-                              {selectedTemplate === "welcome" && "Bienvenue"}
-                              {selectedTemplate === "order_confirmation" && "Commande confirmée"}
-                              {selectedTemplate === "order_shipped" && "Colis expédié"}
-                              {selectedTemplate === "order_delivered" && "Colis livré"}
-                              {selectedTemplate === "subscription_created" && "Abonnement activé"}
-                              {selectedTemplate === "team_order_notification" && "Nouvelle commande"}
-                            </div>
+                      <div className="bg-[#f8f9fc] min-h-[600px]">
+                        {isLoadingPreview ? (
+                          <div className="flex items-center justify-center h-[600px]">
+                            <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
                           </div>
-                          
-                          {/* Email Body Preview */}
-                          <div className="p-8">
-                            <p className="text-[#1a5f4a] text-xl font-serif mb-4">
-                              {selectedTemplate === "welcome" && "Bienvenue, Marie"}
-                              {selectedTemplate === "order_confirmation" && "Merci pour votre commande, Marie"}
-                              {selectedTemplate === "order_shipped" && "Bonne nouvelle, Marie"}
-                              {selectedTemplate === "order_delivered" && "Votre colis est arrivé, Marie"}
-                              {selectedTemplate === "subscription_created" && "Merci, Marie"}
-                              {selectedTemplate === "team_order_notification" && "Nouvelle commande reçue"}
-                            </p>
-                            <p className="text-gray-600 mb-4">
-                              {selectedTemplate === "welcome" && "Nous sommes heureux de vous accueillir au sein de la famille SerenCare."}
-                              {selectedTemplate === "order_confirmation" && "Nous avons bien reçu votre commande et nous la préparons avec le plus grand soin."}
-                              {selectedTemplate === "order_shipped" && "Votre commande n° SC-2026-001234 est en route vers vous."}
-                              {selectedTemplate === "order_delivered" && "Votre commande n° SC-2026-001234 a été livrée avec succès."}
-                              {selectedTemplate === "subscription_created" && "Votre abonnement SerenCare est maintenant actif."}
-                              {selectedTemplate === "team_order_notification" && "Commande n° SC-2026-001234 - 63,30 €"}
-                            </p>
-                            
-                            {/* Sample CTA */}
-                            <div className="text-center my-6">
-                              <span className="inline-block bg-[#1a5f4a] text-white px-8 py-3 rounded-lg">
-                                {selectedTemplate === "welcome" && "Découvrir nos produits"}
-                                {selectedTemplate === "order_confirmation" && "Suivre ma commande"}
-                                {selectedTemplate === "order_shipped" && "Suivre mon colis"}
-                                {selectedTemplate === "order_delivered" && "Commander à nouveau"}
-                                {selectedTemplate === "subscription_created" && "Gérer mon abonnement"}
-                                {selectedTemplate === "team_order_notification" && "Voir dans l'admin"}
-                              </span>
-                            </div>
-                          </div>
-                          
-                          {/* Email Footer */}
-                          <div className="bg-[#fafafa] px-8 py-6 text-center border-t">
-                            <p className="text-gray-500 text-sm">
-                              Besoin d'aide ? contact@serencare.be | +32 2 123 45 67
-                            </p>
-                            <p className="text-gray-400 text-xs mt-2">
-                              © 2026 SerenCare. Tous droits réservés.
-                            </p>
-                          </div>
-                        </div>
+                        ) : (
+                          <iframe
+                            srcDoc={previewHtml}
+                            className="w-full h-[700px] border-0"
+                            title="Email Preview"
+                            sandbox="allow-same-origin"
+                          />
+                        )}
                       </div>
                     </div>
                   </TabsContent>
@@ -294,30 +325,19 @@ const EmailPreview = () => {
                         <div className="bg-black h-8 flex items-center justify-center">
                           <div className="w-20 h-4 bg-black rounded-full" />
                         </div>
-                        <div className="h-[667px] overflow-auto bg-[#fafafa]">
-                          <div className="bg-white m-2 rounded-lg shadow-sm overflow-hidden">
-                            <div className="bg-[#1a5f4a] px-4 py-4 text-center">
-                              <div className="text-white text-lg font-serif">SerenCare</div>
+                        <div className="h-[667px] overflow-auto bg-[#f8f9fc]">
+                          {isLoadingPreview ? (
+                            <div className="flex items-center justify-center h-full">
+                              <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
                             </div>
-                            <div className="p-4">
-                              <p className="text-[#1a5f4a] text-lg font-serif mb-3">
-                                Bienvenue, Marie
-                              </p>
-                              <p className="text-gray-600 text-sm mb-4">
-                                Nous sommes heureux de vous accueillir...
-                              </p>
-                              <div className="text-center">
-                                <span className="inline-block bg-[#1a5f4a] text-white text-sm px-6 py-2.5 rounded-lg">
-                                  Découvrir nos produits
-                                </span>
-                              </div>
-                            </div>
-                            <div className="bg-[#fafafa] px-4 py-4 text-center border-t">
-                              <p className="text-gray-400 text-xs">
-                                © 2026 SerenCare
-                              </p>
-                            </div>
-                          </div>
+                          ) : (
+                            <iframe
+                              srcDoc={previewHtml}
+                              className="w-full h-full border-0"
+                              title="Email Preview Mobile"
+                              sandbox="allow-same-origin"
+                            />
+                          )}
                         </div>
                       </div>
                     </div>
@@ -326,8 +346,8 @@ const EmailPreview = () => {
                   <TabsContent value="data">
                     <div className="bg-muted rounded-lg p-4">
                       <h4 className="font-medium mb-2">Données du template</h4>
-                      <pre className="text-sm overflow-auto bg-background p-4 rounded border">
-                        {JSON.stringify(sampleData[selectedTemplate as keyof typeof sampleData] || {}, null, 2)}
+                      <pre className="text-sm overflow-auto bg-background p-4 rounded border max-h-[500px]">
+                        {JSON.stringify(sampleData[selectedTemplate] || {}, null, 2)}
                       </pre>
                     </div>
                   </TabsContent>

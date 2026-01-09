@@ -979,6 +979,8 @@ export type Database = {
           is_active: boolean | null
           price_adjustment: number | null
           product_id: string
+          purchase_price: number | null
+          sale_price: number | null
           size: string
           sku: string | null
           stock_quantity: number | null
@@ -988,6 +990,8 @@ export type Database = {
           is_active?: boolean | null
           price_adjustment?: number | null
           product_id: string
+          purchase_price?: number | null
+          sale_price?: number | null
           size: string
           sku?: string | null
           stock_quantity?: number | null
@@ -997,6 +1001,8 @@ export type Database = {
           is_active?: boolean | null
           price_adjustment?: number | null
           product_id?: string
+          purchase_price?: number | null
+          sale_price?: number | null
           size?: string
           sku?: string | null
           stock_quantity?: number | null
