@@ -49,6 +49,7 @@ const navItems = [
   { label: 'Guides', href: '/admin/guides', icon: BookOpen },
   { label: 'Médias', href: '/admin/medias', icon: Image },
   { label: 'Médias Hero', href: '/admin/hero-media', icon: Film },
+  { label: 'Emails', href: '/admin/emails', icon: FileText },
   { label: 'Paramètres', href: '/admin/parametres', icon: Settings },
 ];
 

@@ -96,7 +96,7 @@ const App = () => (
               <Route path="/commande-confirmee" element={<OrderConfirmed />} />
               <Route path="/commande-preparation/:orderId" element={<OrderPreparation />} />
               <Route path="/compte" element={<Account />} />
-              <Route path="/admin/email-preview" element={<EmailPreview />} />
+              
 
               {/* Admin routes */}
               <Route path="/admin" element={
@@ -117,13 +117,14 @@ const App = () => (
                 <Route path="categories" element={<AdminCategories />} />
                 <Route path="avis" element={<AdminReviews />} />
                 <Route path="preparations" element={<AdminPreparations />} />
-                <Route path="analytics-preparations" element={<AdminPreparationAnalytics />} />
-                <Route path="fournisseurs" element={<AdminSuppliers />} />
-                <Route path="reassort" element={<AdminReorders />} />
-                <Route path="medias" element={<AdminMedia />} />
-                <Route path="hero-media" element={<AdminHeroMedia />} />
-                <Route path="parametres" element={<AdminSettings />} />
-              </Route>
+              <Route path="analytics-preparations" element={<AdminPreparationAnalytics />} />
+              <Route path="fournisseurs" element={<AdminSuppliers />} />
+              <Route path="reassort" element={<AdminReorders />} />
+              <Route path="medias" element={<AdminMedia />} />
+              <Route path="hero-media" element={<AdminHeroMedia />} />
+              <Route path="emails" element={<EmailPreview />} />
+              <Route path="parametres" element={<AdminSettings />} />
+            </Route>
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
