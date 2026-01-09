@@ -531,19 +531,21 @@ function getOrderConfirmationEmail(data: TemplateData): { subject: string; html:
   const firstName = data.firstName || data.customerName || "Cher client";
   const orderNumber = data.orderNumber || "N/A";
   const items = data.items || [];
-  const subtotal = data.subtotal || 0;
-  const shippingFee = data.shippingFee || 0;
-  const discount = data.discount || 0;
-  const total = data.total || subtotal + shippingFee - discount;
+  const subtotal = parseFloat(String(data.subtotal)) || 0;
+  const shippingFee = parseFloat(String(data.shippingFee)) || 0;
+  const discount = parseFloat(String(data.discount)) || 0;
+  const total = parseFloat(String(data.total)) || subtotal + shippingFee - discount;
   const shippingAddress = data.shippingAddress || {};
   const estimatedDelivery = data.estimatedDelivery || "3-5 jours ouvrés";
   
   let itemsHtml = "";
   items.forEach((item: any) => {
+    const itemPrice = parseFloat(String(item.unitPrice || item.price)) || 0;
+    const itemQuantity = parseInt(String(item.quantity)) || 1;
     itemsHtml += `
       <div class="order-item">
-        <span>${item.name}${item.size ? ` (${item.size})` : ''} × ${item.quantity}</span>
-        <span>${(item.unitPrice * item.quantity).toFixed(2)} €</span>
+        <span>${item.name}${item.size ? ` (${item.size})` : ''} × ${itemQuantity}</span>
+        <span>${(itemPrice * itemQuantity).toFixed(2)} €</span>
       </div>
     `;
   });
@@ -624,9 +626,11 @@ function getOrderConfirmationEmail(data: TemplateData): { subject: string; html:
     </div>
   `;
   
-  let itemsText = items.map((item: any) => 
-    `- ${item.name}${item.size ? ` (${item.size})` : ''} × ${item.quantity}: ${(item.unitPrice * item.quantity).toFixed(2)} €`
-  ).join('\n');
+  let itemsText = items.map((item: any) => {
+    const itemPrice = parseFloat(String(item.unitPrice || item.price)) || 0;
+    const itemQuantity = parseInt(String(item.quantity)) || 1;
+    return `- ${item.name}${item.size ? ` (${item.size})` : ''} × ${itemQuantity}: ${(itemPrice * itemQuantity).toFixed(2)} €`;
+  }).join('\n');
   
   return {
     subject: `Confirmation de commande n° ${orderNumber} - ${brand.name}`,
