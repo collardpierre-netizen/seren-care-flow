@@ -66,7 +66,7 @@ const brand = {
     primary: "'Plus Jakarta Sans', system-ui, sans-serif",
     secondary: "'Inter', system-ui, sans-serif",
   },
-  logo: LOGO_URL,
+  logo: "https://obkfkygjisxvgrmclhnb.supabase.co/storage/v1/object/public/email-assets/serencare-logo-email.png",
   supportEmail: "support@serencare.be",      // Familles
   supportEmailPro: "pro@serencare.be",        // Professionnels
   supportPhone: "+32 2 123 45 67",
