@@ -97,6 +97,7 @@ export const useProducts = (filters?: {
           sizes:product_sizes(*)
         `)
         .eq('is_active', true)
+        .gt('price', 0) // Filtrer les produits sans prix
         .order('created_at', { ascending: false });
 
       if (filters?.categoryId) {
@@ -178,11 +179,12 @@ export const useCategories = (options?: { includeCount?: boolean; includeEmpty?:
         return categories as Category[];
       }
       
-      // Get product counts per category
+      // Get product counts per category (only products with price > 0)
       const { data: products } = await supabase
         .from('products')
         .select('category_id')
-        .eq('is_active', true);
+        .eq('is_active', true)
+        .gt('price', 0);
       
       const counts: Record<string, number> = {};
       products?.forEach(p => {
