@@ -43,8 +43,8 @@ const corsHeaders = {
 // SERENCARE EMAIL DESIGN SYSTEM
 // ============================================
 
-// Logo SerenCare - URL publique du bucket storage
-const LOGO_URL = "https://obkfkygjisxvgrmclhnb.supabase.co/storage/v1/object/public/email-assets/serencare-logo.png";
+// Logo SerenCare - URL publique du site déployé
+const LOGO_URL = "https://serencare.be/images/serencare-logo-email.png";
 
 const brand = {
   name: "SerenCare",
