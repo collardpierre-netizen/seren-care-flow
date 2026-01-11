@@ -67,33 +67,61 @@ const Header = () => {
   };
 
   return (
-    <header 
-      className={`fixed top-0 left-0 right-0 z-50 bg-background/98 backdrop-blur-xl border-b border-border/40 transition-transform duration-300 ${
-        isVisible ? 'translate-y-0' : '-translate-y-full'
-      }`}
+    <motion.header 
+      initial={false}
+      animate={{ 
+        y: isVisible ? 0 : -100,
+        opacity: isVisible ? 1 : 0
+      }}
+      transition={{ 
+        type: 'spring', 
+        stiffness: 400, 
+        damping: 35,
+        mass: 0.8
+      }}
+      className="fixed top-0 left-0 right-0 z-50 bg-background/98 backdrop-blur-xl border-b border-border/40"
     >
       <nav className="container-main">
         <div className="flex items-center justify-between h-[72px]">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
-            <img src={logo} alt="SerenCare" className="w-9 h-9 rounded-lg transition-transform group-hover:scale-105" />
+            <motion.img 
+              src={logo} 
+              alt="SerenCare" 
+              className="w-9 h-9 rounded-lg"
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+            />
             <span className="font-display font-bold text-xl text-foreground tracking-tight">SerenCare</span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-1">
-            {navigation.map((item) => (
-              <Link
+            {navigation.map((item, index) => (
+              <motion.div
                 key={item.name}
-                to={item.href}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  isActive(item.href)
-                    ? "text-primary bg-highlight"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                }`}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
               >
-                {item.name}
-              </Link>
+                <Link
+                  to={item.href}
+                  className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    isActive(item.href)
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {item.name}
+                  {isActive(item.href) && (
+                    <motion.div
+                      layoutId="activeNavIndicator"
+                      className="absolute inset-0 bg-highlight rounded-lg -z-10"
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                </Link>
+              </motion.div>
             ))}
           </div>
 
@@ -169,13 +197,36 @@ const Header = () => {
                 </span>
               )}
             </Button>
-            <button
+            <motion.button
               className="p-2.5 rounded-lg hover:bg-muted transition-colors"
               onClick={() => setIsOpen(!isOpen)}
               aria-label="Menu"
+              whileTap={{ scale: 0.95 }}
             >
-              {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
+              <AnimatePresence mode="wait" initial={false}>
+                {isOpen ? (
+                  <motion.div
+                    key="close"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <X className="w-5 h-5" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="menu"
+                    initial={{ rotate: 90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -90, opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <Menu className="w-5 h-5" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.button>
           </div>
         </div>
 
@@ -186,23 +237,47 @@ const Header = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
+              transition={{ 
+                duration: 0.25,
+                ease: [0.4, 0, 0.2, 1]
+              }}
               className="lg:hidden overflow-hidden border-t border-border/40"
             >
-              <div className="py-4 space-y-1">
+              <motion.div 
+                className="py-4 space-y-1"
+                initial="closed"
+                animate="open"
+                exit="closed"
+                variants={{
+                  open: {
+                    transition: { staggerChildren: 0.05, delayChildren: 0.1 }
+                  },
+                  closed: {
+                    transition: { staggerChildren: 0.03, staggerDirection: -1 }
+                  }
+                }}
+              >
                 {navigation.map((item) => (
-                  <Link
+                  <motion.div
                     key={item.name}
-                    to={item.href}
-                    onClick={() => setIsOpen(false)}
-                    className={`block px-4 py-3 rounded-xl text-base font-medium transition-colors ${
-                      isActive(item.href)
-                        ? "bg-highlight text-primary"
-                        : "text-foreground hover:bg-muted"
-                    }`}
+                    variants={{
+                      open: { opacity: 1, x: 0 },
+                      closed: { opacity: 0, x: -20 }
+                    }}
+                    transition={{ duration: 0.2 }}
                   >
-                    {item.name}
-                  </Link>
+                    <Link
+                      to={item.href}
+                      onClick={() => setIsOpen(false)}
+                      className={`block px-4 py-3 rounded-xl text-base font-medium transition-colors ${
+                        isActive(item.href)
+                          ? "bg-highlight text-primary"
+                          : "text-foreground hover:bg-muted"
+                      }`}
+                    >
+                      {item.name}
+                    </Link>
+                  </motion.div>
                 ))}
                 
                 {user && isAdmin && (
@@ -243,12 +318,12 @@ const Header = () => {
                     </div>
                   )}
                 </div>
-              </div>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
       </nav>
-    </header>
+    </motion.header>
   );
 };
 
