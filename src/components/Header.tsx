@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Menu, X, Phone, ChevronRight, ShoppingCart, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,11 +11,40 @@ import logo from "@/assets/logo.png";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAdmin, signOut } = useAuth();
   const { openCart, getItemCount } = useCart();
   const itemCount = getItemCount();
+
+  // Smart header visibility on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Always show if at top or scrolling up
+      if (currentScrollY < 100 || currentScrollY < lastScrollY) {
+        setIsVisible(true);
+      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        // Hide when scrolling down and not near top
+        setIsVisible(false);
+        // Close mobile menu when hiding
+        if (isOpen) setIsOpen(false);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY, isOpen]);
+
+  // Close menu on route change
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location.pathname]);
 
   const navigation = [
     { name: "Accueil", href: "/" },
@@ -38,7 +67,11 @@ const Header = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/40">
+    <header 
+      className={`fixed top-0 left-0 right-0 z-50 bg-background/98 backdrop-blur-xl border-b border-border/40 transition-transform duration-300 ${
+        isVisible ? 'translate-y-0' : '-translate-y-full'
+      }`}
+    >
       <nav className="container-main">
         <div className="flex items-center justify-between h-[72px]">
           {/* Logo */}
@@ -161,15 +194,7 @@ const Header = () => {
                   <Link
                     key={item.name}
                     to={item.href}
-                    onClick={() => {
-                      setIsOpen(false);
-                      // Ensure scroll to top on mobile navigation
-                      setTimeout(() => {
-                        window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-                        document.documentElement.scrollTop = 0;
-                        document.body.scrollTop = 0;
-                      }, 100);
-                    }}
+                    onClick={() => setIsOpen(false)}
                     className={`block px-4 py-3 rounded-xl text-base font-medium transition-colors ${
                       isActive(item.href)
                         ? "bg-highlight text-primary"
