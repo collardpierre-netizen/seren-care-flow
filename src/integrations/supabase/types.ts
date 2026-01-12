@@ -975,37 +975,49 @@ export type Database = {
       }
       product_sizes: {
         Row: {
+          cnk_code: string | null
+          ean_code: string | null
           id: string
           is_active: boolean | null
           price_adjustment: number | null
           product_id: string
+          public_price: number | null
           purchase_price: number | null
           sale_price: number | null
           size: string
           sku: string | null
           stock_quantity: number | null
+          units_per_size: number | null
         }
         Insert: {
+          cnk_code?: string | null
+          ean_code?: string | null
           id?: string
           is_active?: boolean | null
           price_adjustment?: number | null
           product_id: string
+          public_price?: number | null
           purchase_price?: number | null
           sale_price?: number | null
           size: string
           sku?: string | null
           stock_quantity?: number | null
+          units_per_size?: number | null
         }
         Update: {
+          cnk_code?: string | null
+          ean_code?: string | null
           id?: string
           is_active?: boolean | null
           price_adjustment?: number | null
           product_id?: string
+          public_price?: number | null
           purchase_price?: number | null
           sale_price?: number | null
           size?: string
           sku?: string | null
           stock_quantity?: number | null
+          units_per_size?: number | null
         }
         Relationships: [
           {
