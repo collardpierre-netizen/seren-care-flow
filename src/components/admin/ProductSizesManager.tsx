@@ -12,7 +12,10 @@ interface ProductSize {
   id?: string;
   size: string;
   sku: string;
-  price_adjustment: number;
+  ean_code: string;
+  cnk_code: string;
+  units_per_size: number;
+  public_price: number | null;
   sale_price: number | null;
   purchase_price: number | null;
   stock_quantity: number;
@@ -60,7 +63,10 @@ export const ProductSizesManager: React.FC<ProductSizesManagerProps> = ({
         id: s.id,
         size: s.size,
         sku: s.sku || '',
-        price_adjustment: Number(s.price_adjustment) || 0,
+        ean_code: (s as any).ean_code || '',
+        cnk_code: (s as any).cnk_code || '',
+        units_per_size: (s as any).units_per_size || 1,
+        public_price: (s as any).public_price != null ? Number((s as any).public_price) : null,
         sale_price: s.sale_price != null ? Number(s.sale_price) : null,
         purchase_price: s.purchase_price != null ? Number(s.purchase_price) : null,
         stock_quantity: s.stock_quantity || 0,
@@ -82,14 +88,17 @@ export const ProductSizesManager: React.FC<ProductSizesManagerProps> = ({
           product_id: productId,
           size: s.size,
           sku: s.sku || null,
-          price_adjustment: s.price_adjustment || 0,
+          ean_code: s.ean_code || null,
+          cnk_code: s.cnk_code || null,
+          units_per_size: s.units_per_size || 1,
+          public_price: s.public_price,
           sale_price: s.sale_price,
           purchase_price: s.purchase_price,
           stock_quantity: s.stock_quantity || 0,
           is_active: s.is_active,
         }));
 
-        const { error } = await supabase.from('product_sizes').insert(sizesToInsert);
+        const { error } = await supabase.from('product_sizes').insert(sizesToInsert as any);
         if (error) throw error;
       }
     },
@@ -113,7 +122,10 @@ export const ProductSizesManager: React.FC<ProductSizesManagerProps> = ({
     setSizes(prev => [...prev, {
       size: size.toUpperCase(),
       sku: productSku ? `${productSku}-${size.toUpperCase()}` : '',
-      price_adjustment: 0,
+      ean_code: '',
+      cnk_code: '',
+      units_per_size: 1,
+      public_price: null,
       sale_price: null,
       purchase_price: null,
       stock_quantity: 0,
@@ -137,7 +149,10 @@ export const ProductSizesManager: React.FC<ProductSizesManagerProps> = ({
         newSizes.push({
           size,
           sku: productSku ? `${productSku}-${size}` : '',
-          price_adjustment: 0,
+          ean_code: '',
+          cnk_code: '',
+          units_per_size: 1,
+          public_price: null,
           sale_price: null,
           purchase_price: null,
           stock_quantity: 0,
@@ -224,94 +239,121 @@ export const ProductSizesManager: React.FC<ProductSizesManagerProps> = ({
           Aucune taille définie. Ce produit sera vendu sans sélection de taille.
         </p>
       ) : (
-        <div className="space-y-2">
-          {/* Header */}
-          <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground px-2">
-            <div className="col-span-1">Taille</div>
-            <div className="col-span-2">Référence (SKU)</div>
-            <div className="col-span-2">Prix vente (€)</div>
-            <div className="col-span-2">Prix achat (€)</div>
-            <div className="col-span-2">Stock</div>
-            <div className="col-span-2">Actif</div>
-            <div className="col-span-1"></div>
-          </div>
-
+        <div className="space-y-3">
           {sizes.map((size, index) => (
-            <div key={index} className="grid grid-cols-12 gap-2 items-center bg-background p-2 rounded-md border">
-              {/* Size badge */}
-              <div className="col-span-1">
-                <Badge variant="outline" className="font-mono text-xs">
-                  {size.size}
-                </Badge>
+            <div key={index} className="bg-background p-3 rounded-md border space-y-3">
+              {/* Row 1: Size, SKU, EAN, CNK */}
+              <div className="grid grid-cols-12 gap-2 items-center">
+                <div className="col-span-1">
+                  <Badge variant="outline" className="font-mono text-xs w-full justify-center">
+                    {size.size}
+                  </Badge>
+                </div>
+                <div className="col-span-3">
+                  <label className="text-[10px] text-muted-foreground mb-0.5 block">SKU</label>
+                  <Input
+                    value={size.sku}
+                    onChange={(e) => updateSize(index, 'sku', e.target.value)}
+                    placeholder="SKU"
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <div className="col-span-3">
+                  <label className="text-[10px] text-muted-foreground mb-0.5 block">Code EAN</label>
+                  <Input
+                    value={size.ean_code}
+                    onChange={(e) => updateSize(index, 'ean_code', e.target.value)}
+                    placeholder="Code EAN"
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <div className="col-span-3">
+                  <label className="text-[10px] text-muted-foreground mb-0.5 block">Code CNK</label>
+                  <Input
+                    value={size.cnk_code}
+                    onChange={(e) => updateSize(index, 'cnk_code', e.target.value)}
+                    placeholder="Code CNK"
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <div className="col-span-2 flex justify-end">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => removeSize(index)}
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
               </div>
-              
-              {/* SKU */}
-              <div className="col-span-2">
-                <Input
-                  value={size.sku}
-                  onChange={(e) => updateSize(index, 'sku', e.target.value)}
-                  placeholder="SKU"
-                  className="h-8 text-xs"
-                />
-              </div>
-              
-              {/* Sale price */}
-              <div className="col-span-2">
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={size.sale_price ?? ''}
-                  onChange={(e) => updateSize(index, 'sale_price', e.target.value ? parseFloat(e.target.value) : null)}
-                  placeholder={basePrice ? basePrice.toFixed(2) : "0.00"}
-                  className="h-8 text-xs"
-                />
-              </div>
-              
-              {/* Purchase price */}
-              <div className="col-span-2">
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={size.purchase_price ?? ''}
-                  onChange={(e) => updateSize(index, 'purchase_price', e.target.value ? parseFloat(e.target.value) : null)}
-                  placeholder={basePurchasePrice ? basePurchasePrice.toFixed(2) : "0.00"}
-                  className="h-8 text-xs"
-                />
-              </div>
-              
-              {/* Stock */}
-              <div className="col-span-2">
-                <Input
-                  type="number"
-                  value={size.stock_quantity || ''}
-                  onChange={(e) => updateSize(index, 'stock_quantity', parseInt(e.target.value) || 0)}
-                  placeholder="0"
-                  className="h-8 text-xs"
-                />
-              </div>
-              
-              {/* Active toggle */}
-              <div className="col-span-2 flex items-center gap-2">
-                <Switch
-                  checked={size.is_active}
-                  onCheckedChange={(v) => updateSize(index, 'is_active', v)}
-                />
-                <span className="text-xs text-muted-foreground">
-                  {size.is_active ? 'Oui' : 'Non'}
-                </span>
-              </div>
-              
-              {/* Delete button */}
-              <div className="col-span-1">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => removeSize(index)}
-                >
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
+
+              {/* Row 2: Units, Public Price, SerenCare Price, Purchase Price, Stock, Active */}
+              <div className="grid grid-cols-12 gap-2 items-center">
+                <div className="col-span-1"></div>
+                <div className="col-span-2">
+                  <label className="text-[10px] text-muted-foreground mb-0.5 block">Unités/variant</label>
+                  <Input
+                    type="number"
+                    value={size.units_per_size || ''}
+                    onChange={(e) => updateSize(index, 'units_per_size', parseInt(e.target.value) || 1)}
+                    placeholder="1"
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="text-[10px] text-muted-foreground mb-0.5 block">Prix public (€)</label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={size.public_price ?? ''}
+                    onChange={(e) => updateSize(index, 'public_price', e.target.value ? parseFloat(e.target.value) : null)}
+                    placeholder="0.00"
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="text-[10px] text-muted-foreground mb-0.5 block">Prix SerenCare (€)</label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={size.sale_price ?? ''}
+                    onChange={(e) => updateSize(index, 'sale_price', e.target.value ? parseFloat(e.target.value) : null)}
+                    placeholder={basePrice ? basePrice.toFixed(2) : "0.00"}
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="text-[10px] text-muted-foreground mb-0.5 block">Prix achat (€)</label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={size.purchase_price ?? ''}
+                    onChange={(e) => updateSize(index, 'purchase_price', e.target.value ? parseFloat(e.target.value) : null)}
+                    placeholder={basePurchasePrice ? basePurchasePrice.toFixed(2) : "0.00"}
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <div className="col-span-1">
+                  <label className="text-[10px] text-muted-foreground mb-0.5 block">Stock</label>
+                  <Input
+                    type="number"
+                    value={size.stock_quantity || ''}
+                    onChange={(e) => updateSize(index, 'stock_quantity', parseInt(e.target.value) || 0)}
+                    placeholder="0"
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <div className="col-span-2 flex items-end gap-2 pb-0.5">
+                  <Switch
+                    checked={size.is_active}
+                    onCheckedChange={(v) => updateSize(index, 'is_active', v)}
+                  />
+                  <span className="text-xs text-muted-foreground">
+                    {size.is_active ? 'Actif' : 'Inactif'}
+                  </span>
+                </div>
               </div>
             </div>
           ))}
@@ -319,9 +361,10 @@ export const ProductSizesManager: React.FC<ProductSizesManagerProps> = ({
       )}
 
       <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t">
-        <p>💡 <strong>Prix vente :</strong> Si vide, utilise le prix de base du produit</p>
-        <p>💡 <strong>Prix achat :</strong> Prix d'achat fournisseur pour cette taille spécifique</p>
-        <p>💡 <strong>Référence :</strong> SKU unique pour cette variante (code barre, etc.)</p>
+        <p>💡 <strong>Prix public :</strong> Prix de vente conseillé (PVPC)</p>
+        <p>💡 <strong>Prix SerenCare :</strong> Prix de vente sur notre site (si vide, utilise le prix de base)</p>
+        <p>💡 <strong>Prix achat :</strong> Prix d'achat fournisseur pour cette variante</p>
+        <p>💡 <strong>Unités :</strong> Nombre d'unités dans cette variante (ex: paquet de 28)</p>
       </div>
     </div>
   );
