@@ -527,26 +527,26 @@ const Shop = () => {
             <div className="grid md:grid-cols-3 gap-4">
               <button 
                 onClick={() => setShowProductSelector(true)} 
-                className="block w-full text-left"
+                className="block w-full text-left group"
               >
-                <div className="p-6 bg-card rounded-xl border border-border hover:border-primary hover:shadow-md transition-all text-center group cursor-pointer">
-                  <Droplet className="w-8 h-8 mx-auto mb-3 text-primary" />
+                <div className="p-6 bg-card rounded-xl border border-border hover:border-primary hover:shadow-lg transition-all duration-300 text-center cursor-pointer transform hover:scale-[1.02] hover:-translate-y-1">
+                  <Droplet className="w-8 h-8 mx-auto mb-3 text-primary transition-transform duration-300 group-hover:scale-110" />
                   <h3 className="font-medium text-foreground group-hover:text-primary transition-colors">
                     Choisir le bon produit
                   </h3>
                 </div>
               </button>
-              <Link to="/guides/comment-choisir-la-bonne-taille" className="block">
-                <div className="p-6 bg-card rounded-xl border border-border hover:border-primary hover:shadow-md transition-all text-center group">
-                  <Footprints className="w-8 h-8 mx-auto mb-3 text-primary" />
+              <Link to="/guides/comment-choisir-la-bonne-taille" className="block group">
+                <div className="p-6 bg-card rounded-xl border border-border hover:border-primary hover:shadow-lg transition-all duration-300 text-center transform hover:scale-[1.02] hover:-translate-y-1">
+                  <Footprints className="w-8 h-8 mx-auto mb-3 text-primary transition-transform duration-300 group-hover:scale-110" />
                   <h3 className="font-medium text-foreground group-hover:text-primary transition-colors">
                     Choisir la bonne taille
                   </h3>
                 </div>
               </Link>
-              <Link to="/guides" className="block">
-                <div className="p-6 bg-card rounded-xl border border-border hover:border-primary hover:shadow-md transition-all text-center group">
-                  <Sparkles className="w-8 h-8 mx-auto mb-3 text-primary" />
+              <Link to="/guides" className="block group">
+                <div className="p-6 bg-card rounded-xl border border-border hover:border-primary hover:shadow-lg transition-all duration-300 text-center transform hover:scale-[1.02] hover:-translate-y-1">
+                  <Sparkles className="w-8 h-8 mx-auto mb-3 text-primary transition-transform duration-300 group-hover:scale-110" />
                   <h3 className="font-medium text-foreground group-hover:text-primary transition-colors">
                     Tous nos guides
                   </h3>
