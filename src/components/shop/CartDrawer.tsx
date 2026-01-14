@@ -18,9 +18,10 @@ const CartDrawer: React.FC = () => {
     closeCart, 
     updateQuantity, 
     removeItem, 
-    updateSize,
+    updateItemWithPrices,
     getSubtotal, 
     getSubscriptionSavings,
+    getPublicPriceSavings,
     getItemCount 
   } = useCart();
   
@@ -28,7 +29,9 @@ const CartDrawer: React.FC = () => {
   const { formattedDate: estimatedDeliveryDate } = useEstimatedDelivery();
   
   const subtotal = getSubtotal();
-  const savings = getSubscriptionSavings();
+  const subscriptionSavings = getSubscriptionSavings();
+  const publicPriceSavings = getPublicPriceSavings();
+  const totalSavings = subscriptionSavings + publicPriceSavings;
   const freeShippingThreshold = settings?.shipping?.free_shipping_threshold || 49;
   const shippingFee = settings?.shipping?.standard_shipping_fee || 4.90;
   const minimumOrderAmount = settings?.checkout?.minimum_order_amount || 25;
@@ -105,8 +108,11 @@ const CartDrawer: React.FC = () => {
                             <span>Taille:</span>
                             <CartSizeSelector
                               currentSize={item.size}
-                              onSizeChange={(newSize) => {
-                                updateSize(item.productId, item.size, newSize, item.isSubscription);
+                              productId={item.productId}
+                              basePrice={item.unitPrice}
+                              subscriptionDiscountPercent={10}
+                              onSizeChange={(newSize, unitPrice, subscriptionPrice, publicPrice) => {
+                                updateItemWithPrices(item.productId, item.size, newSize, item.isSubscription, unitPrice, subscriptionPrice, publicPrice);
                                 toast.success(`Taille modifiée: ${newSize}`);
                               }}
                             />
@@ -174,12 +180,28 @@ const CartDrawer: React.FC = () => {
 
             {/* Summary */}
             <div className="border-t border-border pt-4 space-y-3">
-              {savings > 0 && (
-                <div className="flex justify-between text-sm text-secondary">
-                  <span>Économies abonnement</span>
-                  <span className="font-medium">-{savings.toFixed(2)} €</span>
+              {/* Total savings summary */}
+              {totalSavings > 0 && (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg space-y-1">
+                  <div className="flex justify-between text-sm font-semibold text-green-800">
+                    <span>🎉 Vos économies totales</span>
+                    <span>-{totalSavings.toFixed(2)} €</span>
+                  </div>
+                  {publicPriceSavings > 0 && (
+                    <div className="flex justify-between text-xs text-green-700">
+                      <span>vs. prix public</span>
+                      <span>-{publicPriceSavings.toFixed(2)} €</span>
+                    </div>
+                  )}
+                  {subscriptionSavings > 0 && (
+                    <div className="flex justify-between text-xs text-green-700">
+                      <span>grâce à l'abonnement</span>
+                      <span>-{subscriptionSavings.toFixed(2)} €</span>
+                    </div>
+                  )}
                 </div>
               )}
+              
               <div className="flex justify-between text-sm">
                 <span>Sous-total</span>
                 <span>{subtotal.toFixed(2)} €</span>
