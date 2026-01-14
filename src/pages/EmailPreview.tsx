@@ -26,7 +26,7 @@ const brand = {
 const EmailPreview = () => {
   const [isSending, setIsSending] = useState(false);
   const [selectedEmail, setSelectedEmail] = useState<'order' | 'notification' | 'shipped'>('order');
-  const [testEmail, setTestEmail] = useState('collardpierre@gmail.com');
+  const [testEmail, setTestEmail] = useState('test@serencare.be');
 
   // Sample order data for preview
   const sampleOrderData = {
