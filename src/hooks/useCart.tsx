@@ -10,6 +10,7 @@ export interface CartItem {
   unitPrice: number;
   isSubscription: boolean;
   subscriptionPrice?: number;
+  publicPrice?: number; // Added for displaying crossed-out public price
 }
 
 interface CartStore {

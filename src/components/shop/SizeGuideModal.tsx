@@ -16,6 +16,7 @@ import { Ruler, HelpCircle, CheckCircle2, AlertCircle, Lightbulb, Check, Heart }
 import { cn } from "@/lib/utils";
 import { MeasurementIllustration } from "./MeasurementIllustration";
 import { usePreferredSize } from "@/hooks/usePreferredSize";
+import { extractStandardSize, findMatchingProductSize } from "@/lib/sizeUtils";
 
 // Centralized size data by brand
 const SIZE_DATA = {
@@ -178,14 +179,24 @@ export function SizeGuideModal({
     onOpenChange(false);
   };
 
-  const handleSizeSelect = (size: string, saveAsPreferred = false) => {
+  const handleSizeSelect = (standardSize: string, saveAsPreferred = false) => {
     if (saveAsPreferred) {
-      savePreferredSize(size);
+      savePreferredSize(standardSize);
     }
-    if (onSelectSize && availableSizes?.includes(size)) {
-      onSelectSize(size);
-      handleClose();
+    if (onSelectSize && availableSizes) {
+      // Find the actual product size that matches this standard size
+      const matchingProductSize = findMatchingProductSize(availableSizes, standardSize);
+      if (matchingProductSize) {
+        onSelectSize(matchingProductSize);
+        handleClose();
+      }
     }
+  };
+  
+  // Check if a standard size is available in the product sizes
+  const isStandardSizeAvailable = (standardSize: string): boolean => {
+    if (!availableSizes) return false;
+    return !!findMatchingProductSize(availableSizes, standardSize);
   };
 
   const currentRanges = SIZE_DATA[activeBrand].ranges;
@@ -309,7 +320,7 @@ export function SizeGuideModal({
                         )}
                         
                         {/* Quick select buttons */}
-                        {onSelectSize && availableSizes?.includes(recommendation.primary) && (
+                        {onSelectSize && isStandardSizeAvailable(recommendation.primary) && (
                           <motion.div
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -383,8 +394,10 @@ export function SizeGuideModal({
                         <tbody>
                           {data.ranges.map((range, idx) => {
                             const isRecommended = recommendation?.primary === range.size;
-                            const isAvailable = availableSizes?.includes(range.size);
-                            const isSelected = selectedSize === range.size;
+                            // Use the smart matching function instead of direct includes
+                            const isAvailable = isStandardSizeAvailable(range.size);
+                            // Check if selected size matches this standard size
+                            const isSelected = selectedSize ? extractStandardSize(selectedSize) === range.size : false;
                             
                             return (
                               <motion.tr

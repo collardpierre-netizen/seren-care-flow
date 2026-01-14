@@ -151,12 +151,18 @@ const CartDrawer: React.FC = () => {
                         </Button>
                       </div>
                       <div className="text-right">
+                        {/* Public price crossed out */}
+                        {item.publicPrice && item.publicPrice > item.unitPrice && (
+                          <p className="text-xs text-muted-foreground line-through">
+                            {(item.publicPrice * item.quantity).toFixed(2)} €
+                          </p>
+                        )}
                         <p className="font-bold">
                           {((item.isSubscription && item.subscriptionPrice ? item.subscriptionPrice : item.unitPrice) * item.quantity).toFixed(2)} €
                         </p>
                         {item.isSubscription && item.subscriptionPrice && (
-                          <p className="text-xs text-muted-foreground line-through">
-                            {(item.unitPrice * item.quantity).toFixed(2)} €
+                          <p className="text-xs text-secondary">
+                            au lieu de {(item.unitPrice * item.quantity).toFixed(2)} €
                           </p>
                         )}
                       </div>
