@@ -525,14 +525,17 @@ const Shop = () => {
               </p>
             </div>
             <div className="grid md:grid-cols-3 gap-4">
-              <Link to="/guides/comment-choisir-le-bon-produit" className="block">
-                <div className="p-6 bg-card rounded-xl border border-border hover:border-primary hover:shadow-md transition-all text-center group">
+              <button 
+                onClick={() => setShowProductSelector(true)} 
+                className="block w-full text-left"
+              >
+                <div className="p-6 bg-card rounded-xl border border-border hover:border-primary hover:shadow-md transition-all text-center group cursor-pointer">
                   <Droplet className="w-8 h-8 mx-auto mb-3 text-primary" />
                   <h3 className="font-medium text-foreground group-hover:text-primary transition-colors">
                     Choisir le bon produit
                   </h3>
                 </div>
-              </Link>
+              </button>
               <Link to="/guides/comment-choisir-la-bonne-taille" className="block">
                 <div className="p-6 bg-card rounded-xl border border-border hover:border-primary hover:shadow-md transition-all text-center group">
                   <Footprints className="w-8 h-8 mx-auto mb-3 text-primary" />
