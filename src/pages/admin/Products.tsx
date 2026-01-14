@@ -318,6 +318,7 @@ const AdminProducts: React.FC = () => {
 
   const duplicateProducts = useMutation({
     mutationFn: async (ids: string[]) => {
+      let duplicatedCount = 0;
       for (const id of ids) {
         const product = products?.find(p => p.id === id);
         if (!product) continue;
@@ -334,16 +335,26 @@ const AdminProducts: React.FC = () => {
           incontinence_level: product.incontinence_level,
           mobility: product.mobility,
           usage_time: product.usage_time,
+          mobility_levels: product.mobility_levels,
+          usage_times: product.usage_times,
+          gender: product.gender,
           recommended_price: product.recommended_price,
           price: product.price,
           subscription_price: product.subscription_price,
+          subscription_discount_percent: product.subscription_discount_percent,
           purchase_price: product.purchase_price,
           units_per_product: product.units_per_product,
           min_order_quantity: product.min_order_quantity,
           stock_quantity: product.stock_quantity,
+          stock_status: product.stock_status,
           sku: product.sku ? `${product.sku}-COPY` : null,
+          ean_code: '',
+          cnk_code: '',
+          manufacturer_url: product.manufacturer_url,
           is_active: false,
           is_featured: false,
+          is_coming_soon: product.is_coming_soon,
+          show_size_guide: product.show_size_guide,
         }).select().single();
 
         if (error) throw error;
@@ -359,12 +370,41 @@ const AdminProducts: React.FC = () => {
           }));
           await supabase.from('product_images').insert(imagesToInsert);
         }
+
+        // Copy sizes
+        if (newProduct) {
+          const { data: sizes } = await supabase
+            .from('product_sizes')
+            .select('*')
+            .eq('product_id', id);
+          
+          if (sizes && sizes.length > 0) {
+            const sizesToInsert = sizes.map((size: any) => ({
+              product_id: newProduct.id,
+              size: size.size,
+              price_adjustment: size.price_adjustment,
+              stock_quantity: size.stock_quantity,
+              is_active: size.is_active,
+              sale_price: size.sale_price,
+              purchase_price: size.purchase_price,
+              public_price: size.public_price,
+              units_per_size: size.units_per_size,
+              sku: size.sku ? `${size.sku}-COPY` : null,
+              ean_code: '',
+              cnk_code: '',
+            }));
+            await supabase.from('product_sizes').insert(sizesToInsert);
+          }
+        }
+        
+        duplicatedCount++;
       }
+      return duplicatedCount;
     },
-    onSuccess: () => {
+    onSuccess: (count) => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
       setSelectedProducts(new Set());
-      toast.success(`${selectedProducts.size} produit(s) dupliqué(s)`);
+      toast.success(`${count} produit(s) dupliqué(s)`);
     },
     onError: () => {
       toast.error('Erreur lors de la duplication');
@@ -1578,13 +1618,25 @@ const AdminProducts: React.FC = () => {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button variant="ghost" size="icon" onClick={() => handleEdit(product)}>
+                        <div className="flex justify-end gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => handleEdit(product)} title="Modifier">
                             <Pencil className="h-4 w-4" />
                           </Button>
                           <Button 
                             variant="ghost" 
-                            size="icon" 
+                            size="icon"
+                            title="Dupliquer"
+                            disabled={duplicateProducts.isPending}
+                            onClick={() => {
+                              duplicateProducts.mutate([product.id]);
+                            }}
+                          >
+                            <Copy className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            title="Supprimer"
                             onClick={() => {
                               if (confirm('Supprimer ce produit ?')) {
                                 deleteProduct.mutate(product.id);
