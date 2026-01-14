@@ -22,6 +22,22 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick, compact = f
   const hasRecommendedPrice = product.recommended_price && product.recommended_price > product.price;
   const savingsPercent = hasRecommendedPrice ? Math.round(((product.recommended_price! - product.price) / product.recommended_price!) * 100) : 0;
 
+  // Check if product has multiple sizes with different prices
+  const activeSizes = product.sizes?.filter(s => s.is_active !== false) || [];
+  const sizePrices = activeSizes.map(size => {
+    if (size.sale_price && size.sale_price > 0) return size.sale_price;
+    return product.price + (size.price_adjustment || 0);
+  });
+  
+  // Add base price if no sizes or as fallback
+  if (sizePrices.length === 0) {
+    sizePrices.push(product.price);
+  }
+  
+  const minPrice = Math.min(...sizePrices);
+  const maxPrice = Math.max(...sizePrices);
+  const hasPriceRange = activeSizes.length > 1 && minPrice !== maxPrice;
+
   return (
     <Card 
       className="group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 h-full flex flex-col"
@@ -85,9 +101,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick, compact = f
             </div>
           ) : (
             <>
-              <div className="flex items-baseline gap-1">
+              <div className="flex items-baseline gap-1 flex-wrap">
+                {hasPriceRange && (
+                  <span className={`text-muted-foreground ${compact ? 'text-[10px]' : 'text-xs'}`}>
+                    À partir de
+                  </span>
+                )}
                 <span className={`font-bold text-primary ${compact ? 'text-sm' : 'text-lg'}`}>
-                  {product.price.toFixed(2)} €
+                  {minPrice.toFixed(2)} €
                 </span>
               </div>
               {hasSubscription && !compact && (
