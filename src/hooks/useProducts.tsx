@@ -56,6 +56,12 @@ export interface ProductSize {
   stock_quantity: number | null;
   sku: string | null;
   is_active: boolean | null;
+  sale_price: number | null;
+  purchase_price: number | null;
+  public_price: number | null;
+  ean_code: string | null;
+  cnk_code: string | null;
+  units_per_size: number | null;
 }
 
 export interface Brand {
