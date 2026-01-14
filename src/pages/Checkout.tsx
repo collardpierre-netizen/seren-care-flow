@@ -29,7 +29,7 @@ interface ShippingAddress {
 }
 
 const Checkout = () => {
-  const { items, getSubtotal, getSubscriptionSavings, updateSize, clearCart } = useCart();
+  const { items, getSubtotal, getSubscriptionSavings, getPublicPriceSavings, updateItemWithPrices, clearCart } = useCart();
   const { data: settings } = useStoreSettings();
   const { formattedDate: estimatedDeliveryDate, workingDays } = useEstimatedDelivery();
   const { user } = useAuth();
@@ -243,8 +243,11 @@ const Checkout = () => {
                             <span>Taille:</span>
                             <CartSizeSelector 
                               currentSize={item.size}
-                              onSizeChange={(newSize) => {
-                                updateSize(item.productId, item.size, newSize, item.isSubscription);
+                              productId={item.productId}
+                              basePrice={item.unitPrice}
+                              subscriptionDiscountPercent={10}
+                              onSizeChange={(newSize, unitPrice, subscriptionPrice, publicPrice) => {
+                                updateItemWithPrices(item.productId, item.size, newSize, item.isSubscription, unitPrice, subscriptionPrice, publicPrice);
                                 toast.success('Taille modifiée');
                               }}
                             />
