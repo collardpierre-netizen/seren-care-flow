@@ -107,6 +107,20 @@ const ProductPage = () => {
   
   const selectedSizeData = sizes.find(s => s.size === selectedSize);
   
+  // Check if product has multiple sizes with different prices (for "À partir de" display)
+  const sizePrices = sizes.map(size => {
+    if (size.sale_price && size.sale_price > 0) return size.sale_price;
+    return basePrice + (size.price_adjustment || 0);
+  });
+  
+  if (sizePrices.length === 0) {
+    sizePrices.push(basePrice);
+  }
+  
+  const minPrice = Math.min(...sizePrices);
+  const maxPrice = Math.max(...sizePrices);
+  const hasPriceRange = sizes.length > 1 && minPrice !== maxPrice;
+  
   // Use variant-specific sale_price if defined, otherwise fall back to base price + adjustment
   const variantBasePrice = selectedSizeData?.sale_price ?? (basePrice + (selectedSizeData?.price_adjustment || 0));
   const variantSubscriptionPrice = selectedSizeData?.sale_price 
@@ -296,13 +310,24 @@ const ProductPage = () => {
                       </div>
                     )}
                     <div className="flex items-baseline gap-3 flex-wrap">
-                      <span className="text-3xl font-bold text-primary">
-                        Prix SerenCare : {variantBasePrice.toFixed(2)} €
-                      </span>
-                      {(selectedSizeData?.public_price || hasRecommendedPrice) && (
-                        <Badge variant="destructive" className="text-sm px-3 py-1">
-                          -{Math.round(((selectedSizeData?.public_price ?? recommendedPrice ?? 0) - variantBasePrice) / (selectedSizeData?.public_price ?? recommendedPrice ?? 1) * 100)}% | Vous économisez {((selectedSizeData?.public_price ?? recommendedPrice ?? 0) - variantBasePrice).toFixed(2)} €
-                        </Badge>
+                      {hasPriceRange && !selectedSize ? (
+                        <>
+                          <span className="text-muted-foreground text-lg">À partir de</span>
+                          <span className="text-3xl font-bold text-primary">
+                            {minPrice.toFixed(2)} €
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-3xl font-bold text-primary">
+                            Prix SerenCare : {variantBasePrice.toFixed(2)} €
+                          </span>
+                          {(selectedSizeData?.public_price || hasRecommendedPrice) && (
+                            <Badge variant="destructive" className="text-sm px-3 py-1">
+                              -{Math.round(((selectedSizeData?.public_price ?? recommendedPrice ?? 0) - variantBasePrice) / (selectedSizeData?.public_price ?? recommendedPrice ?? 1) * 100)}% | Vous économisez {((selectedSizeData?.public_price ?? recommendedPrice ?? 0) - variantBasePrice).toFixed(2)} €
+                            </Badge>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
