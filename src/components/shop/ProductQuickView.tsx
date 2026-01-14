@@ -128,6 +128,7 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
       unitPrice: variantBasePrice,
       isSubscription: purchaseMode === 'subscription',
       subscriptionPrice: variantSubscriptionPrice,
+      publicPrice: selectedSizeData?.public_price ?? recommendedPrice ?? undefined,
     });
 
     toast.success('Produit ajouté au panier');
@@ -208,22 +209,23 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
               )}
               <h2 className="text-2xl font-display font-bold">{product.name}</h2>
               
-              {/* Price display with recommended price */}
+              {/* Price display with public price */}
               <div className="mt-3 space-y-1">
-                {hasRecommendedPrice && (
+                {/* Public price crossed out - from variant or product */}
+                {(selectedSizeData?.public_price || hasRecommendedPrice) && (
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground line-through">
-                      Prix public constaté : {recommendedPrice?.toFixed(2)} €
+                      Prix public constaté : {(selectedSizeData?.public_price ?? recommendedPrice)?.toFixed(2)} €
                     </span>
                   </div>
                 )}
                 <div className="flex items-baseline gap-3">
                   <span className="text-2xl font-bold text-primary">
-                    {basePrice.toFixed(2)} €
+                    {variantBasePrice.toFixed(2)} €
                   </span>
-                  {hasRecommendedPrice && (
+                  {(selectedSizeData?.public_price || hasRecommendedPrice) && (
                     <Badge variant="destructive" className="text-xs">
-                      -{savingsPercent}% | Économie {savingsValue.toFixed(2)} €
+                      -{Math.round(((selectedSizeData?.public_price ?? recommendedPrice ?? 0) - variantBasePrice) / (selectedSizeData?.public_price ?? recommendedPrice ?? 1) * 100)}% | Économie {((selectedSizeData?.public_price ?? recommendedPrice ?? 0) - variantBasePrice).toFixed(2)} €
                     </Badge>
                   )}
                 </div>
@@ -321,7 +323,7 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
                       Livraison automatique chaque mois
                     </p>
                     <p className="text-lg font-bold text-secondary mt-2">
-                      {subscriptionPrice.toFixed(2)} €
+                      {variantSubscriptionPrice.toFixed(2)} €
                     </p>
                   </div>
                   <RefreshCw className="h-5 w-5 text-secondary" />
@@ -341,7 +343,7 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
                     <Label htmlFor="one-time" className="font-medium cursor-pointer">
                       Achat unique
                     </Label>
-                    <p className="text-lg font-bold mt-2">{basePrice.toFixed(2)} €</p>
+                    <p className="text-lg font-bold mt-2">{variantBasePrice.toFixed(2)} €</p>
                   </div>
                   <ShoppingCart className="h-5 w-5 text-muted-foreground" />
                 </div>

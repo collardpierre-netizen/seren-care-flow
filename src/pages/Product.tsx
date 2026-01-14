@@ -161,6 +161,7 @@ const ProductPage = () => {
       unitPrice: variantBasePrice,
       isSubscription: purchaseMode === 'subscription',
       subscriptionPrice: variantSubscriptionPrice,
+      publicPrice: selectedSizeData?.public_price ?? recommendedPrice ?? undefined,
     });
 
     toast.success('Produit ajouté au panier');
@@ -286,20 +287,21 @@ const ProductPage = () => {
                 {/* Price display with recommended price */}
                 {!product.is_coming_soon && (
                   <div className="mt-4 space-y-2">
-                    {hasRecommendedPrice && (
+                    {/* Public price crossed out - from variant or product */}
+                    {(selectedSizeData?.public_price || hasRecommendedPrice) && (
                       <div className="flex items-center gap-2">
                         <span className="text-muted-foreground line-through">
-                          Prix public constaté : {recommendedPrice?.toFixed(2)} €
+                          Prix public constaté : {(selectedSizeData?.public_price ?? recommendedPrice)?.toFixed(2)} €
                         </span>
                       </div>
                     )}
                     <div className="flex items-baseline gap-3 flex-wrap">
                       <span className="text-3xl font-bold text-primary">
-                        Prix SerenCare : {basePrice.toFixed(2)} €
+                        Prix SerenCare : {variantBasePrice.toFixed(2)} €
                       </span>
-                      {hasRecommendedPrice && (
+                      {(selectedSizeData?.public_price || hasRecommendedPrice) && (
                         <Badge variant="destructive" className="text-sm px-3 py-1">
-                          -{savingsPercent}% | Vous économisez {savingsValue.toFixed(2)} €
+                          -{Math.round(((selectedSizeData?.public_price ?? recommendedPrice ?? 0) - variantBasePrice) / (selectedSizeData?.public_price ?? recommendedPrice ?? 1) * 100)}% | Vous économisez {((selectedSizeData?.public_price ?? recommendedPrice ?? 0) - variantBasePrice).toFixed(2)} €
                         </Badge>
                       )}
                     </div>
@@ -405,7 +407,7 @@ const ProductPage = () => {
                         Livraison automatique chaque mois
                       </p>
                       <p className="text-xl font-bold text-secondary mt-2">
-                        {subscriptionPrice.toFixed(2)} €
+                        {variantSubscriptionPrice.toFixed(2)} €
                       </p>
                     </div>
                     <RefreshCw className="h-5 w-5 text-secondary" />
@@ -425,7 +427,7 @@ const ProductPage = () => {
                       <Label htmlFor="one-time" className="font-medium cursor-pointer">
                         Achat unique
                       </Label>
-                      <p className="text-xl font-bold mt-2">{basePrice.toFixed(2)} €</p>
+                      <p className="text-xl font-bold mt-2">{variantBasePrice.toFixed(2)} €</p>
                     </div>
                     <ShoppingCart className="h-5 w-5 text-muted-foreground" />
                   </div>
