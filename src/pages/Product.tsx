@@ -106,11 +106,16 @@ const ProductPage = () => {
   const savingsPercent = hasRecommendedPrice ? Math.round((savingsValue / recommendedPrice) * 100) : 0;
   
   const selectedSizeData = sizes.find(s => s.size === selectedSize);
-  const priceAdjustment = selectedSizeData?.price_adjustment || 0;
+  
+  // Use variant-specific sale_price if defined, otherwise fall back to base price + adjustment
+  const variantBasePrice = selectedSizeData?.sale_price ?? (basePrice + (selectedSizeData?.price_adjustment || 0));
+  const variantSubscriptionPrice = selectedSizeData?.sale_price 
+    ? selectedSizeData.sale_price * (1 - discountPercent / 100)
+    : subscriptionPrice + (selectedSizeData?.price_adjustment || 0);
   
   const finalPrice = purchaseMode === 'subscription' 
-    ? subscriptionPrice + priceAdjustment 
-    : basePrice + priceAdjustment;
+    ? variantSubscriptionPrice 
+    : variantBasePrice;
   
   const freeShippingThreshold = settings?.shipping?.free_shipping_threshold || 49;
   const subtotal = finalPrice * quantity;
@@ -153,9 +158,9 @@ const ProductPage = () => {
       productImage: images[0]?.image_url,
       size: selectedSize || undefined,
       quantity,
-      unitPrice: basePrice + priceAdjustment,
+      unitPrice: variantBasePrice,
       isSubscription: purchaseMode === 'subscription',
-      subscriptionPrice: subscriptionPrice + priceAdjustment,
+      subscriptionPrice: variantSubscriptionPrice,
     });
 
     toast.success('Produit ajouté au panier');
