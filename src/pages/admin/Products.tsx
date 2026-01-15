@@ -160,6 +160,27 @@ const AdminProducts: React.FC = () => {
     },
   });
 
+  // Helper to auto-create Stripe subscription price
+  const createStripePrice = async (productId: string, subscriptionPrice: number) => {
+    if (!subscriptionPrice || subscriptionPrice <= 0) return;
+    
+    try {
+      const priceCents = Math.round(subscriptionPrice * 100);
+      const { data, error } = await supabase.functions.invoke('create-stripe-price', {
+        body: { product_id: productId, price_cents: priceCents },
+      });
+      
+      if (error) {
+        console.error('Stripe price creation error:', error);
+        toast.info('Prix Stripe non créé automatiquement. Créez-le manuellement dans Admin → Prix Stripe.');
+      } else if (data?.success) {
+        toast.success('Prix Stripe abonnement créé automatiquement');
+      }
+    } catch (err) {
+      console.error('Stripe price creation failed:', err);
+    }
+  };
+
   const createProduct = useMutation({
     mutationFn: async (data: ProductFormData) => {
       const insertData = {
@@ -211,6 +232,13 @@ const AdminProducts: React.FC = () => {
         const { error: imgError } = await supabase.from('product_images').insert(imagesToInsert);
         if (imgError) throw imgError;
       }
+
+      // Auto-create Stripe subscription price
+      if (data.subscription_price && data.subscription_price > 0 && newProduct) {
+        await createStripePrice(newProduct.id, data.subscription_price);
+      }
+
+      return newProduct;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
@@ -275,6 +303,21 @@ const AdminProducts: React.FC = () => {
         }));
         const { error: imgError } = await supabase.from('product_images').insert(imagesToInsert);
         if (imgError) throw imgError;
+      }
+
+      // Auto-create Stripe subscription price if subscription_price is set and no mapping exists
+      if (data.subscription_price && data.subscription_price > 0) {
+        // Check if mapping already exists
+        const { data: existingMapping } = await supabase
+          .from('stripe_price_map')
+          .select('id')
+          .eq('product_id', id)
+          .eq('type', 'subscription')
+          .maybeSingle();
+        
+        if (!existingMapping) {
+          await createStripePrice(id, data.subscription_price);
+        }
       }
     },
     onSuccess: () => {
