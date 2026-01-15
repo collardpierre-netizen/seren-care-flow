@@ -219,8 +219,12 @@ const AdminProducts: React.FC = () => {
       setFormData(initialFormData);
       setProductImages([]);
     },
-    onError: () => {
-      toast.error('Erreur lors de la création du produit');
+    onError: (error: any) => {
+      if (error?.message?.includes('products_slug_key') || error?.code === '23505') {
+        toast.error('Ce slug existe déjà. Veuillez utiliser un slug unique.');
+      } else {
+        toast.error('Erreur lors de la création du produit');
+      }
     },
   });
 
@@ -281,8 +285,12 @@ const AdminProducts: React.FC = () => {
       setFormData(initialFormData);
       setProductImages([]);
     },
-    onError: () => {
-      toast.error('Erreur lors de la mise à jour');
+    onError: (error: any) => {
+      if (error?.message?.includes('products_slug_key') || error?.code === '23505') {
+        toast.error('Ce slug existe déjà. Veuillez utiliser un slug unique.');
+      } else {
+        toast.error('Erreur lors de la mise à jour');
+      }
     },
   });
 
