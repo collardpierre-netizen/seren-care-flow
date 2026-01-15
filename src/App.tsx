@@ -20,6 +20,8 @@ import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/Login";
 import RegisterPage from "./pages/Register";
+import ForgotPasswordPage from "./pages/ForgotPassword";
+import ResetPasswordPage from "./pages/ResetPassword";
 import Onboarding from "./pages/Onboarding";
 import Checkout from "./pages/Checkout";
 import Account from "./pages/Account";
@@ -83,6 +85,8 @@ const App = () => (
               <Route path="/a-propos" element={<About />} />
               <Route path="/connexion" element={<LoginPage />} />
               <Route path="/inscription" element={<RegisterPage />} />
+              <Route path="/mot-de-passe-oublie" element={<ForgotPasswordPage />} />
+              <Route path="/reinitialiser-mot-de-passe" element={<ResetPasswordPage />} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/mon-compte" element={<Account />} />
