@@ -12,7 +12,8 @@ import {
   X, 
   Check,
   Eye,
-  Loader2 
+  Loader2,
+  Mail
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -112,6 +113,24 @@ const StockNotifications: React.FC = () => {
     }
   });
 
+  const sendStockAlertsMutation = useMutation({
+    mutationFn: async ({ productId, size }: { productId: string; size?: string }) => {
+      const { data, error } = await supabase.functions.invoke('send-stock-alert', {
+        body: { product_id: productId, size }
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      toast.success(`${data.sent || 0} email(s) envoyé(s) aux clients`);
+      queryClient.invalidateQueries({ queryKey: ['stock-notifications'] });
+    },
+    onError: (error) => {
+      toast.error('Erreur lors de l\'envoi des alertes');
+      console.error(error);
+    }
+  });
+
   const unreadCount = notifications?.filter(n => !n.is_read).length || 0;
 
   const getTypeInfo = (type: string) => {
@@ -122,6 +141,9 @@ const StockNotifications: React.FC = () => {
         return { icon: AlertTriangle, color: 'text-amber-600', bg: 'bg-amber-50', label: 'Stock bas' };
       case 'unavailable_preparation':
         return { icon: Package, color: 'text-orange-600', bg: 'bg-orange-50', label: 'Indisponible' };
+      case 'back_in_stock':
+      case 'size_back_in_stock':
+        return { icon: Check, color: 'text-green-600', bg: 'bg-green-50', label: 'Retour stock' };
       default:
         return { icon: Bell, color: 'text-muted-foreground', bg: 'bg-muted', label: 'Alerte' };
     }
@@ -228,6 +250,30 @@ const StockNotifications: React.FC = () => {
                               </p>
                             </div>
                             <div className="flex flex-col gap-1">
+                              {/* Send alerts button for back_in_stock notifications */}
+                              {(notification.notification_type === 'back_in_stock' || 
+                                notification.notification_type === 'size_back_in_stock') && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                  title="Envoyer les alertes clients"
+                                  disabled={sendStockAlertsMutation.isPending}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    sendStockAlertsMutation.mutate({
+                                      productId: notification.product_id,
+                                      size: notification.product_size || undefined
+                                    });
+                                  }}
+                                >
+                                  {sendStockAlertsMutation.isPending ? (
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                  ) : (
+                                    <Mail className="h-3 w-3" />
+                                  )}
+                                </Button>
+                              )}
                               {notification.order_id && (
                                 <Button
                                   variant="ghost"
