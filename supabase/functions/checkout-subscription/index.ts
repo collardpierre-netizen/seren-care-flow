@@ -143,10 +143,18 @@ serve(async (req) => {
       logStep("Customer created/found", { customerId });
     }
 
-    // Build line items for Stripe subscription
-    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = items.map((item: any) => ({
-      price: item.stripe_price_id,
-      quantity: item.quantity,
+    // Build line items for Stripe subscription - combine by stripe_price_id
+    const priceQuantityMap = new Map<string, number>();
+    items.forEach((item: any) => {
+      const currentQty = priceQuantityMap.get(item.stripe_price_id) || 0;
+      priceQuantityMap.set(item.stripe_price_id, currentQty + item.quantity);
+    });
+
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = Array.from(
+      priceQuantityMap.entries()
+    ).map(([priceId, quantity]) => ({
+      price: priceId,
+      quantity,
     }));
 
     logStep("Line items prepared", { count: lineItems.length });
