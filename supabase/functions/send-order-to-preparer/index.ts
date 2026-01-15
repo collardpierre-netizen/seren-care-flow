@@ -25,7 +25,6 @@ interface SendToPreparerRequest {
   orderId: string;
   orderNumber: string;
   preparerEmail: string;
-  password: string;
   includePdf: boolean;
   orderItems: Array<{
     product_name: string;
@@ -39,16 +38,6 @@ interface SendToPreparerRequest {
     city?: string;
   };
   customerName: string;
-}
-
-// Simple hash function for password
-async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hash))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
 }
 
 serve(async (req) => {
@@ -68,18 +57,17 @@ serve(async (req) => {
     const data: SendToPreparerRequest = await req.json();
     console.log('Sending order to preparer:', data.orderNumber);
 
-    // Generate token and hash password
-    const token = crypto.randomUUID();
-    const passwordHash = await hashPassword(data.password);
+    // Generate a unique magic link token (no password needed)
+    const magicToken = crypto.randomUUID();
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
-    // Save access token to database
+    // Save magic link token to database (no password_hash needed)
     const { error: tokenError } = await supabase
       .from('order_access_tokens')
       .insert({
         order_id: data.orderId,
-        token,
-        password_hash: passwordHash,
+        token: magicToken,
+        password_hash: 'magic_link', // Marker to indicate this is a magic link
         expires_at: expiresAt.toISOString(),
       });
 
@@ -88,9 +76,9 @@ serve(async (req) => {
       throw new Error('Failed to create access token');
     }
 
-    // Build preparation URL
+    // Build preparation URL with magic token embedded
     const baseUrl = Deno.env.get('SITE_URL') || 'https://serencare.be';
-    const preparationUrl = `${baseUrl}/commande-preparation/${data.orderId}`;
+    const preparationUrl = `${baseUrl}/commande-preparation/${data.orderId}?token=${magicToken}`;
 
     // Build items HTML for email
     const itemsHtml = data.orderItems.map(item => `
@@ -156,14 +144,12 @@ serve(async (req) => {
                   </tbody>
                 </table>
                 
-                <!-- Access Info -->
-                <div style="background: #fef3c7; border-radius: 12px; padding: 20px; margin: 24px 0; border: 1px solid #fcd34d;">
-                  <h3 style="margin: 0 0 12px; color: #92400e; font-size: 16px;">🔐 Accès sécurisé</h3>
-                  <p style="margin: 0 0 8px; color: #78350f; font-size: 14px;">
-                    <strong>Mot de passe:</strong> ${data.password}
-                  </p>
-                  <p style="margin: 0; color: #78350f; font-size: 13px;">
-                    Ce mot de passe sera requis pour accéder aux détails de la commande.
+                <!-- Security Info -->
+                <div style="background: #d1fae5; border-radius: 12px; padding: 20px; margin: 24px 0; border: 1px solid #6ee7b7;">
+                  <h3 style="margin: 0 0 12px; color: #065f46; font-size: 16px;">🔐 Lien sécurisé à usage unique</h3>
+                  <p style="margin: 0; color: #047857; font-size: 14px;">
+                    Ce lien vous permet d'accéder directement à la commande.<br>
+                    <strong>Important :</strong> Il expire dans 7 jours et ne peut être utilisé qu'une seule fois.
                   </p>
                 </div>
                 
@@ -178,7 +164,7 @@ serve(async (req) => {
                     text-decoration: none;
                     font-weight: 600;
                     font-size: 16px;
-                  ">Voir la commande</a>
+                  ">Accéder à la commande</a>
                 </div>
               </div>
               

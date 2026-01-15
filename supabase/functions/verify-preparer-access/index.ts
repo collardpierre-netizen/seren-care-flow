@@ -19,16 +19,6 @@ function getCorsHeaders(origin: string | null) {
   };
 }
 
-// Simple hash function for password verification
-async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hash))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
-}
-
 serve(async (req) => {
   const origin = req.headers.get('origin');
   const corsHeaders = getCorsHeaders(origin);
@@ -43,29 +33,28 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { orderId, password } = await req.json();
-    console.log('Verifying access for order:', orderId);
+    const { orderId, token } = await req.json();
+    console.log('Verifying magic link access for order:', orderId);
 
-    if (!orderId || !password) {
+    if (!orderId || !token) {
       return new Response(
-        JSON.stringify({ valid: false, error: 'Missing orderId or password' }),
+        JSON.stringify({ valid: false, error: 'Missing orderId or token' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }
 
-    // Get access token from database
+    // Get access token from database - match by both order_id and token
     const { data: tokenData, error: tokenError } = await supabase
       .from('order_access_tokens')
       .select('*')
       .eq('order_id', orderId)
-      .order('created_at', { ascending: false })
-      .limit(1)
+      .eq('token', token)
       .single();
 
     if (tokenError || !tokenData) {
       console.error('Token not found:', tokenError);
       return new Response(
-        JSON.stringify({ valid: false, error: 'Access token not found' }),
+        JSON.stringify({ valid: false, error: 'Lien invalide ou expiré' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
       );
     }
@@ -73,27 +62,41 @@ serve(async (req) => {
     // Check if token is expired
     if (new Date(tokenData.expires_at) < new Date()) {
       return new Response(
-        JSON.stringify({ valid: false, error: 'Access token expired' }),
+        JSON.stringify({ valid: false, error: 'Ce lien a expiré' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
       );
     }
 
-    // Verify password
-    const passwordHash = await hashPassword(password);
-    if (passwordHash !== tokenData.password_hash) {
-      return new Response(
-        JSON.stringify({ valid: false, error: 'Invalid password' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
-      );
+    // Check if token was already used (one-time use)
+    if (tokenData.used_at) {
+      // Allow continued access for 24 hours after first use
+      const usedAt = new Date(tokenData.used_at);
+      const hoursElapsed = (Date.now() - usedAt.getTime()) / (1000 * 60 * 60);
+      
+      if (hoursElapsed > 24) {
+        return new Response(
+          JSON.stringify({ valid: false, error: 'Ce lien a déjà été utilisé et la session a expiré' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+        );
+      }
+      
+      // Within 24h window, update accessed_at and allow access
+      await supabase
+        .from('order_access_tokens')
+        .update({ accessed_at: new Date().toISOString() })
+        .eq('id', tokenData.id);
+    } else {
+      // First use - mark as used and update accessed_at
+      await supabase
+        .from('order_access_tokens')
+        .update({ 
+          used_at: new Date().toISOString(),
+          accessed_at: new Date().toISOString() 
+        })
+        .eq('id', tokenData.id);
     }
 
-    // Update accessed_at timestamp
-    await supabase
-      .from('order_access_tokens')
-      .update({ accessed_at: new Date().toISOString() })
-      .eq('id', tokenData.id);
-
-    console.log('Access verified for order:', orderId);
+    console.log('Magic link access verified for order:', orderId);
 
     return new Response(
       JSON.stringify({ valid: true }),

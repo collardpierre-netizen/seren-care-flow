@@ -19,16 +19,6 @@ function getCorsHeaders(origin: string | null) {
   };
 }
 
-// Simple hash function for password verification
-async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hash))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
-}
-
 serve(async (req) => {
   const origin = req.headers.get('origin');
   const corsHeaders = getCorsHeaders(origin);
@@ -43,30 +33,28 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { orderId, password } = await req.json();
+    const { orderId, token } = await req.json();
     console.log('Fetching order for preparer:', orderId);
 
-    // Password is now required for security
-    if (!password) {
+    if (!orderId || !token) {
       return new Response(
-        JSON.stringify({ error: 'Password required' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+        JSON.stringify({ error: 'Missing orderId or token' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }
 
-    // Verify password before returning order data
+    // Verify the magic link token
     const { data: tokenData, error: tokenError } = await supabase
       .from('order_access_tokens')
       .select('*')
       .eq('order_id', orderId)
-      .order('created_at', { ascending: false })
-      .limit(1)
+      .eq('token', token)
       .single();
 
     if (tokenError || !tokenData) {
       console.error('Token not found:', tokenError);
       return new Response(
-        JSON.stringify({ error: 'Access token not found' }),
+        JSON.stringify({ error: 'Lien invalide' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
       );
     }
@@ -74,87 +62,88 @@ serve(async (req) => {
     // Check if token is expired
     if (new Date(tokenData.expires_at) < new Date()) {
       return new Response(
-        JSON.stringify({ error: 'Access token expired' }),
+        JSON.stringify({ error: 'Ce lien a expiré' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
       );
     }
 
-    // Verify password
-    const passwordHash = await hashPassword(password);
-    if (passwordHash !== tokenData.password_hash) {
-      console.error('Invalid password for order:', orderId);
-      return new Response(
-        JSON.stringify({ error: 'Invalid password' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
-      );
+    // Check if token was already used - allow 24h window
+    if (tokenData.used_at) {
+      const usedAt = new Date(tokenData.used_at);
+      const hoursElapsed = (Date.now() - usedAt.getTime()) / (1000 * 60 * 60);
+      
+      if (hoursElapsed > 24) {
+        return new Response(
+          JSON.stringify({ error: 'Ce lien a déjà été utilisé et la session a expiré' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+        );
+      }
     }
 
-    console.log('Password verified for order:', orderId);
-
-    if (!orderId) {
-      return new Response(
-        JSON.stringify({ error: 'Missing orderId' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      );
-    }
-
-    // Get order details
-    const { data: order, error: orderError } = await supabase
+    // Fetch order with items
+    const { data: orderData, error: orderError } = await supabase
       .from('orders')
-      .select('*')
+      .select('*, order_items(*)')
       .eq('id', orderId)
       .single();
 
-    if (orderError || !order) {
+    if (orderError || !orderData) {
       console.error('Order not found:', orderError);
       return new Response(
-        JSON.stringify({ error: 'Order not found' }),
+        JSON.stringify({ error: 'Commande introuvable' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
       );
     }
 
-    // Get order items
-    const { data: items, error: itemsError } = await supabase
-      .from('order_items')
-      .select('*')
-      .eq('order_id', orderId);
-
-    if (itemsError) {
-      console.error('Error fetching items:', itemsError);
-    }
-
-    // Get customer profile if user_id exists
+    // Get customer info from profiles if user_id exists
     let customerName = 'Client';
     let customerPhone = null;
-
-    if (order.user_id) {
-      const { data: profile } = await supabase
+    
+    if (orderData.user_id) {
+      const { data: profileData } = await supabase
         .from('profiles')
         .select('first_name, last_name, phone')
-        .eq('id', order.user_id)
+        .eq('id', orderData.user_id)
         .single();
-
-      if (profile) {
-        customerName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Client';
-        customerPhone = profile.phone;
+        
+      if (profileData) {
+        customerName = `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim() || 'Client';
+        customerPhone = profileData.phone;
       }
     }
 
-    console.log('Order fetched successfully:', order.order_number);
+    // Parse shipping address
+    const shippingAddress = orderData.shipping_address as any;
+    if (shippingAddress) {
+      customerName = `${shippingAddress.firstName || ''} ${shippingAddress.lastName || ''}`.trim() || customerName;
+      customerPhone = shippingAddress.phone || customerPhone;
+    }
+
+    // Format response
+    const response = {
+      id: orderData.id,
+      order_number: orderData.order_number,
+      status: orderData.status,
+      created_at: orderData.created_at,
+      eta_date: orderData.eta_date,
+      tracking_number: orderData.tracking_number,
+      tracking_url: orderData.tracking_url,
+      carrier: orderData.carrier,
+      customer_name: customerName,
+      customer_phone: customerPhone,
+      shipping_address: shippingAddress ? {
+        address_line1: shippingAddress.address,
+        address_line2: shippingAddress.address2,
+        postal_code: shippingAddress.postalCode,
+        city: shippingAddress.city,
+      } : null,
+      items: orderData.order_items,
+    };
+
+    console.log('Order data fetched for preparer');
 
     return new Response(
-      JSON.stringify({
-        id: order.id,
-        order_number: order.order_number,
-        status: order.status,
-        created_at: order.created_at,
-        eta_date: order.eta_date,
-        notes: order.notes,
-        shipping_address: order.shipping_address,
-        customer_name: customerName,
-        customer_phone: customerPhone,
-        items: items || [],
-      }),
+      JSON.stringify(response),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 

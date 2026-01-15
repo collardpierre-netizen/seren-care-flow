@@ -438,6 +438,7 @@ export type Database = {
           order_id: string
           password_hash: string
           token: string
+          used_at: string | null
         }
         Insert: {
           accessed_at?: string | null
@@ -447,6 +448,7 @@ export type Database = {
           order_id: string
           password_hash: string
           token: string
+          used_at?: string | null
         }
         Update: {
           accessed_at?: string | null
@@ -456,6 +458,7 @@ export type Database = {
           order_id?: string
           password_hash?: string
           token?: string
+          used_at?: string | null
         }
         Relationships: [
           {

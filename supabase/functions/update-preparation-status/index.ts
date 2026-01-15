@@ -33,7 +33,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { orderId, orderItemId, isAvailable, preparedQuantity, notes, preparerName, password } = await req.json();
+    const { orderId, orderItemId, isAvailable, preparedQuantity, notes, preparerName, token } = await req.json();
     console.log('Updating preparation status:', { orderId, orderItemId, isAvailable, preparedQuantity });
 
     if (!orderId || !orderItemId) {
@@ -43,13 +43,13 @@ serve(async (req) => {
       );
     }
 
-    // Verify access - either by password or check if user is admin
+    // Verify access - either by magic token or check if user is admin
     const authHeader = req.headers.get('Authorization');
     let isAdmin = false;
 
     if (authHeader) {
-      const token = authHeader.replace('Bearer ', '');
-      const { data: { user } } = await supabase.auth.getUser(token);
+      const authToken = authHeader.replace('Bearer ', '');
+      const { data: { user } } = await supabase.auth.getUser(authToken);
       
       if (user) {
         const { data: roles } = await supabase
@@ -62,38 +62,38 @@ serve(async (req) => {
       }
     }
 
-    // If not admin, verify password
-    if (!isAdmin && password) {
-      const { data: token } = await supabase
+    // If not admin, verify magic link token
+    if (!isAdmin && token) {
+      const { data: tokenData } = await supabase
         .from('order_access_tokens')
         .select('*')
         .eq('order_id', orderId)
+        .eq('token', token)
         .gt('expires_at', new Date().toISOString())
         .single();
 
-      if (!token) {
+      if (!tokenData) {
         return new Response(
-          JSON.stringify({ error: 'Invalid or expired access' }),
+          JSON.stringify({ error: 'Lien invalide ou expiré' }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
         );
       }
 
-      // Simple password check (in production, use proper hashing)
-      const encoder = new TextEncoder();
-      const data = encoder.encode(password);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-
-      if (token.password_hash !== hashHex) {
-        return new Response(
-          JSON.stringify({ error: 'Invalid password' }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
-        );
+      // Check if token was used and session has expired (24h window)
+      if (tokenData.used_at) {
+        const usedAt = new Date(tokenData.used_at);
+        const hoursElapsed = (Date.now() - usedAt.getTime()) / (1000 * 60 * 60);
+        
+        if (hoursElapsed > 24) {
+          return new Response(
+            JSON.stringify({ error: 'Session expirée' }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
+          );
+        }
       }
-    } else if (!isAdmin && !password) {
+    } else if (!isAdmin && !token) {
       return new Response(
-        JSON.stringify({ error: 'Authentication required' }),
+        JSON.stringify({ error: 'Authentification requise' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
       );
     }
