@@ -35,6 +35,7 @@ import { SizeGuideModal, SizeGuideButton } from '@/components/shop/SizeGuideModa
 import SubscriptionBadge from '@/components/shop/SubscriptionBadge';
 import SubscriptionBenefits from '@/components/subscription/SubscriptionBenefits';
 import MobileCartFooter from '@/components/shop/MobileCartFooter';
+import { getEffectiveMobilityLevels, getEffectiveUsageTimes } from '@/hooks/useProductFilters';
 
 const ProductPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -145,13 +146,37 @@ const ProductPage = () => {
   const mobilityLabels: Record<string, string> = {
     mobile: 'Mobile',
     reduced: 'Mobilité réduite',
-    bedridden: 'Alité'
+    bedridden: 'Alité',
+    reduite: 'Mobilité réduite',
+    alitee: 'Alité',
   };
 
   const usageTimeLabels: Record<string, { label: string; icon: React.ReactNode }> = {
     day: { label: 'Jour', icon: <Sun className="h-4 w-4" /> },
     night: { label: 'Nuit', icon: <Moon className="h-4 w-4" /> },
     day_night: { label: 'Jour & Nuit', icon: <Activity className="h-4 w-4" /> }
+  };
+
+  // Helper functions for multi-tag display
+  const formatMobilityTags = (): string[] => {
+    const mobilityLevels = getEffectiveMobilityLevels(product);
+    if (!mobilityLevels) return [];
+    const tags = mobilityLevels.split('|').map(t => t.trim().toLowerCase());
+    const labels = tags.map(tag => mobilityLabels[tag]).filter(Boolean);
+    return [...new Set(labels)];
+  };
+
+  const formatUsageTimeTags = (): { label: string; icon: React.ReactNode }[] => {
+    const usageTimes = getEffectiveUsageTimes(product);
+    if (!usageTimes) return [];
+    const tags = usageTimes.split('|').map(t => t.trim().toLowerCase());
+    
+    // If both day and night, show combined
+    if (tags.includes('day') && tags.includes('night')) {
+      return [usageTimeLabels['day_night']];
+    }
+    
+    return tags.map(tag => usageTimeLabels[tag]).filter(Boolean);
   };
 
   const handleAddToCart = () => {
@@ -341,17 +366,17 @@ const ProductPage = () => {
                     {incontinenceLevelLabels[product.incontinence_level]}
                   </Badge>
                 )}
-                {product.mobility && (
-                  <Badge variant="outline">
-                    {mobilityLabels[product.mobility]}
+                {formatMobilityTags().map((label, idx) => (
+                  <Badge key={`mobility-${idx}`} variant="outline">
+                    {label}
                   </Badge>
-                )}
-                {product.usage_time && (
-                  <Badge variant="outline" className="flex items-center gap-1">
-                    {usageTimeLabels[product.usage_time]?.icon}
-                    {usageTimeLabels[product.usage_time]?.label}
+                ))}
+                {formatUsageTimeTags().map((item, idx) => (
+                  <Badge key={`usage-${idx}`} variant="outline" className="flex items-center gap-1">
+                    {item.icon}
+                    {item.label}
                   </Badge>
-                )}
+                ))}
               </div>
 
               {/* Description */}

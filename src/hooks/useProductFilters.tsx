@@ -18,6 +18,7 @@ export const usageTimeFilterOptions = [
   { id: 'all', label: 'Tous', tag: null },
   { id: 'day', label: 'Jour', tag: 'day' as UsageTimeTag },
   { id: 'night', label: 'Nuit', tag: 'night' as UsageTimeTag },
+  { id: 'day_night', label: 'Jour & Nuit', tag: 'day_night' as any },
 ];
 
 export const genderFilterOptions = [
@@ -190,7 +191,12 @@ export const useProductFilters = (
       // Usage time filter (multi-tag)
       if (selectedUsageTime !== 'all') {
         const effectiveUsageTime = getEffectiveUsageTimes(product);
-        if (!containsTag(effectiveUsageTime, selectedUsageTime)) {
+        // Special case for day_night: match products that have BOTH day and night
+        if (selectedUsageTime === 'day_night') {
+          if (!containsTag(effectiveUsageTime, 'day') || !containsTag(effectiveUsageTime, 'night')) {
+            return false;
+          }
+        } else if (!containsTag(effectiveUsageTime, selectedUsageTime)) {
           return false;
         }
       }
@@ -232,13 +238,16 @@ export const useProductFilters = (
       });
 
       // Usage time counts (from effective tags)
-      const usageTimeTags = getEffectiveUsageTimes(product).split('|');
+      const usageTimeTags = getEffectiveUsageTimes(product).split('|').map(t => t.trim().toLowerCase());
       usageTimeTags.forEach(tag => {
-        const trimmed = tag.trim();
-        if (trimmed) {
-          counts.usageTime[trimmed] = (counts.usageTime[trimmed] || 0) + 1;
+        if (tag) {
+          counts.usageTime[tag] = (counts.usageTime[tag] || 0) + 1;
         }
       });
+      // Count day_night for products that have both
+      if (usageTimeTags.includes('day') && usageTimeTags.includes('night')) {
+        counts.usageTime['day_night'] = (counts.usageTime['day_night'] || 0) + 1;
+      }
 
       // Gender counts (from effective tags)
       const genderTags = getEffectiveGender(product).split('|');
