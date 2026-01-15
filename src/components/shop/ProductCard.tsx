@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Product } from '@/hooks/useProducts';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import AbsorptionDroplets from './AbsorptionDroplets';
 import SubscriptionBadge from './SubscriptionBadge';
@@ -9,11 +8,11 @@ import { CompareButton } from './ProductComparator';
 
 interface ProductCardProps {
   product: Product;
-  onClick: () => void;
+  onClick?: () => void;
   compact?: boolean;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, onClick, compact = false }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, compact = false }) => {
   const primaryImage = product.images?.find(img => img.is_primary) || product.images?.[0];
   const hasSubscription = product.subscription_price && product.subscription_price < product.price;
   const discountPercent = product.subscription_discount_percent || 10;
@@ -39,14 +38,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick, compact = f
   const hasPriceRange = activeSizes.length > 1 && minPrice !== maxPrice;
 
   return (
-    <Card 
-      className="group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 h-full flex flex-col"
-      onClick={onClick}
+    <article 
+      className="group overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 h-full flex flex-col bg-card rounded-lg border"
     >
       <Link 
         to={`/produit/${product.slug}`}
-        onClick={(e) => e.stopPropagation()}
-        className="block"
+        className="block focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-t-lg"
+        aria-label={`Voir le produit ${product.name}${hasRecommendedPrice ? `, -${savingsPercent}%` : ''}`}
       >
         <div className={`relative bg-muted/30 overflow-hidden ${compact ? 'aspect-[4/3]' : 'aspect-square'}`}>
           <img
@@ -82,7 +80,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick, compact = f
           )}
         </div>
       </Link>
-      <CardContent className={`flex-1 flex flex-col ${compact ? 'p-2' : 'p-4'}`}>
+      <div className={`flex-1 flex flex-col ${compact ? 'p-2' : 'p-4'}`}>
         <div className="flex items-center justify-between mb-1">
           {product.brand && (
             <p className={`text-muted-foreground ${compact ? 'text-[10px]' : 'text-xs'}`}>{product.brand.name}</p>
@@ -119,8 +117,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick, compact = f
             </>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </article>
   );
 };
 

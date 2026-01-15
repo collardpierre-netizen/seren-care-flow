@@ -107,6 +107,7 @@ const Header = () => {
               >
                 <Link
                   to={item.href}
+                  aria-current={isActive(item.href) ? "page" : undefined}
                   className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isActive(item.href)
                       ? "text-primary"
@@ -137,10 +138,10 @@ const Header = () => {
             </a>
             
             {/* Cart button */}
-            <Button variant="ghost" size="icon" onClick={openCart} className="relative">
+            <Button variant="ghost" size="icon" onClick={openCart} className="relative" aria-label={`Panier${itemCount > 0 ? ` (${itemCount} articles)` : ''}`}>
               <ShoppingCart className="h-5 w-5" />
               {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-accent text-accent-foreground text-xs flex items-center justify-center font-medium">
+                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-accent text-accent-foreground text-xs flex items-center justify-center font-medium" aria-hidden="true">
                   {itemCount}
                 </span>
               )}
@@ -153,7 +154,7 @@ const Header = () => {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
+                  <Button variant="ghost" size="icon" aria-label="Menu utilisateur">
                     <User className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -197,10 +198,10 @@ const Header = () => {
 
           {/* Mobile - Cart + Menu */}
           <div className="lg:hidden flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={openCart} className="relative">
+            <Button variant="ghost" size="icon" onClick={openCart} className="relative" aria-label={`Panier${itemCount > 0 ? ` (${itemCount} articles)` : ''}`}>
               <ShoppingCart className="h-5 w-5" />
               {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-accent text-accent-foreground text-xs flex items-center justify-center font-medium">
+                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-accent text-accent-foreground text-xs flex items-center justify-center font-medium" aria-hidden="true">
                   {itemCount}
                 </span>
               )}
@@ -208,7 +209,9 @@ const Header = () => {
             <motion.button
               className="p-2.5 rounded-lg hover:bg-muted transition-colors"
               onClick={() => setIsOpen(!isOpen)}
-              aria-label="Menu"
+              aria-label={isOpen ? "Fermer le menu" : "Ouvrir le menu"}
+              aria-expanded={isOpen}
+              aria-controls="mobile-menu"
               whileTap={{ scale: 0.95 }}
             >
               <AnimatePresence mode="wait" initial={false}>
@@ -250,6 +253,7 @@ const Header = () => {
                 ease: [0.4, 0, 0.2, 1]
               }}
               className="lg:hidden overflow-hidden border-t border-border/40"
+              id="mobile-menu"
             >
               <motion.div 
                 className="py-4 space-y-1"
