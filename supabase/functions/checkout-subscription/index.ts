@@ -165,6 +165,7 @@ serve(async (req) => {
       metadata: {
         user_id: user.id,
         cart_id: cart.id,
+        origin: origin,
       },
       subscription_data: {
         metadata: {
