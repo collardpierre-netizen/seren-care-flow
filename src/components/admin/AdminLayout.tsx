@@ -24,7 +24,8 @@ import {
   Star,
   Building2,
   PackageSearch,
-  BarChart3
+  BarChart3,
+  Bell
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -40,6 +41,7 @@ const navItems = [
   { label: 'Abonnements', href: '/admin/abonnements', icon: RefreshCw },
   { label: 'Fournisseurs', href: '/admin/fournisseurs', icon: Building2 },
   { label: 'Réassort', href: '/admin/reassort', icon: PackageSearch },
+  { label: 'Alertes stock', href: '/admin/alertes-stock', icon: Bell },
   { label: 'Clients', href: '/admin/clients', icon: Users },
   { label: 'Avis clients', href: '/admin/avis', icon: Star },
   { label: 'Prescripteurs', href: '/admin/prescripteurs', icon: UserCheck },

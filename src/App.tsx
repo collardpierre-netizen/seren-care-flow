@@ -56,6 +56,7 @@ import AdminPreparations from "./pages/admin/Preparations";
 import AdminSuppliers from "./pages/admin/Suppliers";
 import AdminReorders from "./pages/admin/Reorders";
 import AdminPreparationAnalytics from "./pages/admin/PreparationAnalytics";
+import AdminStockAlerts from "./pages/admin/StockAlerts";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -117,7 +118,8 @@ const App = () => (
                 <Route path="categories" element={<AdminCategories />} />
                 <Route path="avis" element={<AdminReviews />} />
                 <Route path="preparations" element={<AdminPreparations />} />
-              <Route path="analytics-preparations" element={<AdminPreparationAnalytics />} />
+                <Route path="analytics-preparations" element={<AdminPreparationAnalytics />} />
+                <Route path="alertes-stock" element={<AdminStockAlerts />} />
               <Route path="fournisseurs" element={<AdminSuppliers />} />
               <Route path="reassort" element={<AdminReorders />} />
               <Route path="medias" element={<AdminMedia />} />
