@@ -30,6 +30,9 @@ verify_jwt = false
 [functions.send-stock-alert]
 verify_jwt = false
 
+[functions.auto-stock-alert]
+verify_jwt = false
+
 [functions.send-order-to-preparer]
 verify_jwt = false
 
