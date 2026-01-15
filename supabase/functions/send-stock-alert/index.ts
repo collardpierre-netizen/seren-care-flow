@@ -47,7 +47,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Get active stock alerts for this product
     let alertsQuery = supabase
       .from("stock_alerts")
-      .select("id, email, size")
+      .select("id, email, size, unsubscribe_token")
       .eq("product_id", product_id)
       .eq("is_active", true)
       .is("notified_at", null);
@@ -74,13 +74,15 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Found ${alerts.length} alerts to process`);
 
-    const productUrl = `${Deno.env.get("SITE_URL") || "https://seren-care-flow.lovable.app"}/produit/${product.slug}`;
+    const siteUrl = Deno.env.get("SITE_URL") || "https://seren-care-flow.lovable.app";
+    const productUrl = `${siteUrl}/produit/${product.slug}`;
     let successCount = 0;
     const failedEmails: string[] = [];
 
     for (const alert of alerts) {
       try {
         const sizeText = alert.size ? ` (taille ${alert.size})` : "";
+        const unsubscribeUrl = `${siteUrl}/desinscription-alerte?token=${alert.unsubscribe_token}`;
         
         const emailResult = await resend.emails.send({
           from: "SerenCare <notifications@serencare.be>",
@@ -140,6 +142,9 @@ const handler = async (req: Request): Promise<Response> => {
                     <p style="color: #999; font-size: 12px; margin: 0 0 8px 0;">
                       Vous avez reçu cet email car vous vous êtes inscrit(e) à une alerte de disponibilité.
                     </p>
+                    <a href="${unsubscribeUrl}" style="color: #666; font-size: 12px; display: block; margin-bottom: 8px;">
+                      Se désinscrire de cette alerte
+                    </a>
                     <p style="color: #999; font-size: 12px; margin: 0;">
                       © ${new Date().getFullYear()} SerenCare. Tous droits réservés.
                     </p>

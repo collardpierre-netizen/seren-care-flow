@@ -41,3 +41,9 @@ verify_jwt = false
 
 [functions.send-confirmation-email]
 verify_jwt = false
+
+[functions.unsubscribe-stock-alert]
+verify_jwt = false
+
+[functions.send-stock-alert-confirmation]
+verify_jwt = false

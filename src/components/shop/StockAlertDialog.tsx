@@ -37,13 +37,20 @@ export function StockAlertDialog({
 
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from("stock_alerts").insert({
+      const { data, error } = await supabase.from("stock_alerts").insert({
         product_id: productId,
         email: email.trim(),
         size: size || null,
-      });
+      }).select('id').single();
 
       if (error) throw error;
+
+      // Send confirmation email
+      if (data?.id) {
+        supabase.functions.invoke('send-stock-alert-confirmation', {
+          body: { alert_id: data.id }
+        }).catch(err => console.error('Failed to send confirmation:', err));
+      }
 
       setIsSuccess(true);
       setTimeout(() => {

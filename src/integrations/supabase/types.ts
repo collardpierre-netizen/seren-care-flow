@@ -1382,6 +1382,7 @@ export type Database = {
           notified_at: string | null
           product_id: string
           size: string | null
+          unsubscribe_token: string
         }
         Insert: {
           created_at?: string
@@ -1391,6 +1392,7 @@ export type Database = {
           notified_at?: string | null
           product_id: string
           size?: string | null
+          unsubscribe_token?: string
         }
         Update: {
           created_at?: string
@@ -1400,6 +1402,7 @@ export type Database = {
           notified_at?: string | null
           product_id?: string
           size?: string | null
+          unsubscribe_token?: string
         }
         Relationships: [
           {
