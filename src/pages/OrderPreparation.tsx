@@ -104,7 +104,7 @@ const OrderPreparation = () => {
 
   // Fetch order data
   const { data: order, isLoading } = useQuery({
-    queryKey: ['preparer-order', orderId, isAdmin],
+    queryKey: ['preparer-order', orderId, isAdmin, sessionPassword],
     queryFn: async () => {
       if (isAdmin) {
         const { data: orderData, error: orderError } = await supabase
@@ -129,14 +129,15 @@ const OrderPreparation = () => {
           } : null,
         };
       } else {
+        // Pass password for authentication when fetching order data
         const { data, error } = await supabase.functions.invoke('get-order-for-preparer', {
-          body: { orderId },
+          body: { orderId, password: sessionPassword },
         });
         if (error) throw error;
         return data;
       }
     },
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && (isAdmin || !!sessionPassword),
   });
 
   // Fetch existing preparation statuses
