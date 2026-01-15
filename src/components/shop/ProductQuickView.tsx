@@ -194,15 +194,6 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
 
           {/* Product details */}
           <div className="p-6 space-y-6">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-4 top-4"
-              onClick={onClose}
-            >
-              <X className="h-5 w-5" />
-            </Button>
-
             {/* Header */}
             <div>
               {product.brand && (
