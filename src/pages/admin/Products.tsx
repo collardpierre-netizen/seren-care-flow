@@ -1159,14 +1159,16 @@ const AdminProducts: React.FC = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="price">Prix SerenCare (€) *</Label>
+                    <Label htmlFor="price">
+                      Prix SerenCare (€) {!formData.is_coming_soon && '*'}
+                    </Label>
                     <Input
                       id="price"
                       type="number"
                       step="0.01"
                       value={formData.price || ''}
                       onChange={(e) => handlePriceChange(parseFloat(e.target.value) || 0)}
-                      required
+                      required={!formData.is_coming_soon}
                     />
                   </div>
                 </div>
