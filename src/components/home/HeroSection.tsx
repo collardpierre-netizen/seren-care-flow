@@ -50,7 +50,8 @@ const getTransitionVariants = (effect: "fade" | "zoom" | "slide") => {
 
 const HeroSection = () => {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
-  const { data: heroMediaFromDB } = useHeroMedia();
+  const [loadedMedia, setLoadedMedia] = useState<Set<number>>(new Set([0]));
+  const { data: heroMediaFromDB, isLoading } = useHeroMedia();
 
   // Use DB media if available, otherwise fallback
   const heroMedia: MediaItem[] = heroMediaFromDB && heroMediaFromDB.length > 0
@@ -62,6 +63,21 @@ const HeroSection = () => {
         alt: m.alt_text,
       }))
     : fallbackMedia;
+
+  // Preload next media when current changes
+  useEffect(() => {
+    if (heroMedia.length <= 1) return;
+    
+    const nextIndex = (currentMediaIndex + 1) % heroMedia.length;
+    setLoadedMedia(prev => new Set([...prev, currentMediaIndex, nextIndex]));
+    
+    // Preload next image
+    const nextItem = heroMedia[nextIndex];
+    if (nextItem?.type === 'image') {
+      const img = new Image();
+      img.src = nextItem.src;
+    }
+  }, [currentMediaIndex, heroMedia]);
 
   const handleVideoEnd = () => {
     setCurrentMediaIndex((prev) => (prev + 1) % heroMedia.length);
@@ -88,45 +104,53 @@ const HeroSection = () => {
     }
   }, [heroMedia.length, currentMediaIndex]);
 
-  if (heroMedia.length === 0) {
+  if (heroMedia.length === 0 && !isLoading) {
     return null;
   }
 
   const currentItem = heroMedia[currentMediaIndex];
-  const variants = getTransitionVariants(currentItem.transition);
+  const variants = currentItem ? getTransitionVariants(currentItem.transition) : getTransitionVariants('fade');
+  const shouldRenderMedia = loadedMedia.has(currentMediaIndex);
 
   return (
     <section className="relative overflow-hidden min-h-[90vh] flex items-center">
       {/* Media Background Gallery */}
       <div className="absolute inset-0 z-0">
         <AnimatePresence mode="wait">
-          {currentItem.type === "video" ? (
-            <motion.video
-              key={`video-${currentMediaIndex}`}
-              src={currentItem.src}
-              autoPlay
-              muted
-              playsInline
-              onEnded={handleVideoEnd}
-              initial={variants.initial}
-              animate={variants.animate}
-              exit={variants.exit}
-              transition={{ duration: 1.2, ease: "easeInOut" }}
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-          ) : (
-            <motion.img
-              key={`image-${currentMediaIndex}`}
-              src={currentItem.src}
-              alt={currentItem.alt || "SerenCare"}
-              initial={variants.initial}
-              animate={variants.animate}
-              exit={variants.exit}
-              transition={{ duration: 1.2, ease: "easeInOut" }}
-              className="absolute inset-0 w-full h-full object-cover"
-            />
+          {shouldRenderMedia && currentItem && (
+            currentItem.type === "video" ? (
+              <motion.video
+                key={`video-${currentMediaIndex}`}
+                src={currentItem.src}
+                autoPlay
+                muted
+                playsInline
+                onEnded={handleVideoEnd}
+                initial={variants.initial}
+                animate={variants.animate}
+                exit={variants.exit}
+                transition={{ duration: 1.2, ease: "easeInOut" }}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            ) : (
+              <motion.img
+                key={`image-${currentMediaIndex}`}
+                src={currentItem.src}
+                alt={currentItem.alt || "SerenCare"}
+                loading="eager"
+                initial={variants.initial}
+                animate={variants.animate}
+                exit={variants.exit}
+                transition={{ duration: 1.2, ease: "easeInOut" }}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            )
           )}
         </AnimatePresence>
+        {/* Loading placeholder */}
+        {!shouldRenderMedia && (
+          <div className="absolute inset-0 bg-primary/20 animate-pulse" />
+        )}
         {/* Color Overlay #0058A0 at 12% */}
         <div 
           className="absolute inset-0" 
