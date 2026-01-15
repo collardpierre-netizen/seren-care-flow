@@ -101,20 +101,64 @@ const Subscription = () => {
     return (
       <Layout>
         <Helmet>
-          <title>Abonnement | SerenCare</title>
+          <title>Abonnement mensuel | SerenCare</title>
+          <meta name="description" content="Recevez vos protections pour incontinence automatiquement chaque mois avec notre abonnement flexible. Sans engagement, livraison gratuite, -10% sur vos produits." />
         </Helmet>
         <div className="container py-12">
+          {/* Hero section for logged-out users */}
+          <div className="max-w-3xl mx-auto text-center mb-12">
+            <Badge variant="secondary" className="mb-4">Sans engagement</Badge>
+            <h1 className="text-3xl md:text-4xl font-bold mb-4">
+              L'abonnement mensuel qui simplifie votre quotidien
+            </h1>
+            <p className="text-lg text-muted-foreground mb-8">
+              Recevez vos produits automatiquement chaque mois. Plus de rupture de stock, plus de courses de dernière minute.
+            </p>
+          </div>
+
+          {/* Benefits grid */}
+          <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-6 mb-12">
+            <Card className="text-center p-6">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <Package className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-semibold mb-2">Livraison automatique</h3>
+              <p className="text-sm text-muted-foreground">Vos produits livrés chaque mois, sans rien faire</p>
+            </Card>
+            <Card className="text-center p-6">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <CreditCard className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-semibold mb-2">-10% sur vos produits</h3>
+              <p className="text-sm text-muted-foreground">Prix réduits exclusifs aux abonnés</p>
+            </Card>
+            <Card className="text-center p-6">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-semibold mb-2">Flexible et sans risque</h3>
+              <p className="text-sm text-muted-foreground">Modifiez ou annulez à tout moment</p>
+            </Card>
+          </div>
+
+          {/* CTA Card */}
           <Card className="max-w-lg mx-auto">
-            <CardHeader>
-              <CardTitle>Connectez-vous</CardTitle>
+            <CardHeader className="text-center">
+              <CardTitle>Commencez dès maintenant</CardTitle>
               <CardDescription>
-                Créez un compte ou connectez-vous pour gérer votre abonnement mensuel.
+                Créez un compte gratuit pour configurer votre abonnement personnalisé.
               </CardDescription>
             </CardHeader>
-            <CardFooter>
-              <Button onClick={() => navigate('/connexion')} className="w-full">
-                Se connecter
+            <CardFooter className="flex flex-col gap-3">
+              <Button onClick={() => navigate('/inscription')} className="w-full" size="lg">
+                Créer un compte
               </Button>
+              <p className="text-sm text-center text-muted-foreground">
+                Déjà client ?{' '}
+                <Button variant="link" className="p-0 h-auto" onClick={() => navigate('/connexion')}>
+                  Se connecter
+                </Button>
+              </p>
             </CardFooter>
           </Card>
         </div>

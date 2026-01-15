@@ -62,9 +62,9 @@ const CookieConsent = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
             transition={{ duration: 0.3 }}
-            className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6"
+            className="fixed bottom-4 left-4 right-4 z-50 md:left-6 md:right-6 md:bottom-6"
           >
-            <div className="max-w-3xl mx-auto bg-card border border-border rounded-2xl shadow-2xl p-6">
+            <div className="max-w-3xl mx-auto bg-card border border-border rounded-2xl shadow-2xl p-4 md:p-6">
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <Cookie className="w-5 h-5 text-primary" />
