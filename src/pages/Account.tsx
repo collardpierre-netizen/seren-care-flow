@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 import { useCart } from '@/hooks/useCart';
 import OrderStatusTimeline from '@/components/account/OrderStatusTimeline';
 import SubscriptionManager from '@/components/account/SubscriptionManager';
+import StockAlertsManager from '@/components/account/StockAlertsManager';
 import { 
   User, 
   Package, 
@@ -29,6 +30,7 @@ import {
   Save,
   X,
   RotateCcw,
+  Bell,
   CreditCard,
   ExternalLink,
   ChevronDown
@@ -210,7 +212,7 @@ const Account = () => {
             <p className="text-muted-foreground mb-8">{user.email}</p>
 
             <Tabs defaultValue="profile" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
+              <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
                 <TabsTrigger value="profile" className="gap-2">
                   <User className="h-4 w-4" />
                   <span className="hidden sm:inline">Profil</span>
@@ -222,6 +224,10 @@ const Account = () => {
                 <TabsTrigger value="subscriptions" className="gap-2">
                   <RefreshCw className="h-4 w-4" />
                   <span className="hidden sm:inline">Abonnements</span>
+                </TabsTrigger>
+                <TabsTrigger value="alerts" className="gap-2">
+                  <Bell className="h-4 w-4" />
+                  <span className="hidden sm:inline">Alertes</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -584,6 +590,11 @@ const Account = () => {
                     Sans engagement. Modifiez, mettez en pause ou annulez votre abonnement à tout moment.
                   </p>
                 </div>
+              </TabsContent>
+
+              {/* Alerts Tab */}
+              <TabsContent value="alerts">
+                <StockAlertsManager />
               </TabsContent>
             </Tabs>
           </motion.div>

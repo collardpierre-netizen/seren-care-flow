@@ -34,8 +34,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bell, Trash2, Mail, Search, Loader2, CheckCircle2, XCircle, Send } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Bell, Trash2, Mail, Search, Loader2, CheckCircle2, XCircle, Send, BarChart3, List } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import StockAlertStats from "@/components/admin/StockAlertStats";
 
 interface StockAlert {
   id: string;
@@ -157,50 +159,67 @@ export default function AdminStockAlerts() {
         </div>
       </div>
 
-      {/* Stats cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total inscriptions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Bell className="h-5 w-5 text-primary" />
-              <span className="text-2xl font-bold">{totalAlerts}</span>
-            </div>
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="stats" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="stats" className="gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Statistiques
+          </TabsTrigger>
+          <TabsTrigger value="list" className="gap-2">
+            <List className="h-4 w-4" />
+            Liste des alertes
+          </TabsTrigger>
+        </TabsList>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              En attente
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Mail className="h-5 w-5 text-amber-500" />
-              <span className="text-2xl font-bold">{activeAlerts}</span>
-            </div>
-          </CardContent>
-        </Card>
+        <TabsContent value="stats">
+          <StockAlertStats />
+        </TabsContent>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Notifiés
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-500" />
-              <span className="text-2xl font-bold">{notifiedAlerts}</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+        <TabsContent value="list" className="space-y-6">
+          {/* Quick stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Total inscriptions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2">
+                  <Bell className="h-5 w-5 text-primary" />
+                  <span className="text-2xl font-bold">{totalAlerts}</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  En attente
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2">
+                  <Mail className="h-5 w-5 text-amber-500" />
+                  <span className="text-2xl font-bold">{activeAlerts}</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Notifiés
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                  <span className="text-2xl font-bold">{notifiedAlerts}</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
@@ -347,6 +366,8 @@ export default function AdminStockAlerts() {
           </CardContent>
         </Card>
       )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
