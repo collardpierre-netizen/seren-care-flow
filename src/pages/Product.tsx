@@ -28,7 +28,8 @@ import {
   Shield,
   Clock,
   Package,
-  Calendar
+  Calendar,
+  Bell
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SizeGuideModal, SizeGuideButton } from '@/components/shop/SizeGuideModal';
@@ -36,6 +37,7 @@ import SubscriptionBadge from '@/components/shop/SubscriptionBadge';
 import SubscriptionBenefits from '@/components/subscription/SubscriptionBenefits';
 import MobileCartFooter from '@/components/shop/MobileCartFooter';
 import { getEffectiveMobilityLevels, getEffectiveUsageTimes } from '@/hooks/useProductFilters';
+import { StockAlertDialog } from '@/components/shop/StockAlertDialog';
 
 const ProductPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -50,6 +52,7 @@ const ProductPage = () => {
   const [purchaseMode, setPurchaseMode] = useState<'one-time' | 'subscription'>('subscription');
   const [quantity, setQuantity] = useState(1);
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
+  const [stockAlertOpen, setStockAlertOpen] = useState(false);
 
   useEffect(() => {
     if (product?.min_order_quantity) {
@@ -552,15 +555,27 @@ const ProductPage = () => {
               </div>
 
               {/* Add to cart - hidden on mobile (shown in footer) */}
-              {product.is_coming_soon ? (
-                <Button 
-                  className="w-full h-14 text-base hidden lg:flex" 
-                  size="lg"
-                  disabled
-                >
-                  <Clock className="h-5 w-5 mr-2" />
-                  Bientôt disponible
-                </Button>
+              {product.is_coming_soon || product.stock_status === 'out_of_stock' ? (
+                <div className="space-y-3 hidden lg:block">
+                  <Button 
+                    className="w-full h-14 text-base" 
+                    size="lg"
+                    disabled
+                    variant="secondary"
+                  >
+                    <Clock className="h-5 w-5 mr-2" />
+                    {product.is_coming_soon ? 'Bientôt disponible' : 'Rupture de stock'}
+                  </Button>
+                  <Button 
+                    className="w-full h-12 text-base" 
+                    size="lg"
+                    variant="outline"
+                    onClick={() => setStockAlertOpen(true)}
+                  >
+                    <Bell className="h-5 w-5 mr-2" />
+                    Me prévenir quand disponible
+                  </Button>
+                </div>
               ) : (
                 <Button 
                   className="w-full h-14 text-base hidden lg:flex" 
@@ -610,9 +625,21 @@ const ProductPage = () => {
             quantity={quantity}
             isDisabled={sizes.length > 0 && !selectedSize}
             isComingSoon={product.is_coming_soon || false}
+            isOutOfStock={product.stock_status === 'out_of_stock'}
             productName={product.name}
+            productId={product.id}
+            onStockAlertClick={() => setStockAlertOpen(true)}
           />
         )}
+
+        {/* Stock Alert Dialog */}
+        <StockAlertDialog
+          open={stockAlertOpen}
+          onOpenChange={setStockAlertOpen}
+          productId={product.id}
+          productName={product.name}
+          size={selectedSize || undefined}
+        />
       </Layout>
     </>
   );

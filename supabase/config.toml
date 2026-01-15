@@ -26,3 +26,15 @@ verify_jwt = false
 
 [functions.create-order]
 verify_jwt = false
+
+[functions.send-stock-alert]
+verify_jwt = false
+
+[functions.send-order-to-preparer]
+verify_jwt = false
+
+[functions.send-order-status-email]
+verify_jwt = false
+
+[functions.send-confirmation-email]
+verify_jwt = false
