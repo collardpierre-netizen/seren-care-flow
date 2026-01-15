@@ -26,8 +26,12 @@ const AbsorptionDroplets: React.FC<AbsorptionDropletsProps> = ({
   const maxDrops = 4;
 
   return (
-    <div className="flex items-center gap-1.5">
-      <div className="flex items-center gap-0.5">
+    <div 
+      className="flex items-center gap-1.5"
+      role="img"
+      aria-label={`Niveau d'absorption: ${config.label}`}
+    >
+      <div className="flex items-center gap-0.5" aria-hidden="true">
         {Array.from({ length: maxDrops }).map((_, index) => (
           <Droplet
             key={index}
