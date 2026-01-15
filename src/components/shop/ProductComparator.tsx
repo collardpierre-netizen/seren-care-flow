@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Product, useProducts } from "@/hooks/useProducts";
 import { cn } from "@/lib/utils";
+import { getEffectiveUsageTimes, getEffectiveMobilityLevels } from "@/hooks/useProductFilters";
 import { useCart } from "@/hooks/useCart";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
@@ -40,12 +41,44 @@ const mobilityLabels: Record<string, string> = {
   mobile: "Mobile",
   reduced: "Mobilité réduite",
   bedridden: "Alité",
+  reduite: "Mobilité réduite",
+  alitee: "Alité",
 };
 
 const usageTimeLabels: Record<string, string> = {
   day: "Jour",
   night: "Nuit",
   day_night: "Jour & Nuit",
+};
+
+// Helper function to format usage times from multi-tags
+const formatUsageTimes = (product: any): string => {
+  const usageTimes = getEffectiveUsageTimes(product);
+  if (!usageTimes) return "-";
+  
+  const tags = usageTimes.split('|').map(t => t.trim().toLowerCase());
+  
+  // If both day and night, show "Jour & Nuit"
+  if (tags.includes('day') && tags.includes('night')) {
+    return "Jour & Nuit";
+  }
+  
+  // Map individual tags
+  const labels = tags.map(tag => usageTimeLabels[tag]).filter(Boolean);
+  return labels.length > 0 ? labels.join(' & ') : "-";
+};
+
+// Helper function to format mobility from multi-tags
+const formatMobility = (product: any): string => {
+  const mobilityLevels = getEffectiveMobilityLevels(product);
+  if (!mobilityLevels) return "-";
+  
+  const tags = mobilityLevels.split('|').map(t => t.trim().toLowerCase());
+  const labels = tags.map(tag => mobilityLabels[tag]).filter(Boolean);
+  
+  // Remove duplicates and join
+  const uniqueLabels = [...new Set(labels)];
+  return uniqueLabels.length > 0 ? uniqueLabels.join(', ') : (product.mobility ? mobilityLabels[product.mobility] || "-" : "-");
 };
 
 export function ProductComparator({ 
@@ -265,7 +298,7 @@ export function ProductComparator({
                     <CompareRow label="Mobilité">
                       {compareProducts.map(product => (
                         <div key={product.id} className="text-center text-sm">
-                          {product.mobility ? mobilityLabels[product.mobility] : "-"}
+                          {formatMobility(product)}
                         </div>
                       ))}
                     </CompareRow>
@@ -273,7 +306,7 @@ export function ProductComparator({
                     <CompareRow label="Moment d'utilisation">
                       {compareProducts.map(product => (
                         <div key={product.id} className="text-center text-sm">
-                          {product.usage_time ? usageTimeLabels[product.usage_time] : "-"}
+                          {formatUsageTimes(product)}
                         </div>
                       ))}
                     </CompareRow>
@@ -599,7 +632,7 @@ export function GlobalProductComparator() {
               <CompareRow label="Mobilité">
                 {products.map(product => (
                   <div key={product.id} className="text-center text-sm">
-                    {product.mobility ? mobilityLabels[product.mobility] : "-"}
+                    {formatMobility(product)}
                   </div>
                 ))}
               </CompareRow>
@@ -607,7 +640,7 @@ export function GlobalProductComparator() {
               <CompareRow label="Moment d'utilisation">
                 {products.map(product => (
                   <div key={product.id} className="text-center text-sm">
-                    {product.usage_time ? usageTimeLabels[product.usage_time] : "-"}
+                    {formatUsageTimes(product)}
                   </div>
                 ))}
               </CompareRow>
