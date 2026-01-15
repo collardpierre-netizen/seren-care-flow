@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SizeGuideModal, SizeGuideButton } from './SizeGuideModal';
+import AddToSubscriptionButton from './AddToSubscriptionButton';
 
 interface ProductQuickViewProps {
   product: Product | null;
@@ -400,14 +401,24 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
             </div>
 
             {/* Add to cart */}
-            <Button 
-              className="w-full h-12 text-base" 
-              size="lg"
-              onClick={handleAddToCart}
-            >
-              <ShoppingCart className="h-5 w-5 mr-2" />
-              Ajouter au panier — {(finalPrice * quantity).toFixed(2)} €
-            </Button>
+            <div className="space-y-3">
+              <Button 
+                className="w-full h-12 text-base" 
+                size="lg"
+                onClick={handleAddToCart}
+              >
+                <ShoppingCart className="h-5 w-5 mr-2" />
+                Ajouter au panier — {(finalPrice * quantity).toFixed(2)} €
+              </Button>
+              <AddToSubscriptionButton
+                productId={product.id}
+                productSize={selectedSize || undefined}
+                quantity={quantity}
+                variant="outline"
+                className="w-full"
+                disabled={sizes.length > 0 && !selectedSize}
+              />
+            </div>
           </div>
         </div>
       </DialogContent>

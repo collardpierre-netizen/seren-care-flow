@@ -36,6 +36,7 @@ import { SizeGuideModal, SizeGuideButton } from '@/components/shop/SizeGuideModa
 import SubscriptionBadge from '@/components/shop/SubscriptionBadge';
 import SubscriptionBenefits from '@/components/subscription/SubscriptionBenefits';
 import MobileCartFooter from '@/components/shop/MobileCartFooter';
+import AddToSubscriptionButton from '@/components/shop/AddToSubscriptionButton';
 import { getEffectiveMobilityLevels, getEffectiveUsageTimes } from '@/hooks/useProductFilters';
 import { StockAlertDialog } from '@/components/shop/StockAlertDialog';
 
@@ -577,14 +578,24 @@ const ProductPage = () => {
                   </Button>
                 </div>
               ) : (
-                <Button 
-                  className="w-full h-14 text-base hidden lg:flex" 
-                  size="lg"
-                  onClick={handleAddToCart}
-                >
-                  <ShoppingCart className="h-5 w-5 mr-2" />
-                  Ajouter au panier — {(finalPrice * quantity).toFixed(2)} €
-                </Button>
+                <div className="space-y-3 hidden lg:block">
+                  <Button 
+                    className="w-full h-14 text-base" 
+                    size="lg"
+                    onClick={handleAddToCart}
+                  >
+                    <ShoppingCart className="h-5 w-5 mr-2" />
+                    Ajouter au panier — {(finalPrice * quantity).toFixed(2)} €
+                  </Button>
+                  <AddToSubscriptionButton
+                    productId={product.id}
+                    productSize={selectedSize || undefined}
+                    quantity={quantity}
+                    variant="outline"
+                    className="w-full h-12"
+                    disabled={sizes.length > 0 && !selectedSize}
+                  />
+                </div>
               )}
 
               {/* Reassurance */}

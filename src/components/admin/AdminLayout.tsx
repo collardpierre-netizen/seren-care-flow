@@ -39,6 +39,7 @@ const navItems = [
   { label: 'Catégories', href: '/admin/categories', icon: FolderOpen },
   { label: 'Commandes', href: '/admin/commandes', icon: ShoppingCart },
   { label: 'Abonnements', href: '/admin/abonnements', icon: RefreshCw },
+  { label: 'Stripe Price Map', href: '/admin/stripe-price-map', icon: Euro },
   { label: 'Fournisseurs', href: '/admin/fournisseurs', icon: Building2 },
   { label: 'Réassort', href: '/admin/reassort', icon: PackageSearch },
   { label: 'Alertes stock', href: '/admin/alertes-stock', icon: Bell },

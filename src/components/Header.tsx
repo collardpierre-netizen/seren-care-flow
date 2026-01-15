@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
-import { Menu, X, Phone, ChevronRight, ShoppingCart, User, LogOut } from "lucide-react";
+import { Menu, X, Phone, ChevronRight, ShoppingCart, User, LogOut, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -49,10 +49,10 @@ const Header = () => {
   const navigation = [
     { name: "Accueil", href: "/" },
     { name: "Boutique", href: "/boutique" },
+    { name: "Abonnement", href: "/abonnement" },
     { name: "Guides", href: "/guides" },
     { name: "Aide au choix", href: "/aide-au-choix" },
     { name: "FAQ", href: "/faq" },
-    { name: "Prescripteurs", href: "/prescripteurs" },
   ];
 
   const isActive = (href: string) => location.pathname === href;
@@ -165,6 +165,10 @@ const Header = () => {
                   )}
                   <DropdownMenuItem onSelect={() => navigate('/mon-compte')}>
                     Mon compte
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => navigate('/abonnement')}>
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Mon abonnement
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onSelect={handleSignOut}>
