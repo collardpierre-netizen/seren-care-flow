@@ -15,7 +15,8 @@ import {
   Loader2,
   TrendingDown,
   Calendar,
-  UserCheck
+  UserCheck,
+  Bell
 } from 'lucide-react';
 import { format, subDays, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -30,7 +31,7 @@ const AdminDashboard: React.FC = () => {
       const lastMonthStart = startOfMonth(subMonths(now, 1));
       const lastMonthEnd = endOfMonth(subMonths(now, 1));
 
-      const [products, orders, ordersLast7, subscriptions, customers, ordersPrevMonth, prescribers] = await Promise.all([
+      const [products, orders, ordersLast7, subscriptions, customers, ordersPrevMonth, prescribers, stockAlerts] = await Promise.all([
         supabase.from('products').select('id', { count: 'exact', head: true }).eq('is_active', true),
         supabase.from('orders').select('id, total, status, created_at'),
         supabase.from('orders').select('id, total').gte('created_at', sevenDaysAgo.toISOString()),
@@ -38,6 +39,7 @@ const AdminDashboard: React.FC = () => {
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
         supabase.from('orders').select('id, total').gte('created_at', lastMonthStart.toISOString()).lte('created_at', lastMonthEnd.toISOString()),
         (supabase.from('prescribers' as any) as any).select('id', { count: 'exact', head: true }).eq('is_active', true),
+        supabase.from('stock_alerts').select('id', { count: 'exact', head: true }).eq('is_active', true),
       ]);
 
       // Active subscriptions
@@ -84,6 +86,7 @@ const AdminDashboard: React.FC = () => {
         revenueLast7Days,
         churnRate,
         revenueGrowth,
+        activeStockAlerts: stockAlerts.count || 0,
       };
     },
   });
@@ -135,6 +138,7 @@ const AdminDashboard: React.FC = () => {
     { label: 'Commandes', href: '/admin/commandes', icon: ShoppingCart, count: stats?.ordersLast7Days },
     { label: 'Produits', href: '/admin/produits', icon: Package, count: stats?.productsCount },
     { label: 'Abonnements', href: '/admin/abonnements', icon: RefreshCw, count: stats?.activeSubscriptions },
+    { label: 'Alertes stock', href: '/admin/alertes-stock', icon: Bell, count: stats?.activeStockAlerts, highlight: (stats?.activeStockAlerts || 0) > 0 },
     { label: 'Prescripteurs', href: '/admin/prescripteurs', icon: UserCheck, count: stats?.prescribersCount },
   ];
 
@@ -173,14 +177,14 @@ const AdminDashboard: React.FC = () => {
           <CardTitle>Accès rapide</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {quickLinks.map((link) => (
               <Link key={link.href} to={link.href}>
-                <Button variant="outline" className="w-full h-auto py-6 flex flex-col gap-2 relative">
-                  <link.icon className="h-6 w-6" />
+                <Button variant="outline" className={`w-full h-auto py-6 flex flex-col gap-2 relative ${(link as any).highlight ? 'border-primary' : ''}`}>
+                  <link.icon className={`h-6 w-6 ${(link as any).highlight ? 'text-primary' : ''}`} />
                   <span className="text-sm">{link.label}</span>
                   {link.count !== undefined && link.count > 0 && (
-                    <span className="absolute top-2 right-2 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">
+                    <span className={`absolute top-2 right-2 text-xs px-2 py-0.5 rounded-full ${(link as any).highlight ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
                       {link.count}
                     </span>
                   )}
