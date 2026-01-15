@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.send-stock-alert-confirmation]
 verify_jwt = false
+
+[functions.send-stock-reminder]
+verify_jwt = false
