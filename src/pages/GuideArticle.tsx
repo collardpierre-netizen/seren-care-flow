@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronLeft, Clock, Share2, Printer, ArrowRight } from "lucide-react";
+import DOMPurify from "dompurify";
 
 interface Guide {
   id: string;
@@ -192,7 +193,11 @@ const GuideArticle = () => {
                   prose-a:text-primary hover:prose-a:text-primary/80 prose-a:underline-offset-4
                   prose-table:my-8 prose-th:py-4 prose-td:py-3
                   prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:my-8"
-                dangerouslySetInnerHTML={{ __html: guide.content }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(guide.content, {
+                  ALLOWED_TAGS: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'a', 'ul', 'ol', 'li', 'strong', 'em', 'blockquote', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'br', 'span', 'div', 'img'],
+                  ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'target', 'rel'],
+                  ALLOW_DATA_ATTR: false,
+                }) }}
               />
             ) : (
               <p className="text-muted-foreground">Contenu à venir...</p>
