@@ -7,20 +7,48 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
   console.log(`[STRIPE-WEBHOOK] ${step}${detailsStr}`);
 };
 
+// Helper function to send emails via the send-email edge function
+async function sendEmail(
+  supabaseUrl: string,
+  serviceRoleKey: string,
+  template: string,
+  to: string,
+  data: Record<string, unknown>
+) {
+  try {
+    const response = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${serviceRoleKey}`,
+      },
+      body: JSON.stringify({ to, template, data }),
+    });
+    
+    if (!response.ok) {
+      const error = await response.text();
+      logStep("Email send failed", { template, to, error });
+    } else {
+      logStep("Email sent successfully", { template, to });
+    }
+  } catch (error) {
+    logStep("Email send error", { template, to, error: String(error) });
+  }
+}
+
 serve(async (req) => {
   try {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
     
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not set");
     if (!webhookSecret) throw new Error("STRIPE_WEBHOOK_SECRET not set");
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const body = await req.text();
     const signature = req.headers.get("stripe-signature");
@@ -69,7 +97,7 @@ serve(async (req) => {
                 onConflict: "stripe_subscription_id",
               });
 
-            // Update profile
+            // Update profile with stripe_customer_id
             const isActive = ["active", "trialing"].includes(subscription.status);
             await supabase
               .from("profiles")
@@ -77,6 +105,7 @@ serve(async (req) => {
                 is_member_active: isActive,
                 subscription_status: subscription.status,
                 subscription_current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+                stripe_customer_id: session.customer as string,
               })
               .eq("id", userId);
 
@@ -90,6 +119,27 @@ serve(async (req) => {
             }
 
             logStep("Subscription activated", { userId, subscriptionId, status: subscription.status });
+
+            // Fetch user email to send confirmation
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("email, first_name")
+              .eq("id", userId)
+              .single();
+
+            if (profile?.email) {
+              const nextDeliveryDate = new Date(subscription.current_period_end * 1000);
+              await sendEmail(supabaseUrl, serviceRoleKey, "subscription_created", profile.email, {
+                firstName: profile.first_name || "Cher client",
+                frequency: "Mensuel",
+                nextDeliveryDate: nextDeliveryDate.toLocaleDateString("fr-BE", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                }),
+                ctaUrl: `${session.metadata?.origin || 'https://serencare.be'}/compte`,
+              });
+            }
           }
         } else if (session.mode === "payment") {
           // Handle one-shot payment
@@ -122,7 +172,7 @@ serve(async (req) => {
         // Find user by customer ID
         const { data: profile } = await supabase
           .from("profiles")
-          .select("id")
+          .select("id, email, first_name")
           .eq("stripe_customer_id", subscription.customer as string)
           .single();
 
@@ -162,7 +212,7 @@ serve(async (req) => {
 
         const { data: profile } = await supabase
           .from("profiles")
-          .select("id")
+          .select("id, email, first_name")
           .eq("stripe_customer_id", subscription.customer as string)
           .single();
 
@@ -181,6 +231,14 @@ serve(async (req) => {
             .eq("id", profile.id);
 
           logStep("Subscription canceled", { userId: profile.id });
+
+          // Send cancellation email
+          if (profile.email) {
+            await sendEmail(supabaseUrl, serviceRoleKey, "subscription_cancelled", profile.email, {
+              firstName: profile.first_name || "Cher client",
+              ctaUrl: "https://serencare.be/boutique",
+            });
+          }
         }
         break;
       }
@@ -206,6 +264,59 @@ serve(async (req) => {
               .eq("id", sub.user_id);
 
             logStep("Marked as past_due", { userId: sub.user_id });
+
+            // Fetch user and send payment failed email
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("email, first_name")
+              .eq("id", sub.user_id)
+              .single();
+
+            if (profile?.email) {
+              await sendEmail(supabaseUrl, serviceRoleKey, "payment_failed", profile.email, {
+                firstName: profile.first_name || "Cher client",
+                reason: "Le paiement de votre abonnement a échoué. Veuillez mettre à jour vos informations de paiement.",
+              });
+            }
+          }
+        }
+        break;
+      }
+
+      case "invoice.paid": {
+        const invoice = event.data.object as Stripe.Invoice;
+        logStep("Invoice paid", { invoiceId: invoice.id, subscriptionId: invoice.subscription });
+
+        // Only for subscription invoices (not first invoice which is handled by checkout.session.completed)
+        if (invoice.subscription && invoice.billing_reason === "subscription_cycle") {
+          const { data: sub } = await supabase
+            .from("stripe_subscriptions")
+            .select("user_id")
+            .eq("stripe_subscription_id", invoice.subscription as string)
+            .single();
+
+          if (sub) {
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("email, first_name")
+              .eq("id", sub.user_id)
+              .single();
+
+            if (profile?.email) {
+              const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
+              const nextDeliveryDate = new Date(subscription.current_period_end * 1000);
+              
+              await sendEmail(supabaseUrl, serviceRoleKey, "subscription_renewed", profile.email, {
+                firstName: profile.first_name || "Cher client",
+                amount: (invoice.amount_paid || 0) / 100,
+                nextDeliveryDate: nextDeliveryDate.toLocaleDateString("fr-BE", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                }),
+                ctaUrl: "https://serencare.be/compte",
+              });
+            }
           }
         }
         break;
