@@ -77,8 +77,7 @@ serve(async (req) => {
     }
 
     // Build preparation URL with magic token embedded
-    // Use the custom domain if available, otherwise fall back to Lovable preview URL
-    const baseUrl = Deno.env.get('SITE_URL') || 'https://seren-care-flow.lovable.app';
+    const baseUrl = Deno.env.get('SITE_URL') || 'https://www.serencare.be';
     const preparationUrl = `${baseUrl}/commande-preparation/${data.orderId}?token=${magicToken}`;
 
     // Build items HTML for email
