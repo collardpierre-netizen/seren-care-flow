@@ -8,6 +8,7 @@ import { useCart } from "@/hooks/useCart";
 import { toast } from "@/hooks/use-toast";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import logo from "@/assets/logo.png";
+import SubscriptionCartBadge from "./header/SubscriptionCartBadge";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -144,6 +145,9 @@ const Header = () => {
                 </span>
               )}
             </Button>
+
+            {/* Subscription cart badge */}
+            <SubscriptionCartBadge />
 
             {/* User menu */}
             {user ? (

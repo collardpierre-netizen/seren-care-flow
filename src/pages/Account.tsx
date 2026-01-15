@@ -514,6 +514,68 @@ const Account = () => {
 
               {/* Subscriptions Tab */}
               <TabsContent value="subscriptions">
+                {/* Stripe Subscription Status Card */}
+                {profile?.is_member_active && (
+                  <Card className="mb-6 border-green-200 bg-green-50">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-green-100 rounded-full">
+                            <CreditCard className="h-5 w-5 text-green-600" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-lg text-green-900">Abonnement Stripe Actif</CardTitle>
+                            <CardDescription className="text-green-700">
+                              Vos produits sont livrés automatiquement chaque mois
+                            </CardDescription>
+                          </div>
+                        </div>
+                        <Badge variant="default" className="bg-green-600">
+                          {profile.subscription_status || 'Actif'}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="flex flex-wrap gap-4">
+                        {profile.subscription_current_period_end && (
+                          <div className="text-sm text-green-800">
+                            <span className="text-green-600">Prochaine facturation:</span>{' '}
+                            {format(new Date(profile.subscription_current_period_end), 'dd MMMM yyyy', { locale: fr })}
+                          </div>
+                        )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="ml-auto border-green-300 text-green-700 hover:bg-green-100"
+                          disabled={isOpeningPortal}
+                          onClick={async () => {
+                            setIsOpeningPortal(true);
+                            try {
+                              const { data, error } = await supabase.functions.invoke('customer-portal');
+                              if (error) throw error;
+                              if (data?.url) {
+                                window.open(data.url, '_blank');
+                              }
+                            } catch (err) {
+                              console.error(err);
+                              toast.error('Impossible d\'ouvrir le portail de gestion');
+                            } finally {
+                              setIsOpeningPortal(false);
+                            }
+                          }}
+                        >
+                          {isOpeningPortal ? (
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          ) : (
+                            <ExternalLink className="h-4 w-4 mr-2" />
+                          )}
+                          Gérer mes paiements Stripe
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 {subsLoading ? (
                   <Card>
                     <CardContent className="flex justify-center py-12">
@@ -529,7 +591,7 @@ const Account = () => {
                         Ajoutez des produits en abonnement pour économiser 10% et recevoir vos livraisons automatiquement.
                       </p>
                       <Button asChild>
-                        <Link to="/boutique">Découvrir nos produits</Link>
+                        <Link to="/abonnement">Créer un abonnement</Link>
                       </Button>
                     </CardContent>
                   </Card>
