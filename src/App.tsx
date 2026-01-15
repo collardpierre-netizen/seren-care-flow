@@ -58,6 +58,7 @@ import AdminReorders from "./pages/admin/Reorders";
 import AdminPreparationAnalytics from "./pages/admin/PreparationAnalytics";
 import AdminStockAlerts from "./pages/admin/StockAlerts";
 import UnsubscribeStockAlert from "./pages/UnsubscribeStockAlert";
+import Subscription from "./pages/Subscription";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -98,6 +99,7 @@ const App = () => (
               <Route path="/commande-confirmee" element={<OrderConfirmed />} />
               <Route path="/commande-preparation/:orderId" element={<OrderPreparation />} />
               <Route path="/compte" element={<Account />} />
+              <Route path="/abonnement" element={<Subscription />} />
               <Route path="/desinscription-alerte" element={<UnsubscribeStockAlert />} />
 
               {/* Admin routes */}

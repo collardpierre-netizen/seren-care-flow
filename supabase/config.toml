@@ -50,3 +50,12 @@ verify_jwt = false
 
 [functions.send-stock-reminder]
 verify_jwt = false
+
+[functions.checkout-subscription]
+verify_jwt = false
+
+[functions.subscription-cart]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false

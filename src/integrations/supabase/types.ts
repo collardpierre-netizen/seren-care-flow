@@ -1220,6 +1220,7 @@ export type Database = {
           gender: string | null
           id: string
           incontinence_level: string | null
+          is_member_active: boolean | null
           last_name: string | null
           mobility_level: string | null
           newsletter_subscribed: boolean | null
@@ -1227,6 +1228,9 @@ export type Database = {
           phone: string | null
           postal_code: string | null
           preferred_size: string | null
+          stripe_customer_id: string | null
+          subscription_current_period_end: string | null
+          subscription_status: string | null
           updated_at: string
           usage_time: string | null
         }
@@ -1243,6 +1247,7 @@ export type Database = {
           gender?: string | null
           id: string
           incontinence_level?: string | null
+          is_member_active?: boolean | null
           last_name?: string | null
           mobility_level?: string | null
           newsletter_subscribed?: boolean | null
@@ -1250,6 +1255,9 @@ export type Database = {
           phone?: string | null
           postal_code?: string | null
           preferred_size?: string | null
+          stripe_customer_id?: string | null
+          subscription_current_period_end?: string | null
+          subscription_status?: string | null
           updated_at?: string
           usage_time?: string | null
         }
@@ -1266,6 +1274,7 @@ export type Database = {
           gender?: string | null
           id?: string
           incontinence_level?: string | null
+          is_member_active?: boolean | null
           last_name?: string | null
           mobility_level?: string | null
           newsletter_subscribed?: boolean | null
@@ -1273,6 +1282,9 @@ export type Database = {
           phone?: string | null
           postal_code?: string | null
           preferred_size?: string | null
+          stripe_customer_id?: string | null
+          subscription_current_period_end?: string | null
+          subscription_status?: string | null
           updated_at?: string
           usage_time?: string | null
         }
@@ -1486,6 +1498,191 @@ export type Database = {
           key?: string
           updated_at?: string
           value?: Json
+        }
+        Relationships: []
+      }
+      stripe_orders: {
+        Row: {
+          amount_total: number
+          created_at: string | null
+          currency: string | null
+          id: string
+          status: string | null
+          stripe_checkout_session_id: string
+          stripe_payment_intent_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount_total: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          status?: string | null
+          stripe_checkout_session_id: string
+          stripe_payment_intent_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount_total?: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          status?: string | null
+          stripe_checkout_session_id?: string
+          stripe_payment_intent_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      stripe_price_map: {
+        Row: {
+          created_at: string | null
+          currency: string | null
+          id: string
+          is_active: boolean | null
+          product_id: string
+          product_size: string | null
+          stripe_price_id: string
+          type: string
+          unit_amount: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          is_active?: boolean | null
+          product_id: string
+          product_size?: string | null
+          stripe_price_id: string
+          type?: string
+          unit_amount: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          is_active?: boolean | null
+          product_id?: string
+          product_size?: string | null
+          stripe_price_id?: string
+          type?: string
+          unit_amount?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stripe_price_map_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stripe_subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean | null
+          created_at: string | null
+          current_period_end: string | null
+          id: string
+          status: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string | null
+          current_period_end?: string | null
+          id?: string
+          status: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string | null
+          current_period_end?: string | null
+          id?: string
+          status?: string
+          stripe_customer_id?: string
+          stripe_subscription_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      subscription_cart_items: {
+        Row: {
+          cart_id: string
+          created_at: string | null
+          id: string
+          product_id: string
+          product_size: string | null
+          quantity: number
+          stripe_price_id: string
+          unit_price_cents: number
+        }
+        Insert: {
+          cart_id: string
+          created_at?: string | null
+          id?: string
+          product_id: string
+          product_size?: string | null
+          quantity?: number
+          stripe_price_id: string
+          unit_price_cents: number
+        }
+        Update: {
+          cart_id?: string
+          created_at?: string | null
+          id?: string
+          product_id?: string
+          product_size?: string | null
+          quantity?: number
+          stripe_price_id?: string
+          unit_price_cents?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_cart_items_cart_id_fkey"
+            columns: ["cart_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_carts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_cart_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscription_carts: {
+        Row: {
+          created_at: string | null
+          id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
