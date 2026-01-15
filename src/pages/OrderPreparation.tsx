@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -44,12 +44,15 @@ interface PreparationStatus {
 
 const OrderPreparation = () => {
   const { orderId } = useParams();
+  const [searchParams] = useSearchParams();
+  const magicToken = searchParams.get('token');
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [password, setPassword] = useState('');
-  const [sessionPassword, setSessionPassword] = useState('');
+  const [sessionToken, setSessionToken] = useState(magicToken || '');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
+  const [isVerifyingToken, setIsVerifyingToken] = useState(!!magicToken);
+  const [tokenError, setTokenError] = useState<string | null>(null);
   const [preparerName, setPreparerName] = useState('');
   
   // Local state for preparation items
@@ -74,6 +77,33 @@ const OrderPreparation = () => {
     enabled: !!user,
   });
 
+  // Auto-verify magic link token on mount
+  useEffect(() => {
+    if (magicToken && orderId && !isAuthenticated && !isAdmin) {
+      const verifyMagicLink = async () => {
+        setIsVerifyingToken(true);
+        try {
+          const { data, error } = await supabase.functions.invoke('verify-preparer-access', {
+            body: { orderId, token: magicToken },
+          });
+          if (error) throw error;
+          if (data.valid) {
+            setIsAuthenticated(true);
+            setSessionToken(magicToken);
+            toast.success('Accès autorisé');
+          } else {
+            setTokenError(data.error || 'Lien invalide');
+          }
+        } catch (err) {
+          setTokenError(err instanceof Error ? err.message : 'Erreur de vérification');
+        } finally {
+          setIsVerifyingToken(false);
+        }
+      };
+      verifyMagicLink();
+    }
+  }, [magicToken, orderId, isAdmin, isAuthenticated]);
+
   useEffect(() => {
     if (isAdmin === true) {
       setIsAuthenticated(true);
@@ -83,28 +113,9 @@ const OrderPreparation = () => {
     }
   }, [isAdmin]);
 
-  const verifyAccess = useMutation({
-    mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke('verify-preparer-access', {
-        body: { orderId, password },
-      });
-      if (error) throw error;
-      if (!data.valid) throw new Error('Mot de passe incorrect');
-      return data;
-    },
-    onSuccess: () => {
-      setIsAuthenticated(true);
-      setSessionPassword(password);
-      toast.success('Accès autorisé');
-    },
-    onError: (error) => {
-      toast.error(error.message || 'Accès refusé');
-    },
-  });
-
   // Fetch order data
   const { data: order, isLoading } = useQuery({
-    queryKey: ['preparer-order', orderId, isAdmin, sessionPassword],
+    queryKey: ['preparer-order', orderId, isAdmin, sessionToken],
     queryFn: async () => {
       if (isAdmin) {
         const { data: orderData, error: orderError } = await supabase
@@ -129,15 +140,15 @@ const OrderPreparation = () => {
           } : null,
         };
       } else {
-        // Pass password for authentication when fetching order data
+        // Pass magic token for authentication when fetching order data
         const { data, error } = await supabase.functions.invoke('get-order-for-preparer', {
-          body: { orderId, password: sessionPassword },
+          body: { orderId, token: sessionToken },
         });
         if (error) throw error;
         return data;
       }
     },
-    enabled: isAuthenticated && (isAdmin || !!sessionPassword),
+    enabled: isAuthenticated && (isAdmin || !!sessionToken),
   });
 
   // Fetch existing preparation statuses
@@ -220,7 +231,7 @@ const OrderPreparation = () => {
           preparedQuantity: itemData.quantity,
           notes: itemData.notes,
           preparerName: preparerName || 'Préparateur',
-          password: sessionPassword || undefined,
+          token: sessionToken || undefined,
         },
       });
 
@@ -273,6 +284,50 @@ const OrderPreparation = () => {
     );
   }
 
+  // Show loading while verifying magic link
+  if (isVerifyingToken) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+          <p className="text-muted-foreground">Vérification du lien...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error if magic link failed
+  if (tokenError) {
+    return (
+      <>
+        <Helmet>
+          <title>Lien invalide | SerenCare</title>
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
+        <div className="min-h-screen bg-gradient-to-b from-muted/50 to-background flex items-center justify-center p-4">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="w-full max-w-md">
+              <CardHeader className="text-center">
+                <div className="mx-auto h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
+                  <XCircle className="h-6 w-6 text-destructive" />
+                </div>
+                <CardTitle>Lien invalide ou expiré</CardTitle>
+                <CardDescription>
+                  {tokenError}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-sm text-muted-foreground">
+                  Ce lien d'accès n'est plus valide. Veuillez contacter l'administrateur pour obtenir un nouveau lien.
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      </>
+    );
+  }
+
   if (!isAuthenticated) {
     return (
       <>
@@ -289,41 +344,13 @@ const OrderPreparation = () => {
                 </div>
                 <CardTitle>Accès protégé</CardTitle>
                 <CardDescription>
-                  Entrez le mot de passe pour accéder aux détails de la commande
+                  Cette page nécessite un lien d'accès sécurisé envoyé par email.
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <form 
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    verifyAccess.mutate();
-                  }}
-                  className="space-y-4"
-                >
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Mot de passe</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Entrez le mot de passe"
-                      autoFocus
-                    />
-                  </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full"
-                    disabled={verifyAccess.isPending || !password}
-                  >
-                    {verifyAccess.isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : (
-                      <Lock className="h-4 w-4 mr-2" />
-                    )}
-                    Accéder à la commande
-                  </Button>
-                </form>
+              <CardContent className="text-center">
+                <p className="text-sm text-muted-foreground">
+                  Veuillez utiliser le lien sécurisé que vous avez reçu par email pour accéder à cette commande.
+                </p>
               </CardContent>
             </Card>
           </motion.div>
