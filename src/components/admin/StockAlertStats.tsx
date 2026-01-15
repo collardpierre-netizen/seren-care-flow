@@ -10,9 +10,9 @@ import {
   CheckCircle2,
   XCircle,
   BarChart3,
-  Package,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import StockAlertEvolutionChart from "./StockAlertEvolutionChart";
 
 interface ProductAlertStats {
   product_id: string;
@@ -108,6 +108,9 @@ export default function StockAlertStats() {
 
   return (
     <div className="space-y-6">
+      {/* Evolution chart */}
+      <StockAlertEvolutionChart />
+      
       {/* Summary stats */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <Card>
