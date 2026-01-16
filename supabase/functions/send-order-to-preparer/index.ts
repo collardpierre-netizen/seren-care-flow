@@ -1,23 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.2";
 
-// Allowed origins for CORS
-const ALLOWED_ORIGINS = [
-  'https://serencare.be',
-  'https://www.serencare.be',
-  'https://seren-care-flow.lovable.app',
-  'http://localhost:5173',
-  'http://localhost:8080',
-];
+// CORS headers - allow all origins for development
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
-function getCorsHeaders(origin: string | null) {
-  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
-  return {
-    'Access-Control-Allow-Origin': allowedOrigin,
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Access-Control-Allow-Credentials': 'true',
-  };
-}
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 
@@ -41,8 +30,9 @@ interface SendToPreparerRequest {
 }
 
 serve(async (req) => {
-  const origin = req.headers.get('origin');
-  const corsHeaders = getCorsHeaders(origin);
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
 
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
