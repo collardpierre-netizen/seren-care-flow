@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import {
   Package,
@@ -31,7 +32,13 @@ import {
   XCircle,
   AlertTriangle,
   Save,
+  Camera,
+  MessageCircle,
+  FileText,
 } from 'lucide-react';
+import PhotoUpload from '@/components/preparer/PhotoUpload';
+import PreparerChatPanel from '@/components/preparer/PreparerChatPanel';
+import DeliverySlip from '@/components/preparer/DeliverySlip';
 
 interface PreparationStatus {
   order_item_id: string;
@@ -639,6 +646,59 @@ const OrderPreparation = () => {
                   </CardContent>
                 </Card>
               </motion.div>
+
+              {/* Additional Tools: Photos, Chat, Delivery Slip */}
+              {!isAdmin && sessionToken && (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Outils</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <Tabs defaultValue="photos" className="w-full">
+                        <TabsList className="grid w-full grid-cols-3">
+                          <TabsTrigger value="photos" className="gap-2">
+                            <Camera className="h-4 w-4" />
+                            Photos
+                          </TabsTrigger>
+                          <TabsTrigger value="chat" className="gap-2">
+                            <MessageCircle className="h-4 w-4" />
+                            Chat
+                          </TabsTrigger>
+                          <TabsTrigger value="slip" className="gap-2">
+                            <FileText className="h-4 w-4" />
+                            Bon
+                          </TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="photos" className="mt-4">
+                          <PhotoUpload
+                            orderId={orderId!}
+                            token={sessionToken}
+                            preparerName={preparerName}
+                            onUploadComplete={() => toast.success('Photo ajoutée')}
+                          />
+                        </TabsContent>
+                        <TabsContent value="chat" className="mt-4 h-80">
+                          <PreparerChatPanel
+                            orderId={orderId!}
+                            token={sessionToken}
+                            preparerName={preparerName || 'Préparateur'}
+                          />
+                        </TabsContent>
+                        <TabsContent value="slip" className="mt-4">
+                          <DeliverySlip
+                            order={order}
+                            items={order.items || []}
+                            shippingAddress={order.shipping_address}
+                            confirmationUrl={`https://serencare.be/confirmation-livraison?token=${orderId}`}
+                            preparerName={preparerName}
+                          />
+                        </TabsContent>
+                      </Tabs>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
 
               {/* Notes */}
               {order.notes && (
