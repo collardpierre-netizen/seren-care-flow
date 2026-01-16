@@ -77,3 +77,6 @@ verify_jwt = false
 
 [functions.log-preparer-access]
 verify_jwt = false
+
+[functions.send-delivery-issue-alert]
+verify_jwt = false

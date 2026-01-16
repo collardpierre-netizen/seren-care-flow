@@ -29,11 +29,11 @@ serve(async (req) => {
     // Find the confirmation by token
     const { data: confirmation, error: findError } = await supabase
       .from('delivery_confirmations')
-      .select('*, orders(order_number, status)')
+      .select('*, orders(order_number, status, shipping_address, user_id)')
       .eq('confirmation_token', token)
       .single();
 
-    // Handle check status request (just return current state)
+    // Handle check status request
     if (status === 'check') {
       if (findError || !confirmation) {
         return new Response(
@@ -89,12 +89,51 @@ serve(async (req) => {
 
     if (updateError) throw updateError;
 
-    // If issue reported, create a notification for admin
+    const orderNumber = confirmation.orders?.order_number || '';
+    const shippingAddress = confirmation.orders?.shipping_address as any;
+    const customerName = shippingAddress 
+      ? `${shippingAddress.firstName || ''} ${shippingAddress.lastName || ''}`.trim() 
+      : '';
+
+    // If issue reported, send alert email and create notification
     if (status === 'issue') {
       await supabase.from('order_preparer_logs').insert({
         order_id: confirmation.order_id,
         action: 'delivery_issue_reported',
         details: `Problème signalé: ${issueType} - ${issueDescription}`,
+      });
+
+      // Call the alert email function
+      try {
+        await supabase.functions.invoke('send-delivery-issue-alert', {
+          body: {
+            orderId: confirmation.order_id,
+            orderNumber,
+            issueType,
+            issueDescription,
+            customerName,
+            customerEmail,
+            customerPhone,
+          },
+        });
+        console.log('Delivery issue alert email sent');
+      } catch (emailError) {
+        console.error('Failed to send alert email:', emailError);
+      }
+
+      // Update order status to on_hold
+      await supabase
+        .from('orders')
+        .update({ status: 'on_hold' })
+        .eq('id', confirmation.order_id);
+
+      // Add status event
+      await supabase.from('order_status_events').insert({
+        order_id: confirmation.order_id,
+        status: 'on_hold',
+        message_public: 'Un problème a été signalé avec cette livraison.',
+        message_internal: `Type: ${issueType}. Description: ${issueDescription}. Contact: ${customerEmail || customerPhone || 'Non fourni'}`,
+        is_visible_to_customer: false,
       });
     } else {
       // If confirmed, update order status to closed
@@ -107,6 +146,13 @@ serve(async (req) => {
         order_id: confirmation.order_id,
         action: 'delivery_confirmed',
         details: 'Livraison confirmée par le client via QR code',
+      });
+
+      await supabase.from('order_status_events').insert({
+        order_id: confirmation.order_id,
+        status: 'closed',
+        message_public: 'Livraison confirmée par le client.',
+        is_visible_to_customer: true,
       });
     }
 

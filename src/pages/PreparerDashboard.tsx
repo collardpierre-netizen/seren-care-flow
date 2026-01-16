@@ -1,16 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { format, differenceInHours } from 'date-fns';
+import { format, differenceInHours, differenceInMinutes, subDays, startOfDay, endOfDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import {
   Package,
@@ -29,6 +30,13 @@ import {
   Sparkles,
   XCircle,
   Lock,
+  Search,
+  Filter,
+  TrendingUp,
+  Award,
+  Zap,
+  BarChart3,
+  Calendar,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import logo from '@/assets/logo.png';
@@ -47,6 +55,13 @@ interface OrderForPreparer {
   has_issues: boolean;
 }
 
+interface PreparerStats {
+  totalPrepared: number;
+  avgPrepTime: number;
+  successRate: number;
+  todayPrepared: number;
+}
+
 const PreparerDashboard = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -57,6 +72,12 @@ const PreparerDashboard = () => {
   const [preparerName, setPreparerName] = useState(localStorage.getItem('preparerName') || '');
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [showNewOrderAnimation, setShowNewOrderAnimation] = useState(false);
+  
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [dateFilter, setDateFilter] = useState<string>('all');
+  const [showStats, setShowStats] = useState(false);
 
   // Verify preparer access
   useEffect(() => {
@@ -104,7 +125,6 @@ const PreparerDashboard = () => {
   const { data: orders = [], isLoading, refetch } = useQuery({
     queryKey: ['preparer-dashboard-orders', token],
     queryFn: async () => {
-      // For now, fetch directly - in production this would use token auth
       const { data: ordersData, error } = await supabase
         .from('orders')
         .select(`
@@ -122,7 +142,6 @@ const PreparerDashboard = () => {
 
       if (error) throw error;
 
-      // Get preparation status
       const orderIds = ordersData?.map(o => o.id) || [];
       const { data: prepData } = await supabase
         .from('order_item_preparation')
@@ -151,6 +170,77 @@ const PreparerDashboard = () => {
     },
     enabled: isAuthenticated,
     refetchInterval: 10000,
+  });
+
+  // Fetch preparer stats
+  const { data: stats } = useQuery<PreparerStats>({
+    queryKey: ['preparer-stats', preparerName],
+    queryFn: async () => {
+      const today = new Date();
+      const startOfToday = startOfDay(today).toISOString();
+      
+      // Get all preparation logs for this preparer
+      const { data: logs } = await supabase
+        .from('order_preparer_logs')
+        .select('created_at, action, order_id')
+        .eq('preparer_name', preparerName)
+        .order('created_at', { ascending: false });
+
+      // Get completed orders (for timing calculation)
+      const { data: completedOrders } = await supabase
+        .from('orders')
+        .select('id, created_at, updated_at, status')
+        .in('status', ['shipped', 'delivered', 'closed'])
+        .gte('updated_at', subDays(today, 30).toISOString());
+
+      const todayLogs = logs?.filter(l => 
+        new Date(l.created_at) >= new Date(startOfToday)
+      ) || [];
+
+      const uniqueOrdersToday = new Set(todayLogs.map(l => l.order_id)).size;
+      const totalPrepared = new Set(logs?.map(l => l.order_id) || []).size;
+
+      // Calculate average prep time (from creation to packed)
+      let avgPrepTime = 0;
+      if (completedOrders && completedOrders.length > 0) {
+        const prepTimes = completedOrders.map(o => {
+          const created = new Date(o.created_at);
+          const updated = new Date(o.updated_at);
+          return differenceInMinutes(updated, created);
+        }).filter(t => t > 0 && t < 1440); // Filter out outliers
+
+        if (prepTimes.length > 0) {
+          avgPrepTime = Math.round(prepTimes.reduce((a, b) => a + b, 0) / prepTimes.length);
+        }
+      }
+
+      // Calculate success rate (orders without issues)
+      const { count: totalOrders } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .in('status', ['shipped', 'delivered', 'closed'])
+        .gte('created_at', subDays(today, 30).toISOString());
+
+      const { data: issueData } = await supabase
+        .from('order_preparer_logs')
+        .select('id', { count: 'exact', head: true })
+        .eq('action', 'delivery_issue_reported')
+        .gte('created_at', subDays(today, 30).toISOString());
+      
+      const issueOrders = issueData ? 1 : 0;
+
+      const successRate = totalOrders && totalOrders > 0 
+        ? Math.round(((totalOrders - (issueOrders || 0)) / totalOrders) * 100) 
+        : 100;
+
+      return {
+        totalPrepared,
+        avgPrepTime,
+        successRate,
+        todayPrepared: uniqueOrdersToday,
+      };
+    },
+    enabled: isAuthenticated && !!preparerName,
   });
 
   // Subscribe to new orders
@@ -221,6 +311,48 @@ const PreparerDashboard = () => {
     return Math.round((order.items_prepared / order.items_count) * 100);
   };
 
+  // Filter orders
+  const filteredOrders = useMemo(() => {
+    return orders.filter(order => {
+      // Search filter
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesSearch = 
+          order.order_number.toLowerCase().includes(query) ||
+          order.customer_name.toLowerCase().includes(query) ||
+          order.customer_city.toLowerCase().includes(query);
+        if (!matchesSearch) return false;
+      }
+
+      // Status filter
+      if (statusFilter !== 'all') {
+        if (statusFilter === 'ready' && getProgress(order) !== 100) return false;
+        if (statusFilter === 'in_progress' && (getProgress(order) === 0 || getProgress(order) === 100)) return false;
+        if (statusFilter === 'pending' && getProgress(order) !== 0) return false;
+        if (statusFilter === 'issues' && !order.has_issues) return false;
+      }
+
+      // Date filter
+      if (dateFilter !== 'all' && order.eta_date) {
+        const etaDate = new Date(order.eta_date);
+        const today = new Date();
+        if (dateFilter === 'today' && etaDate.toDateString() !== today.toDateString()) return false;
+        if (dateFilter === 'tomorrow') {
+          const tomorrow = new Date(today);
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          if (etaDate.toDateString() !== tomorrow.toDateString()) return false;
+        }
+        if (dateFilter === 'week') {
+          const weekFromNow = new Date(today);
+          weekFromNow.setDate(weekFromNow.getDate() + 7);
+          if (etaDate > weekFromNow) return false;
+        }
+      }
+
+      return true;
+    });
+  }, [orders, searchQuery, statusFilter, dateFilter]);
+
   if (isVerifying) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-primary/10">
@@ -278,10 +410,10 @@ const PreparerDashboard = () => {
   }
 
   // Group orders by urgency
-  const overdueOrders = orders.filter(o => getUrgencyLevel(o) === 'overdue');
-  const criticalOrders = orders.filter(o => getUrgencyLevel(o) === 'critical');
-  const urgentOrders = orders.filter(o => getUrgencyLevel(o) === 'urgent');
-  const normalOrders = orders.filter(o => getUrgencyLevel(o) === 'normal');
+  const overdueOrders = filteredOrders.filter(o => getUrgencyLevel(o) === 'overdue');
+  const criticalOrders = filteredOrders.filter(o => getUrgencyLevel(o) === 'critical');
+  const urgentOrders = filteredOrders.filter(o => getUrgencyLevel(o) === 'urgent');
+  const normalOrders = filteredOrders.filter(o => getUrgencyLevel(o) === 'normal');
 
   return (
     <>
@@ -291,7 +423,7 @@ const PreparerDashboard = () => {
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        {/* Header - Uber Eats style */}
+        {/* Header */}
         <header className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-lg border-b border-slate-700">
           <div className="max-w-7xl mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
@@ -299,11 +431,22 @@ const PreparerDashboard = () => {
                 <img src={logo} alt="SerenCare" className="h-8 invert brightness-0" />
                 <div className="hidden sm:block">
                   <p className="text-white font-semibold">Bonjour, {preparerName || 'Préparateur'} 👋</p>
-                  <p className="text-slate-400 text-sm">{orders.length} commande{orders.length > 1 ? 's' : ''} en attente</p>
+                  <p className="text-slate-400 text-sm">{filteredOrders.length} commande{filteredOrders.length > 1 ? 's' : ''}</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowStats(!showStats)}
+                  className={cn(
+                    "text-slate-400 hover:text-white hover:bg-slate-700",
+                    showStats && "bg-slate-700 text-white"
+                  )}
+                >
+                  <BarChart3 className="h-5 w-5" />
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -322,18 +465,14 @@ const PreparerDashboard = () => {
                       : "border-slate-600 text-slate-400 hover:bg-slate-700"
                   )}
                 >
-                  {notificationsEnabled ? (
-                    <Bell className="h-5 w-5" />
-                  ) : (
-                    <BellOff className="h-5 w-5" />
-                  )}
+                  {notificationsEnabled ? <Bell className="h-5 w-5" /> : <BellOff className="h-5 w-5" />}
                 </Button>
               </div>
             </div>
           </div>
         </header>
 
-        {/* New Order Animation Overlay */}
+        {/* New Order Animation */}
         <AnimatePresence>
           {showNewOrderAnimation && (
             <motion.div
@@ -342,11 +481,7 @@ const PreparerDashboard = () => {
               exit={{ opacity: 0 }}
               className="fixed inset-0 z-40 bg-green-500/20 pointer-events-none flex items-center justify-center"
             >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: [0, 1.2, 1] }}
-                className="text-center"
-              >
+              <motion.div initial={{ scale: 0 }} animate={{ scale: [0, 1.2, 1] }} className="text-center">
                 <Sparkles className="h-24 w-24 text-green-400 mx-auto mb-4" />
                 <p className="text-3xl font-bold text-white">Nouvelle commande !</p>
               </motion.div>
@@ -356,11 +491,102 @@ const PreparerDashboard = () => {
 
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-          {/* Stats Row */}
+          {/* Performance Stats */}
+          <AnimatePresence>
+            {showStats && stats && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <Card className="bg-gradient-to-r from-indigo-900/50 to-purple-900/50 border-indigo-700/50">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <Award className="h-5 w-5 text-yellow-400" />
+                      Mes performances (30 jours)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                      <div className="text-center p-4 bg-slate-800/50 rounded-lg">
+                        <Zap className="h-6 w-6 text-yellow-400 mx-auto mb-2" />
+                        <p className="text-2xl font-bold text-white">{stats.todayPrepared}</p>
+                        <p className="text-slate-400 text-xs">Aujourd'hui</p>
+                      </div>
+                      <div className="text-center p-4 bg-slate-800/50 rounded-lg">
+                        <Package className="h-6 w-6 text-blue-400 mx-auto mb-2" />
+                        <p className="text-2xl font-bold text-white">{stats.totalPrepared}</p>
+                        <p className="text-slate-400 text-xs">Total préparées</p>
+                      </div>
+                      <div className="text-center p-4 bg-slate-800/50 rounded-lg">
+                        <Clock className="h-6 w-6 text-purple-400 mx-auto mb-2" />
+                        <p className="text-2xl font-bold text-white">{stats.avgPrepTime}min</p>
+                        <p className="text-slate-400 text-xs">Temps moyen</p>
+                      </div>
+                      <div className="text-center p-4 bg-slate-800/50 rounded-lg">
+                        <TrendingUp className="h-6 w-6 text-green-400 mx-auto mb-2" />
+                        <p className="text-2xl font-bold text-white">{stats.successRate}%</p>
+                        <p className="text-slate-400 text-xs">Taux succès</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Filters */}
+          <Card className="bg-slate-800/50 border-slate-700">
+            <CardContent className="p-4">
+              <div className="flex flex-col sm:flex-row gap-4">
+                {/* Search */}
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Input
+                    placeholder="Rechercher par n° commande, client, ville..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
+                  />
+                </div>
+
+                {/* Status Filter */}
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-full sm:w-[160px] bg-slate-700 border-slate-600 text-white">
+                    <Filter className="h-4 w-4 mr-2" />
+                    <SelectValue placeholder="Statut" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectItem value="all">Tous les statuts</SelectItem>
+                    <SelectItem value="pending">En attente</SelectItem>
+                    <SelectItem value="in_progress">En cours</SelectItem>
+                    <SelectItem value="ready">Prêtes</SelectItem>
+                    <SelectItem value="issues">Avec problèmes</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {/* Date Filter */}
+                <Select value={dateFilter} onValueChange={setDateFilter}>
+                  <SelectTrigger className="w-full sm:w-[160px] bg-slate-700 border-slate-600 text-white">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    <SelectValue placeholder="Date" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectItem value="all">Toutes dates</SelectItem>
+                    <SelectItem value="today">Aujourd'hui</SelectItem>
+                    <SelectItem value="tomorrow">Demain</SelectItem>
+                    <SelectItem value="week">Cette semaine</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <Card className="bg-slate-800/50 border-slate-700">
               <CardContent className="p-4 text-center">
-                <p className="text-3xl font-bold text-white">{orders.length}</p>
+                <p className="text-3xl font-bold text-white">{filteredOrders.length}</p>
                 <p className="text-slate-400 text-sm">Total</p>
               </CardContent>
             </Card>
@@ -373,7 +599,7 @@ const PreparerDashboard = () => {
             <Card className="bg-green-900/30 border-green-700/50">
               <CardContent className="p-4 text-center">
                 <p className="text-3xl font-bold text-green-400">
-                  {orders.filter(o => getProgress(o) === 100 && !o.has_issues).length}
+                  {filteredOrders.filter(o => getProgress(o) === 100 && !o.has_issues).length}
                 </p>
                 <p className="text-green-300 text-sm">Prêtes</p>
               </CardContent>
@@ -381,7 +607,7 @@ const PreparerDashboard = () => {
             <Card className="bg-amber-900/30 border-amber-700/50">
               <CardContent className="p-4 text-center">
                 <p className="text-3xl font-bold text-amber-400">
-                  {orders.filter(o => o.has_issues).length}
+                  {filteredOrders.filter(o => o.has_issues).length}
                 </p>
                 <p className="text-amber-300 text-sm">Problèmes</p>
               </CardContent>
@@ -392,17 +618,25 @@ const PreparerDashboard = () => {
             <div className="flex justify-center py-12">
               <Loader2 className="h-12 w-12 animate-spin text-primary" />
             </div>
-          ) : orders.length === 0 ? (
+          ) : filteredOrders.length === 0 ? (
             <Card className="bg-slate-800/50 border-slate-700">
               <CardContent className="py-16 text-center">
                 <PackageCheck className="h-16 w-16 text-slate-500 mx-auto mb-4" />
-                <p className="text-xl text-white mb-2">Aucune commande en attente</p>
-                <p className="text-slate-400">Profitez-en pour prendre une pause ☕</p>
+                <p className="text-xl text-white mb-2">
+                  {searchQuery || statusFilter !== 'all' || dateFilter !== 'all' 
+                    ? 'Aucune commande trouvée' 
+                    : 'Aucune commande en attente'}
+                </p>
+                <p className="text-slate-400">
+                  {searchQuery || statusFilter !== 'all' || dateFilter !== 'all'
+                    ? 'Essayez de modifier vos filtres'
+                    : 'Profitez-en pour prendre une pause ☕'}
+                </p>
               </CardContent>
             </Card>
           ) : (
             <div className="space-y-6">
-              {/* Overdue + Critical Orders */}
+              {/* Overdue + Critical */}
               {(overdueOrders.length > 0 || criticalOrders.length > 0) && (
                 <section>
                   <div className="flex items-center gap-2 mb-4">
@@ -425,7 +659,7 @@ const PreparerDashboard = () => {
                 </section>
               )}
 
-              {/* Urgent Orders */}
+              {/* Urgent */}
               {urgentOrders.length > 0 && (
                 <section>
                   <div className="flex items-center gap-2 mb-4">
@@ -448,7 +682,7 @@ const PreparerDashboard = () => {
                 </section>
               )}
 
-              {/* Normal Orders */}
+              {/* Normal */}
               {normalOrders.length > 0 && (
                 <section>
                   <div className="flex items-center gap-2 mb-4">
