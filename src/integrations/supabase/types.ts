@@ -853,6 +853,104 @@ export type Database = {
         }
         Relationships: []
       }
+      preparer_badges: {
+        Row: {
+          color: string
+          created_at: string
+          criteria_type: string
+          criteria_value: number
+          description: string | null
+          icon: string
+          id: string
+          name: string
+          points: number
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          criteria_type: string
+          criteria_value: number
+          description?: string | null
+          icon: string
+          id?: string
+          name: string
+          points?: number
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          criteria_type?: string
+          criteria_value?: number
+          description?: string | null
+          icon?: string
+          id?: string
+          name?: string
+          points?: number
+        }
+        Relationships: []
+      }
+      preparer_daily_stats: {
+        Row: {
+          avg_preparation_time_minutes: number | null
+          created_at: string
+          date: string
+          id: string
+          orders_prepared: number
+          points_earned: number
+          preparer_name: string
+          success_rate: number | null
+        }
+        Insert: {
+          avg_preparation_time_minutes?: number | null
+          created_at?: string
+          date?: string
+          id?: string
+          orders_prepared?: number
+          points_earned?: number
+          preparer_name: string
+          success_rate?: number | null
+        }
+        Update: {
+          avg_preparation_time_minutes?: number | null
+          created_at?: string
+          date?: string
+          id?: string
+          orders_prepared?: number
+          points_earned?: number
+          preparer_name?: string
+          success_rate?: number | null
+        }
+        Relationships: []
+      }
+      preparer_earned_badges: {
+        Row: {
+          badge_id: string
+          earned_at: string
+          id: string
+          preparer_name: string
+        }
+        Insert: {
+          badge_id: string
+          earned_at?: string
+          id?: string
+          preparer_name: string
+        }
+        Update: {
+          badge_id?: string
+          earned_at?: string
+          id?: string
+          preparer_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "preparer_earned_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "preparer_badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prescriber_applications: {
         Row: {
           address: string | null

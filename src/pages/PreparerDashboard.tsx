@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import {
   Package,
@@ -37,9 +38,13 @@ import {
   Zap,
   BarChart3,
   Calendar,
+  Trophy,
+  Download,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import logo from '@/assets/logo.png';
+import { PreparerGamification } from '@/components/preparer/PreparerGamification';
+import { PreparerExport } from '@/components/preparer/PreparerExport';
 
 interface OrderForPreparer {
   id: string;
@@ -76,6 +81,7 @@ const PreparerDashboard = () => {
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState<string>('orders');
   const [dateFilter, setDateFilter] = useState<string>('all');
   const [showStats, setShowStats] = useState(false);
 
@@ -491,52 +497,80 @@ const PreparerDashboard = () => {
 
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-          {/* Performance Stats */}
-          <AnimatePresence>
-            {showStats && stats && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
+          {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="bg-slate-800 border border-slate-700 w-full sm:w-auto">
+              <TabsTrigger 
+                value="orders" 
+                className="data-[state=active]:bg-primary data-[state=active]:text-white"
               >
-                <Card className="bg-gradient-to-r from-indigo-900/50 to-purple-900/50 border-indigo-700/50">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-white flex items-center gap-2">
-                      <Award className="h-5 w-5 text-yellow-400" />
-                      Mes performances (30 jours)
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                      <div className="text-center p-4 bg-slate-800/50 rounded-lg">
-                        <Zap className="h-6 w-6 text-yellow-400 mx-auto mb-2" />
-                        <p className="text-2xl font-bold text-white">{stats.todayPrepared}</p>
-                        <p className="text-slate-400 text-xs">Aujourd'hui</p>
-                      </div>
-                      <div className="text-center p-4 bg-slate-800/50 rounded-lg">
-                        <Package className="h-6 w-6 text-blue-400 mx-auto mb-2" />
-                        <p className="text-2xl font-bold text-white">{stats.totalPrepared}</p>
-                        <p className="text-slate-400 text-xs">Total préparées</p>
-                      </div>
-                      <div className="text-center p-4 bg-slate-800/50 rounded-lg">
-                        <Clock className="h-6 w-6 text-purple-400 mx-auto mb-2" />
-                        <p className="text-2xl font-bold text-white">{stats.avgPrepTime}min</p>
-                        <p className="text-slate-400 text-xs">Temps moyen</p>
-                      </div>
-                      <div className="text-center p-4 bg-slate-800/50 rounded-lg">
-                        <TrendingUp className="h-6 w-6 text-green-400 mx-auto mb-2" />
-                        <p className="text-2xl font-bold text-white">{stats.successRate}%</p>
-                        <p className="text-slate-400 text-xs">Taux succès</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                <Package className="h-4 w-4 mr-2" />
+                Commandes
+              </TabsTrigger>
+              <TabsTrigger 
+                value="gamification" 
+                className="data-[state=active]:bg-primary data-[state=active]:text-white"
+              >
+                <Trophy className="h-4 w-4 mr-2" />
+                Badges
+              </TabsTrigger>
+              <TabsTrigger 
+                value="export" 
+                className="data-[state=active]:bg-primary data-[state=active]:text-white"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Rapports
+              </TabsTrigger>
+            </TabsList>
 
-          {/* Filters */}
-          <Card className="bg-slate-800/50 border-slate-700">
+            {/* Orders Tab Content */}
+            <TabsContent value="orders" className="mt-6 space-y-6">
+              {/* Performance Stats */}
+              <AnimatePresence>
+                {showStats && stats && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                  >
+                    <Card className="bg-gradient-to-r from-indigo-900/50 to-purple-900/50 border-indigo-700/50">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-white flex items-center gap-2">
+                          <Award className="h-5 w-5 text-yellow-400" />
+                          Mes performances (30 jours)
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                          <div className="text-center p-4 bg-slate-800/50 rounded-lg">
+                            <Zap className="h-6 w-6 text-yellow-400 mx-auto mb-2" />
+                            <p className="text-2xl font-bold text-white">{stats.todayPrepared}</p>
+                            <p className="text-slate-400 text-xs">Aujourd'hui</p>
+                          </div>
+                          <div className="text-center p-4 bg-slate-800/50 rounded-lg">
+                            <Package className="h-6 w-6 text-blue-400 mx-auto mb-2" />
+                            <p className="text-2xl font-bold text-white">{stats.totalPrepared}</p>
+                            <p className="text-slate-400 text-xs">Total préparées</p>
+                          </div>
+                          <div className="text-center p-4 bg-slate-800/50 rounded-lg">
+                            <Clock className="h-6 w-6 text-purple-400 mx-auto mb-2" />
+                            <p className="text-2xl font-bold text-white">{stats.avgPrepTime}min</p>
+                            <p className="text-slate-400 text-xs">Temps moyen</p>
+                          </div>
+                          <div className="text-center p-4 bg-slate-800/50 rounded-lg">
+                            <TrendingUp className="h-6 w-6 text-green-400 mx-auto mb-2" />
+                            <p className="text-2xl font-bold text-white">{stats.successRate}%</p>
+                            <p className="text-slate-400 text-xs">Taux succès</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Filters */}
+              <Card className="bg-slate-800/50 border-slate-700">
             <CardContent className="p-4">
               <div className="flex flex-col sm:flex-row gap-4">
                 {/* Search */}
@@ -704,8 +738,20 @@ const PreparerDashboard = () => {
                   </div>
                 </section>
               )}
-            </div>
-          )}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Gamification Tab Content */}
+          <TabsContent value="gamification" className="mt-6">
+            <PreparerGamification preparerName={preparerName} />
+          </TabsContent>
+
+          {/* Export Tab Content */}
+          <TabsContent value="export" className="mt-6">
+            <PreparerExport preparerName={preparerName} />
+          </TabsContent>
+        </Tabs>
         </main>
       </div>
     </>
