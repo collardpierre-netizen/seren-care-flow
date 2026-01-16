@@ -690,8 +690,8 @@ const OrderPreparation = () => {
                             order={order}
                             items={order.items || []}
                             shippingAddress={order.shipping_address}
-                            confirmationUrl={`https://serencare.be/confirmation-livraison?token=${orderId}`}
                             preparerName={preparerName}
+                            token={sessionToken}
                           />
                         </TabsContent>
                       </Tabs>
