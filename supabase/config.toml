@@ -62,3 +62,9 @@ verify_jwt = false
 
 [functions.create-stripe-price]
 verify_jwt = false
+
+[functions.preparer-message]
+verify_jwt = false
+
+[functions.log-preparer-access]
+verify_jwt = false

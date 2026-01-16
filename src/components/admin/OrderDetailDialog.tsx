@@ -16,9 +16,12 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import OrderStatusHistory from '@/components/account/OrderStatusHistory';
 import OrderStatusManager from '@/components/admin/OrderStatusManager';
+import OrderChatPanel from '@/components/admin/OrderChatPanel';
+import OrderPreparerLogs from '@/components/admin/OrderPreparerLogs';
 import { statusConfig, OrderStatus } from '@/lib/orderStatus';
 import {
   Loader2,
@@ -30,6 +33,9 @@ import {
   Copy,
   Check,
   RefreshCw,
+  MessageCircle,
+  ClipboardList,
+  StickyNote,
 } from 'lucide-react';
 
 // Generate a secure random password
@@ -52,10 +58,11 @@ const OrderDetailDialog: React.FC<OrderDetailDialogProps> = ({ orderId, onClose 
   const [trackingNumber, setTrackingNumber] = useState('');
   const [trackingUrl, setTrackingUrl] = useState('');
   const [carrier, setCarrier] = useState('');
-  const [isSendingToPreparer, setIsSendingToPreparer] = useState(false);
   const [preparerEmail, setPreparerEmail] = useState('');
   const [preparerPassword, setPreparerPassword] = useState(() => generatePassword());
   const [includePdf, setIncludePdf] = useState(false);
+  const [preparerNotes, setPreparerNotes] = useState('');
+  const [copied, setCopied] = useState(false);
 
   // Auto-generate password on mount
   useEffect(() => {
@@ -63,7 +70,6 @@ const OrderDetailDialog: React.FC<OrderDetailDialogProps> = ({ orderId, onClose 
       setPreparerPassword(generatePassword());
     }
   }, [orderId]);
-  const [copied, setCopied] = useState(false);
 
   const { data: order, isLoading } = useQuery({
     queryKey: ['admin-order-detail', orderId],
@@ -91,6 +97,7 @@ const OrderDetailDialog: React.FC<OrderDetailDialogProps> = ({ orderId, onClose 
       setTrackingNumber(orderData.tracking_number || '');
       setTrackingUrl(orderData.tracking_url || '');
       setCarrier(orderData.carrier || '');
+      setPreparerNotes((orderData as any).preparer_notes || '');
 
       return {
         ...orderData,
@@ -99,6 +106,23 @@ const OrderDetailDialog: React.FC<OrderDetailDialogProps> = ({ orderId, onClose 
       };
     },
     enabled: !!orderId,
+  });
+
+  // Check for unread messages
+  const { data: unreadCount = 0 } = useQuery({
+    queryKey: ['order-unread-messages', orderId],
+    queryFn: async () => {
+      if (!orderId) return 0;
+      const { count } = await supabase
+        .from('order_messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('order_id', orderId)
+        .eq('sender_type', 'preparer')
+        .eq('is_read', false);
+      return count || 0;
+    },
+    enabled: !!orderId,
+    refetchInterval: 10000,
   });
 
   const updateTracking = useMutation({
@@ -123,10 +147,27 @@ const OrderDetailDialog: React.FC<OrderDetailDialogProps> = ({ orderId, onClose 
     },
   });
 
+  const updatePreparerNotes = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('orders')
+        .update({ preparer_notes: preparerNotes || null })
+        .eq('id', orderId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-order-detail', orderId] });
+      toast.success('Notes sauvegardées');
+    },
+    onError: () => {
+      toast.error('Erreur lors de la sauvegarde');
+    },
+  });
+
   const sendToPreparer = useMutation({
     mutationFn: async () => {
-      if (!preparerEmail || !preparerPassword) {
-        throw new Error('Email et mot de passe requis');
+      if (!preparerEmail) {
+        throw new Error('Email requis');
       }
 
       const { data, error } = await supabase.functions.invoke('send-order-to-preparer', {
@@ -145,11 +186,10 @@ const OrderDetailDialog: React.FC<OrderDetailDialogProps> = ({ orderId, onClose 
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success('Commande envoyée au préparateur');
-      setIsSendingToPreparer(false);
       setPreparerEmail('');
-      setPreparerPassword('');
+      setPreparerPassword(generatePassword());
     },
     onError: (error) => {
       toast.error(error.message || 'Erreur lors de l\'envoi');
@@ -169,7 +209,7 @@ const OrderDetailDialog: React.FC<OrderDetailDialogProps> = ({ orderId, onClose 
 
   return (
     <Dialog open={!!orderId} onOpenChange={() => onClose()}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
@@ -183,11 +223,20 @@ const OrderDetailDialog: React.FC<OrderDetailDialogProps> = ({ orderId, onClose 
           </div>
         ) : order ? (
           <Tabs defaultValue="status" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="status">Statut</TabsTrigger>
               <TabsTrigger value="details">Détails</TabsTrigger>
               <TabsTrigger value="tracking">Suivi</TabsTrigger>
               <TabsTrigger value="preparer">Préparateur</TabsTrigger>
+              <TabsTrigger value="chat" className="relative">
+                Chat
+                {unreadCount > 0 && (
+                  <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs flex items-center justify-center">
+                    {unreadCount}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="logs">Activité</TabsTrigger>
             </TabsList>
 
             <TabsContent value="status" className="space-y-4">
@@ -212,9 +261,9 @@ const OrderDetailDialog: React.FC<OrderDetailDialogProps> = ({ orderId, onClose 
                 <div className="p-4 bg-muted/50 rounded-lg space-y-2">
                   <h3 className="font-medium">Adresse de livraison</h3>
                   <p className="text-sm">
-                    {(order.shipping_address as any).address_line1}<br />
+                    {(order.shipping_address as any).address_line1 || (order.shipping_address as any).address}<br />
                     {(order.shipping_address as any).address_line2 && <>{(order.shipping_address as any).address_line2}<br /></>}
-                    {(order.shipping_address as any).postal_code} {(order.shipping_address as any).city}
+                    {(order.shipping_address as any).postal_code || (order.shipping_address as any).postalCode} {(order.shipping_address as any).city}
                   </p>
                 </div>
               )}
@@ -302,6 +351,36 @@ const OrderDetailDialog: React.FC<OrderDetailDialogProps> = ({ orderId, onClose 
             </TabsContent>
 
             <TabsContent value="preparer" className="space-y-4">
+              {/* Notes pour le préparateur */}
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg space-y-3">
+                <h3 className="font-medium flex items-center gap-2 text-amber-800">
+                  <StickyNote className="h-4 w-4" />
+                  Notes pour le préparateur
+                </h3>
+                <Textarea
+                  value={preparerNotes}
+                  onChange={(e) => setPreparerNotes(e.target.value)}
+                  placeholder="Instructions spéciales, remarques..."
+                  className="bg-white"
+                  rows={3}
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => updatePreparerNotes.mutate()}
+                  disabled={updatePreparerNotes.isPending}
+                >
+                  {updatePreparerNotes.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Check className="h-4 w-4 mr-2" />
+                  )}
+                  Sauvegarder les notes
+                </Button>
+              </div>
+
+              <Separator />
+
               <div className="p-4 bg-muted/50 rounded-lg space-y-3">
                 <h3 className="font-medium flex items-center gap-2">
                   <FileText className="h-4 w-4" />
@@ -309,7 +388,7 @@ const OrderDetailDialog: React.FC<OrderDetailDialogProps> = ({ orderId, onClose 
                 </h3>
                 <p className="text-sm text-muted-foreground">
                   Envoyez cette commande par email au préparateur. Il recevra un lien sécurisé 
-                  avec mot de passe pour accéder aux détails de la commande.
+                  pour accéder aux détails et pourra communiquer en temps réel.
                 </p>
               </div>
 
@@ -325,7 +404,7 @@ const OrderDetailDialog: React.FC<OrderDetailDialogProps> = ({ orderId, onClose 
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Mot de passe d'accès</Label>
+                  <Label>Mot de passe d'accès (optionnel)</Label>
                   <div className="flex gap-2">
                     <Input
                       type="text"
@@ -345,7 +424,7 @@ const OrderDetailDialog: React.FC<OrderDetailDialogProps> = ({ orderId, onClose 
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Mot de passe auto-généré. Cliquez sur le bouton pour en créer un nouveau.
+                    Le préparateur accède via un lien magique sécurisé.
                   </p>
                 </div>
 
@@ -363,7 +442,7 @@ const OrderDetailDialog: React.FC<OrderDetailDialogProps> = ({ orderId, onClose 
                 <div className="flex gap-2">
                   <Button
                     onClick={() => sendToPreparer.mutate()}
-                    disabled={sendToPreparer.isPending || !preparerEmail || !preparerPassword}
+                    disabled={sendToPreparer.isPending || !preparerEmail}
                     className="flex-1"
                   >
                     {sendToPreparer.isPending ? (
@@ -383,6 +462,23 @@ const OrderDetailDialog: React.FC<OrderDetailDialogProps> = ({ orderId, onClose 
                   </Button>
                 </div>
               </div>
+            </TabsContent>
+
+            <TabsContent value="chat" className="h-[400px]">
+              <OrderChatPanel orderId={orderId} orderNumber={order.order_number} />
+            </TabsContent>
+
+            <TabsContent value="logs" className="space-y-4">
+              <div className="p-4 bg-muted/50 rounded-lg space-y-3">
+                <h3 className="font-medium flex items-center gap-2">
+                  <ClipboardList className="h-4 w-4" />
+                  Journal d'activité du préparateur
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Historique des actions du préparateur sur cette commande.
+                </p>
+              </div>
+              <OrderPreparerLogs orderId={orderId} />
             </TabsContent>
           </Tabs>
         ) : null}
