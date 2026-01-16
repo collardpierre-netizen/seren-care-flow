@@ -1,5 +1,14 @@
 project_id = "obkfkygjisxvgrmclhnb"
 
+[functions.upload-preparation-photo]
+verify_jwt = false
+
+[functions.confirm-delivery]
+verify_jwt = false
+
+[functions.generate-delivery-slip]
+verify_jwt = false
+
 [functions.send-email]
 verify_jwt = false
 

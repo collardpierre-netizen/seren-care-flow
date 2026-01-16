@@ -37,6 +37,7 @@ import GuideArticle from "./pages/GuideArticle";
 import FAQ from "./pages/FAQ";
 import OrderConfirmed from "./pages/OrderConfirmed";
 import OrderPreparation from "./pages/OrderPreparation";
+import DeliveryConfirmation from "./pages/DeliveryConfirmation";
 import EmailPreview from "./pages/admin/EmailPreview";
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -103,6 +104,7 @@ const App = () => (
               <Route path="/faq" element={<FAQ />} />
               <Route path="/commande-confirmee" element={<OrderConfirmed />} />
               <Route path="/commande-preparation/:orderId" element={<OrderPreparation />} />
+              <Route path="/confirmation-livraison" element={<DeliveryConfirmation />} />
               <Route path="/compte" element={<Account />} />
               <Route path="/abonnement" element={<Subscription />} />
               <Route path="/desinscription-alerte" element={<UnsubscribeStockAlert />} />
