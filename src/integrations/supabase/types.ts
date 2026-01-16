@@ -575,6 +575,85 @@ export type Database = {
           },
         ]
       }
+      order_messages: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean | null
+          message: string
+          order_id: string
+          sender_name: string | null
+          sender_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          order_id: string
+          sender_name?: string | null
+          sender_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          order_id?: string
+          sender_name?: string | null
+          sender_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_messages_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_preparer_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: string | null
+          id: string
+          ip_address: string | null
+          order_id: string
+          preparer_name: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          ip_address?: string | null
+          order_id: string
+          preparer_name?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          ip_address?: string | null
+          order_id?: string
+          preparer_name?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_preparer_logs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_status_events: {
         Row: {
           created_at: string
@@ -658,6 +737,7 @@ export type Database = {
           is_subscription_order: boolean | null
           notes: string | null
           order_number: string
+          preparer_notes: string | null
           prescriber_id: string | null
           referral_code: string | null
           shipping_address: Json | null
@@ -683,6 +763,7 @@ export type Database = {
           is_subscription_order?: boolean | null
           notes?: string | null
           order_number: string
+          preparer_notes?: string | null
           prescriber_id?: string | null
           referral_code?: string | null
           shipping_address?: Json | null
@@ -708,6 +789,7 @@ export type Database = {
           is_subscription_order?: boolean | null
           notes?: string | null
           order_number?: string
+          preparer_notes?: string | null
           prescriber_id?: string | null
           referral_code?: string | null
           shipping_address?: Json | null
