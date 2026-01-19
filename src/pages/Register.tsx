@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Loader2, Mail, Lock, User } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const RegisterPage: React.FC = () => {
   const [firstName, setFirstName] = useState('');
@@ -29,6 +30,20 @@ const RegisterPage: React.FC = () => {
       });
       setIsLoading(false);
       return;
+    }
+
+    // Send welcome email via edge function
+    try {
+      await supabase.functions.invoke('send-email', {
+        body: {
+          to: email,
+          template: 'welcome',
+          data: { firstName: firstName || 'Cher client' }
+        }
+      });
+    } catch (emailError) {
+      console.error('Welcome email failed:', emailError);
+      // Don't block registration for email failure
     }
 
     toast.success('Inscription réussie', {

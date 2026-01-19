@@ -455,7 +455,7 @@ const Account = () => {
                                     asChild
                                     size="sm"
                                   >
-                                    <Link to={`/commande/${order.id}`}>
+                                    <Link to={`/mon-compte/commande/${order.id}`}>
                                       <Package className="h-4 w-4 mr-1" />
                                       Voir le suivi
                                     </Link>

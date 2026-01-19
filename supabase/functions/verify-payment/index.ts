@@ -212,6 +212,29 @@ serve(async (req) => {
 
     logStep("Order updated to paid", { orderId: order.id, orderNumber: order.order_number });
 
+    // Update user profile with shipping address from order if user is logged in
+    if (order.user_id && order.shipping_address) {
+      const addr = order.shipping_address as any;
+      const { error: profileUpdateError } = await supabase
+        .from("profiles")
+        .update({
+          first_name: addr.firstName || undefined,
+          last_name: addr.lastName || undefined,
+          phone: addr.phone || undefined,
+          address_line1: addr.address || undefined,
+          postal_code: addr.postalCode || undefined,
+          city: addr.city || undefined,
+          country: addr.country || undefined,
+        })
+        .eq("id", order.user_id);
+      
+      if (profileUpdateError) {
+        logStep("Profile update warning", { error: profileUpdateError.message });
+      } else {
+        logStep("Profile updated with shipping address", { userId: order.user_id });
+      }
+    }
+
     // Get order items for email
     const { data: orderItems } = await supabase
       .from("order_items")
@@ -243,17 +266,36 @@ serve(async (req) => {
       if (subError) {
         logStep("Subscription creation error", { error: subError.message });
       } else if (orderItems && subscription) {
-        // Create subscription items
-        const subItems = orderItems.map(item => ({
-          subscription_id: subscription.id,
-          product_id: item.product_id,
-          product_size: item.product_size,
-          quantity: item.quantity,
-          unit_price: item.unit_price,
-        }));
+        // Filter only subscription items (those with "(Abonnement)" in name or is_subscription order)
+        // Since we can't know for sure which items are subscription from order_items,
+        // we need to check the product name which includes "(Abonnement)" suffix
+        const subscriptionOrderItems = orderItems.filter(item => 
+          item.product_name?.includes('(Abonnement)') || item.product_name?.includes('Abonnement')
+        );
 
-        await supabase.from("subscription_items").insert(subItems);
-        logStep("Subscription created", { subscriptionId: subscription.id });
+        if (subscriptionOrderItems.length > 0) {
+          const subItems = subscriptionOrderItems.map(item => ({
+            subscription_id: subscription.id,
+            product_id: item.product_id,
+            product_size: item.product_size,
+            quantity: item.quantity,
+            unit_price: item.unit_price,
+          }));
+
+          await supabase.from("subscription_items").insert(subItems);
+          logStep("Subscription items created", { count: subItems.length, subscriptionId: subscription.id });
+        } else {
+          logStep("No subscription items found in order, adding all items to subscription");
+          // Fallback: if no items have (Abonnement) in name, add all items (legacy behavior)
+          const subItems = orderItems.map(item => ({
+            subscription_id: subscription.id,
+            product_id: item.product_id,
+            product_size: item.product_size,
+            quantity: item.quantity,
+            unit_price: item.unit_price,
+          }));
+          await supabase.from("subscription_items").insert(subItems);
+        }
 
         // Update order with subscription reference
         await supabase
