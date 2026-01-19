@@ -65,10 +65,10 @@ interface SubscriptionManagerProps {
 }
 
 const frequencyOptions = [
-  { value: 15, label: 'Toutes les 2 semaines' },
-  { value: 30, label: 'Tous les mois' },
-  { value: 45, label: 'Toutes les 6 semaines' },
-  { value: 60, label: 'Tous les 2 mois' },
+  { value: 14, label: 'Toutes les 2 semaines', surcharge: 4.90 },
+  { value: 30, label: 'Tous les mois', surcharge: 0 },
+  { value: 45, label: 'Toutes les 6 semaines', surcharge: 0 },
+  { value: 60, label: 'Tous les 2 mois', surcharge: 0 },
 ];
 
 const statusLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }> = {
@@ -117,6 +117,10 @@ export const SubscriptionManager = ({ subscription, userPreferences }: Subscript
   const currentSubtotal = calculateSubtotal();
   const savings = originalSubtotal - currentSubtotal;
   const isUnderMinimum = currentSubtotal < minimumAmount;
+
+  // Calculate bi-weekly surcharge
+  const selectedFrequency = frequencyOptions.find(f => f.value === editedFrequency);
+  const frequencySurcharge = selectedFrequency?.surcharge || 0;
 
   // Update subscription mutation
   const updateSubscription = useMutation({
@@ -379,6 +383,9 @@ export const SubscriptionManager = ({ subscription, userPreferences }: Subscript
                   {frequencyOptions.map(opt => (
                     <SelectItem key={opt.value} value={opt.value.toString()}>
                       {opt.label}
+                      {opt.surcharge > 0 && (
+                        <span className="text-amber-600 ml-2">(+{opt.surcharge.toFixed(2)} €/livraison)</span>
+                      )}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -508,13 +515,25 @@ export const SubscriptionManager = ({ subscription, userPreferences }: Subscript
                 <span>-{savings.toFixed(2)} €</span>
               </div>
             )}
+            {frequencySurcharge > 0 && (
+              <div className="flex justify-between text-sm text-amber-600">
+                <span className="flex items-center gap-1">
+                  <Truck className="h-4 w-4" />
+                  Supplément bi-hebdomadaire
+                </span>
+                <span>+{frequencySurcharge.toFixed(2)} €</span>
+              </div>
+            )}
             <div className="flex justify-between font-medium pt-2 border-t">
               <span>Total par livraison</span>
-              <span>{currentSubtotal.toFixed(2)} €</span>
+              <span>{(currentSubtotal + frequencySurcharge).toFixed(2)} €</span>
             </div>
             <div className="text-xs text-muted-foreground space-y-1 mt-2">
               <p>✓ Minimum d'abonnement: {minimumAmount} € (inclut {settings?.subscription.included_deliveries || 1} livraison{(settings?.subscription.included_deliveries || 1) > 1 ? 's' : ''} / mois)</p>
               <p>📦 Livraison supplémentaire: {(settings?.subscription.extra_delivery_fee || 4.90).toFixed(2)} €</p>
+              {frequencySurcharge > 0 && (
+                <p className="text-amber-600">⚠️ Un supplément de {frequencySurcharge.toFixed(2)} € s'applique pour les livraisons toutes les 2 semaines</p>
+              )}
             </div>
           </div>
 
