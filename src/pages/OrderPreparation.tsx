@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -35,6 +35,7 @@ import {
   Camera,
   MessageCircle,
   FileText,
+  ArrowLeft,
 } from 'lucide-react';
 import PhotoUpload from '@/components/preparer/PhotoUpload';
 import PreparerChatPanel from '@/components/preparer/PreparerChatPanel';
@@ -374,6 +375,18 @@ const OrderPreparation = () => {
       </Helmet>
       <div className="min-h-screen bg-gradient-to-b from-muted/50 to-background py-8 px-4">
         <div className="max-w-4xl mx-auto space-y-6">
+          {/* Admin back button */}
+          {isAdmin && (
+            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="print:hidden">
+              <Button variant="ghost" asChild className="gap-2">
+                <Link to="/admin/commandes">
+                  <ArrowLeft className="h-4 w-4" />
+                  Retour aux commandes
+                </Link>
+              </Button>
+            </motion.div>
+          )}
+          
           {isLoading ? (
             <div className="flex justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
