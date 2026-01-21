@@ -7,9 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Loader2, Users, UserPlus, Shield, ShieldCheck, ShieldAlert, Trash2 } from 'lucide-react';
+import { Search, Loader2, Users, UserPlus, Shield, ShieldCheck, ShieldAlert, Trash2, UserX } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -49,6 +50,8 @@ const AdminUsers: React.FC = () => {
   const [search, setSearch] = useState('');
   const [isAddRoleDialogOpen, setIsAddRoleDialogOpen] = useState(false);
   const [isCreateUserDialogOpen, setIsCreateUserDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<UserWithRoles | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<AppRole>('user');
   const [newUserData, setNewUserData] = useState({
@@ -164,6 +167,28 @@ const AdminUsers: React.FC = () => {
     },
   });
 
+  // Delete user mutation
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const { data, error } = await supabase.functions.invoke('delete-user', {
+        body: { user_id: userId },
+      });
+      
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users-with-roles'] });
+      toast.success('Utilisateur supprimé avec succès');
+      setIsDeleteDialogOpen(false);
+      setUserToDelete(null);
+    },
+    onError: (error: Error) => {
+      toast.error('Erreur', { description: error.message });
+    },
+  });
+
   const handleCreateUser = () => {
     if (!newUserData.email || !newUserData.password) {
       toast.error('Email et mot de passe requis');
@@ -200,6 +225,17 @@ const AdminUsers: React.FC = () => {
   const handleRemoveRole = (userId: string, role: AppRole) => {
     if (confirm(`Retirer le rôle "${ROLE_LABELS[role]}" de cet utilisateur ?`)) {
       removeRoleMutation.mutate({ userId, role });
+    }
+  };
+
+  const openDeleteDialog = (user: UserWithRoles) => {
+    setUserToDelete(user);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteUser = () => {
+    if (userToDelete) {
+      deleteUserMutation.mutate(userToDelete.id);
     }
   };
 
@@ -311,15 +347,24 @@ const AdminUsers: React.FC = () => {
                       {format(new Date(user.created_at), 'dd MMM yyyy', { locale: fr })}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openAddRoleDialog(user.id)}
-                        disabled={user.roles.length >= 3}
-                      >
-                        <UserPlus className="h-4 w-4 mr-1" />
-                        Ajouter rôle
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openAddRoleDialog(user.id)}
+                          disabled={user.roles.length >= 3}
+                        >
+                          <UserPlus className="h-4 w-4 mr-1" />
+                          Ajouter rôle
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => openDeleteDialog(user)}
+                        >
+                          <UserX className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -467,6 +512,40 @@ const AdminUsers: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete User Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer l'utilisateur ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Vous êtes sur le point de supprimer définitivement le compte de{' '}
+              <strong>{userToDelete?.first_name || userToDelete?.email || 'cet utilisateur'}</strong>.
+              <br /><br />
+              Cette action est irréversible et supprimera :
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>Le compte utilisateur</li>
+                <li>Son profil et ses préférences</li>
+                <li>Ses abonnements actifs</li>
+                <li>Son panier</li>
+              </ul>
+              <br />
+              <strong className="text-destructive">Les commandes passées seront conservées pour l'historique.</strong>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteUser}
+              disabled={deleteUserMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteUserMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Supprimer définitivement
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
