@@ -359,6 +359,19 @@ const ProductPage = () => {
                         </>
                       )}
                     </div>
+                    {/* Price per unit */}
+                    {(() => {
+                      const unitsPerProduct = selectedSizeData?.units_per_size || product.units_per_product || 1;
+                      const displayPrice = hasPriceRange && !selectedSize ? minPrice : variantBasePrice;
+                      if (unitsPerProduct > 1) {
+                        return (
+                          <div className="text-sm text-muted-foreground">
+                            Soit {(displayPrice / unitsPerProduct).toFixed(2)} €/unité
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 )}
               </div>
