@@ -23,6 +23,8 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import SubscriptionProgressBar from '@/components/subscription/SubscriptionProgressBar';
+import ReassuranceMessages from '@/components/shop/ReassuranceMessages';
 
 const Subscription = () => {
   const navigate = useNavigate();
@@ -319,14 +321,10 @@ const Subscription = () => {
                   <Separator />
                   
                   {!isValid && items.length > 0 && (
-                    <Alert variant="destructive">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription>
-                        Minimum {minimumFormatted}/mois requis.
-                        <br />
-                        <span className="font-medium">Il vous manque {remainingFormatted}</span>
-                      </AlertDescription>
-                    </Alert>
+                    <SubscriptionProgressBar
+                      currentAmount={totalCents / 100}
+                      minimumAmount={minimumCents / 100}
+                    />
                   )}
 
                   {isValid && (
@@ -338,11 +336,9 @@ const Subscription = () => {
                     </Alert>
                   )}
 
-                  <div className="text-sm text-muted-foreground space-y-2">
-                    <p>✓ Sans engagement, annulation possible à tout moment</p>
-                    <p>✓ Livraison incluse chaque mois</p>
-                    <p>✓ Prix abonnement réduits</p>
-                  </div>
+                  <Separator />
+                  
+                  <ReassuranceMessages variant="compact" />
                 </CardContent>
                 <CardFooter className="flex-col gap-3">
                   <Button 
