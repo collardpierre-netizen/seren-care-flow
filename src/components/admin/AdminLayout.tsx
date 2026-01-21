@@ -43,6 +43,7 @@ const navItems = [
   { label: 'Fournisseurs', href: '/admin/fournisseurs', icon: Building2 },
   { label: 'Réassort', href: '/admin/reassort', icon: PackageSearch },
   { label: 'Alertes stock', href: '/admin/alertes-stock', icon: Bell },
+  { label: 'Utilisateurs', href: '/admin/utilisateurs', icon: Users },
   { label: 'Clients', href: '/admin/clients', icon: Users },
   { label: 'Avis clients', href: '/admin/avis', icon: Star },
   { label: 'Prescripteurs', href: '/admin/prescripteurs', icon: UserCheck },
