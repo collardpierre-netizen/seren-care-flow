@@ -48,8 +48,16 @@ const AdminUsers: React.FC = () => {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [isAddRoleDialogOpen, setIsAddRoleDialogOpen] = useState(false);
+  const [isCreateUserDialogOpen, setIsCreateUserDialogOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<AppRole>('user');
+  const [newUserData, setNewUserData] = useState({
+    email: '',
+    password: '',
+    first_name: '',
+    last_name: '',
+    role: 'user' as AppRole,
+  });
 
   // Fetch all profiles with their roles
   const { data: users, isLoading } = useQuery({
@@ -86,6 +94,28 @@ const AdminUsers: React.FC = () => {
       }));
 
       return usersWithRoles;
+    },
+  });
+
+  // Create user mutation
+  const createUserMutation = useMutation({
+    mutationFn: async (data: typeof newUserData) => {
+      const { data: result, error } = await supabase.functions.invoke('create-user', {
+        body: data,
+      });
+      
+      if (error) throw error;
+      if (result?.error) throw new Error(result.error);
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users-with-roles'] });
+      toast.success('Utilisateur créé avec succès');
+      setIsCreateUserDialogOpen(false);
+      setNewUserData({ email: '', password: '', first_name: '', last_name: '', role: 'user' });
+    },
+    onError: (error: Error) => {
+      toast.error('Erreur', { description: error.message });
     },
   });
 
@@ -134,6 +164,18 @@ const AdminUsers: React.FC = () => {
     },
   });
 
+  const handleCreateUser = () => {
+    if (!newUserData.email || !newUserData.password) {
+      toast.error('Email et mot de passe requis');
+      return;
+    }
+    if (newUserData.password.length < 6) {
+      toast.error('Le mot de passe doit contenir au moins 6 caractères');
+      return;
+    }
+    createUserMutation.mutate(newUserData);
+  };
+
   const filteredUsers = users?.filter(user => {
     const searchLower = search.toLowerCase();
     return (
@@ -168,9 +210,15 @@ const AdminUsers: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-display font-bold">Gestion des utilisateurs</h1>
-        <p className="text-muted-foreground">Gérez les utilisateurs et leurs rôles</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-display font-bold">Gestion des utilisateurs</h1>
+          <p className="text-muted-foreground">Gérez les utilisateurs et leurs rôles</p>
+        </div>
+        <Button onClick={() => setIsCreateUserDialogOpen(true)}>
+          <UserPlus className="h-4 w-4 mr-2" />
+          Nouvel utilisateur
+        </Button>
       </div>
 
       {/* Stats Cards */}
@@ -326,6 +374,95 @@ const AdminUsers: React.FC = () => {
             >
               {addRoleMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Ajouter le rôle
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create User Dialog */}
+      <Dialog open={isCreateUserDialogOpen} onOpenChange={setIsCreateUserDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Créer un utilisateur</DialogTitle>
+            <DialogDescription>
+              Créez un nouvel utilisateur avec un rôle initial
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">Prénom</Label>
+                <Input
+                  id="firstName"
+                  placeholder="Jean"
+                  value={newUserData.first_name}
+                  onChange={(e) => setNewUserData(prev => ({ ...prev, first_name: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Nom</Label>
+                <Input
+                  id="lastName"
+                  placeholder="Dupont"
+                  value={newUserData.last_name}
+                  onChange={(e) => setNewUserData(prev => ({ ...prev, last_name: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email *</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="jean@exemple.com"
+                value={newUserData.email}
+                onChange={(e) => setNewUserData(prev => ({ ...prev, email: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Mot de passe *</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Minimum 6 caractères"
+                value={newUserData.password}
+                onChange={(e) => setNewUserData(prev => ({ ...prev, password: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Rôle initial</Label>
+              <Select 
+                value={newUserData.role} 
+                onValueChange={(value) => setNewUserData(prev => ({ ...prev, role: value as AppRole }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Choisir un rôle" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(['user', 'manager', 'admin'] as AppRole[]).map((role) => (
+                    <SelectItem key={role} value={role}>
+                      <div className="flex items-center gap-2">
+                        {ROLE_ICONS[role]}
+                        {ROLE_LABELS[role]}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCreateUserDialogOpen(false)}>
+              Annuler
+            </Button>
+            <Button 
+              onClick={handleCreateUser} 
+              disabled={createUserMutation.isPending || !newUserData.email || !newUserData.password}
+            >
+              {createUserMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Créer l'utilisateur
             </Button>
           </DialogFooter>
         </DialogContent>
