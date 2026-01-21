@@ -109,6 +109,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, compact = false }) =
                   {minPrice.toFixed(2)} €
                 </span>
               </div>
+              {/* Price per unit */}
+              {product.units_per_product && product.units_per_product > 1 && !compact && (
+                <div className="text-xs text-muted-foreground">
+                  {(minPrice / product.units_per_product).toFixed(2)} €/unité
+                </div>
+              )}
               {hasSubscription && !compact && (
                 <div className="mt-1">
                   <SubscriptionBadge discountPercent={discountPercent} variant="small" />
