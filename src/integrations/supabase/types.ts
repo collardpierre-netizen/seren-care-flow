@@ -1265,6 +1265,7 @@ export type Database = {
       }
       products: {
         Row: {
+          addon_category: string | null
           brand_id: string | null
           category_id: string | null
           cnk_code: string | null
@@ -1277,8 +1278,10 @@ export type Database = {
             | Database["public"]["Enums"]["incontinence_level"]
             | null
           is_active: boolean | null
+          is_addon: boolean | null
           is_coming_soon: boolean | null
           is_featured: boolean | null
+          is_subscription_eligible: boolean | null
           manufacturer_url: string | null
           min_order_quantity: number | null
           mobility: Database["public"]["Enums"]["mobility_type"] | null
@@ -1301,6 +1304,7 @@ export type Database = {
           usage_times: string | null
         }
         Insert: {
+          addon_category?: string | null
           brand_id?: string | null
           category_id?: string | null
           cnk_code?: string | null
@@ -1313,8 +1317,10 @@ export type Database = {
             | Database["public"]["Enums"]["incontinence_level"]
             | null
           is_active?: boolean | null
+          is_addon?: boolean | null
           is_coming_soon?: boolean | null
           is_featured?: boolean | null
+          is_subscription_eligible?: boolean | null
           manufacturer_url?: string | null
           min_order_quantity?: number | null
           mobility?: Database["public"]["Enums"]["mobility_type"] | null
@@ -1337,6 +1343,7 @@ export type Database = {
           usage_times?: string | null
         }
         Update: {
+          addon_category?: string | null
           brand_id?: string | null
           category_id?: string | null
           cnk_code?: string | null
@@ -1349,8 +1356,10 @@ export type Database = {
             | Database["public"]["Enums"]["incontinence_level"]
             | null
           is_active?: boolean | null
+          is_addon?: boolean | null
           is_coming_soon?: boolean | null
           is_featured?: boolean | null
+          is_subscription_eligible?: boolean | null
           manufacturer_url?: string | null
           min_order_quantity?: number | null
           mobility?: Database["public"]["Enums"]["mobility_type"] | null

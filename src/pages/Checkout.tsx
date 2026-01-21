@@ -16,6 +16,8 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { SizeGuideDialog } from '@/components/shop/SizeGuideDialog';
 import { CartSizeSelector } from '@/components/shop/CartSizeSelector';
+import CheckoutAddons from '@/components/shop/CheckoutAddons';
+import ReassuranceMessages from '@/components/shop/ReassuranceMessages';
 
 interface ShippingAddress {
   firstName: string;
@@ -396,6 +398,9 @@ const Checkout = () => {
                 </CardContent>
               </Card>
 
+              {/* Addon Products */}
+              <CheckoutAddons mode={items.some(item => item.isSubscription) ? 'subscription' : 'oneshot'} />
+
               {/* Payment Info */}
               <Card>
                 <CardHeader>
@@ -404,7 +409,7 @@ const Checkout = () => {
                     Paiement sécurisé
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
                   <div className="p-6 bg-muted/30 rounded-xl space-y-3">
                     <p className="text-sm text-muted-foreground">
                       Vous serez redirigé vers notre plateforme de paiement sécurisée Stripe pour finaliser votre commande.
@@ -414,6 +419,7 @@ const Checkout = () => {
                       <span>Carte bancaire • Bancontact</span>
                     </div>
                   </div>
+                  <ReassuranceMessages variant="compact" className="pt-2" />
                 </CardContent>
               </Card>
             </div>

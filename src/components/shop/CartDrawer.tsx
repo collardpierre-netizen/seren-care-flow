@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { SizeGuideDialog } from './SizeGuideDialog';
 import { CartSizeSelector } from './CartSizeSelector';
 import { toast } from 'sonner';
+import ReassuranceMessages from './ReassuranceMessages';
 
 const CartDrawer: React.FC = () => {
   const { 
@@ -243,6 +244,7 @@ const CartDrawer: React.FC = () => {
               </div>
               )}
               
+              <ReassuranceMessages variant="inline" className="pt-2" />
               <div className="space-y-2">
                 <Button 
                   className="w-full h-12" 

@@ -48,6 +48,10 @@ interface ProductFormData {
   is_featured: boolean;
   is_coming_soon: boolean;
   show_size_guide: boolean;
+  // New subscription & addon fields
+  is_subscription_eligible: boolean;
+  is_addon: boolean;
+  addon_category: string;
 }
 
 const initialFormData: ProductFormData = {
@@ -80,7 +84,18 @@ const initialFormData: ProductFormData = {
   is_featured: false,
   is_coming_soon: false,
   show_size_guide: true,
+  is_subscription_eligible: true,
+  is_addon: false,
+  addon_category: '',
 };
+
+const addonCategories = [
+  { value: 'pharma', label: 'Produits pharma' },
+  { value: 'hygiene', label: 'Hygiène' },
+  { value: 'soins', label: 'Soins' },
+  { value: 'accessoires', label: 'Accessoires' },
+  { value: 'confort', label: 'Confort' },
+];
 
 // Multi-tag options
 const mobilityLevelOptions = [
@@ -212,6 +227,9 @@ const AdminProducts: React.FC = () => {
         is_featured: data.is_featured,
         is_coming_soon: data.is_coming_soon || false,
         show_size_guide: data.show_size_guide,
+        is_subscription_eligible: data.is_subscription_eligible,
+        is_addon: data.is_addon,
+        addon_category: data.addon_category || null,
       };
       const { data: newProduct, error } = await supabase
         .from('products')
@@ -287,6 +305,9 @@ const AdminProducts: React.FC = () => {
         is_featured: data.is_featured,
         is_coming_soon: data.is_coming_soon || false,
         show_size_guide: data.show_size_guide,
+        is_subscription_eligible: data.is_subscription_eligible,
+        is_addon: data.is_addon,
+        addon_category: data.addon_category || null,
       };
       const { error } = await supabase.from('products').update(updateData).eq('id', id);
       if (error) throw error;
@@ -494,6 +515,9 @@ const AdminProducts: React.FC = () => {
       is_featured: product.is_featured,
       is_coming_soon: product.is_coming_soon || false,
       show_size_guide: product.show_size_guide !== false,
+      is_subscription_eligible: product.is_subscription_eligible !== false,
+      is_addon: product.is_addon || false,
+      addon_category: product.addon_category || '',
     });
     setProductImages(
       product.images?.map((img: any) => ({
@@ -1466,8 +1490,50 @@ const AdminProducts: React.FC = () => {
                     onCheckedChange={(v) => setFormData({ ...formData, show_size_guide: v })}
                   />
                   <Label htmlFor="show_size_guide">Guide des tailles</Label>
-                  <span className="text-xs text-muted-foreground">(afficher le guide des tailles)</span>
                 </div>
+              </div>
+
+              {/* Subscription & Addon Section */}
+              <div className="space-y-4 p-4 bg-blue-50/50 rounded-lg border border-blue-200">
+                <h4 className="font-semibold text-sm text-blue-800">Abonnement & Add-ons</h4>
+                <div className="flex items-center gap-6 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      id="is_subscription_eligible"
+                      checked={formData.is_subscription_eligible}
+                      onCheckedChange={(v) => setFormData({ ...formData, is_subscription_eligible: v })}
+                    />
+                    <Label htmlFor="is_subscription_eligible">Éligible abonnement</Label>
+                    <span className="text-xs text-muted-foreground">(peut être ajouté à un abonnement mensuel)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      id="is_addon"
+                      checked={formData.is_addon}
+                      onCheckedChange={(v) => setFormData({ ...formData, is_addon: v })}
+                    />
+                    <Label htmlFor="is_addon" className="text-blue-700">Produit Add-on</Label>
+                    <span className="text-xs text-muted-foreground">(proposé en complément au checkout)</span>
+                  </div>
+                </div>
+                {formData.is_addon && (
+                  <div className="space-y-2">
+                    <Label>Catégorie Add-on</Label>
+                    <Select 
+                      value={formData.addon_category} 
+                      onValueChange={(v) => setFormData({ ...formData, addon_category: v })}
+                    >
+                      <SelectTrigger className="w-64">
+                        <SelectValue placeholder="Sélectionner une catégorie" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {addonCategories.map(cat => (
+                          <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end gap-3 pt-4">

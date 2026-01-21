@@ -31,6 +31,9 @@ export interface Product {
   is_featured: boolean | null;
   is_coming_soon: boolean | null;
   show_size_guide: boolean | null;
+  is_subscription_eligible: boolean | null;
+  is_addon: boolean | null;
+  addon_category: string | null;
   created_at: string;
   updated_at: string;
   brand?: { id: string; name: string; slug: string } | null;
