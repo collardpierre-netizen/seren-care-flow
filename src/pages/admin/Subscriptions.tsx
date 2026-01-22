@@ -8,9 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Search, Loader2, RefreshCw, Pause, Play } from 'lucide-react';
+import { Search, Loader2, RefreshCw, Pause, Play, Eye, TrendingUp, Users, Euro, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import SubscriptionDetailDialog from '@/components/admin/SubscriptionDetailDialog';
 
 const statusLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' }> = {
   active: { label: 'Actif', variant: 'default' },
@@ -18,14 +19,42 @@ const statusLabels: Record<string, { label: string; variant: 'default' | 'second
   cancelled: { label: 'Annulé', variant: 'destructive' },
 };
 
+interface SubscriptionItem {
+  id: string;
+  product_id: string;
+  product_size: string | null;
+  quantity: number;
+  unit_price: number;
+  product?: { name: string };
+}
+
+interface Subscription {
+  id: string;
+  user_id: string;
+  status: 'active' | 'paused' | 'cancelled';
+  frequency_days: number;
+  next_delivery_date: string | null;
+  total_savings: number | null;
+  created_at: string;
+  stripe_subscription_id?: string | null;
+  profile?: {
+    first_name: string;
+    last_name: string;
+    email: string;
+  };
+  items: SubscriptionItem[];
+}
+
 const AdminSubscriptions: React.FC = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: subscriptions, isLoading } = useQuery({
     queryKey: ['admin-subscriptions'],
-    queryFn: async () => {
+    queryFn: async (): Promise<Subscription[]> => {
       const { data: subsData, error } = await supabase
         .from('subscriptions')
         .select('*')
@@ -47,17 +76,17 @@ const AdminSubscriptions: React.FC = () => {
         .in('subscription_id', subIds);
       
       const profileMap = new Map(profiles?.map(p => [p.id, p]));
-      const itemsMap = new Map<string, any[]>();
+      const itemsMap = new Map<string, SubscriptionItem[]>();
       items?.forEach(item => {
         const existing = itemsMap.get(item.subscription_id) || [];
-        itemsMap.set(item.subscription_id, [...existing, item]);
+        itemsMap.set(item.subscription_id, [...existing, item as SubscriptionItem]);
       });
       
       return subsData?.map(sub => ({
         ...sub,
         profile: profileMap.get(sub.user_id),
         items: itemsMap.get(sub.id) || []
-      }));
+      })) || [];
     },
   });
 
@@ -83,12 +112,27 @@ const AdminSubscriptions: React.FC = () => {
     return matchesSearch && matchesStatus;
   });
 
+  // Stats calculations
+  const activeCount = subscriptions?.filter(s => s.status === 'active').length || 0;
+  const pausedCount = subscriptions?.filter(s => s.status === 'paused').length || 0;
+  const cancelledCount = subscriptions?.filter(s => s.status === 'cancelled').length || 0;
+  
   const totalMRR = subscriptions
     ?.filter(s => s.status === 'active')
     .reduce((sum, sub) => {
-      const itemsTotal = sub.items?.reduce((t: number, item: any) => t + (item.unit_price * item.quantity), 0) || 0;
+      const itemsTotal = sub.items?.reduce((t, item) => t + (item.unit_price * item.quantity), 0) || 0;
       return sum + itemsTotal;
     }, 0) || 0;
+
+  const totalSavings = subscriptions
+    ?.reduce((sum, sub) => sum + (sub.total_savings || 0), 0) || 0;
+
+  const uniqueSubscribers = new Set(subscriptions?.filter(s => s.status === 'active').map(s => s.user_id)).size;
+
+  const handleViewDetails = (subscription: Subscription) => {
+    setSelectedSubscription(subscription);
+    setDialogOpen(true);
+  };
 
   return (
     <div className="space-y-6">
@@ -97,26 +141,57 @@ const AdminSubscriptions: React.FC = () => {
         <p className="text-muted-foreground">Gérez les abonnements clients</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Enhanced Stats Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">
-            <div className="text-sm text-muted-foreground">Abonnements actifs</div>
-            <div className="text-2xl font-bold">
-              {subscriptions?.filter(s => s.status === 'active').length || 0}
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                <TrendingUp className="h-5 w-5 text-green-600" />
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground">Abonnements actifs</div>
+                <div className="text-2xl font-bold">{activeCount}</div>
+              </div>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-sm text-muted-foreground">Revenu mensuel récurrent</div>
-            <div className="text-2xl font-bold">{totalMRR.toFixed(2)} €</div>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Euro className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground">MRR</div>
+                <div className="text-2xl font-bold">{totalMRR.toFixed(0)} €</div>
+              </div>
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-sm text-muted-foreground">En pause</div>
-            <div className="text-2xl font-bold">
-              {subscriptions?.filter(s => s.status === 'paused').length || 0}
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                <Users className="h-5 w-5 text-blue-600" />
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground">Abonnés uniques</div>
+                <div className="text-2xl font-bold">{uniqueSubscribers}</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+                <Calendar className="h-5 w-5 text-amber-600" />
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground">En pause</div>
+                <div className="text-2xl font-bold">{pausedCount}</div>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -139,10 +214,10 @@ const AdminSubscriptions: React.FC = () => {
                 <SelectValue placeholder="Filtrer par statut" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les statuts</SelectItem>
-                <SelectItem value="active">Actif</SelectItem>
-                <SelectItem value="paused">En pause</SelectItem>
-                <SelectItem value="cancelled">Annulé</SelectItem>
+                <SelectItem value="all">Tous ({subscriptions?.length || 0})</SelectItem>
+                <SelectItem value="active">Actif ({activeCount})</SelectItem>
+                <SelectItem value="paused">En pause ({pausedCount})</SelectItem>
+                <SelectItem value="cancelled">Annulé ({cancelledCount})</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -163,68 +238,100 @@ const AdminSubscriptions: React.FC = () => {
                 <TableRow>
                   <TableHead>Client</TableHead>
                   <TableHead>Produits</TableHead>
+                  <TableHead>Total/mois</TableHead>
                   <TableHead>Fréquence</TableHead>
                   <TableHead>Prochaine livraison</TableHead>
-                  <TableHead>Économies totales</TableHead>
                   <TableHead>Statut</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredSubscriptions?.map((sub) => (
-                  <TableRow key={sub.id}>
-                    <TableCell>
-                      {sub.profile?.first_name} {sub.profile?.last_name}
-                      <br />
-                      <span className="text-xs text-muted-foreground">{sub.profile?.email}</span>
-                    </TableCell>
-                    <TableCell>
-                      {sub.items?.length || 0} produit(s)
-                    </TableCell>
-                    <TableCell>{sub.frequency_days} jours</TableCell>
-                    <TableCell>
-                      {sub.next_delivery_date 
-                        ? format(new Date(sub.next_delivery_date), 'dd MMM yyyy', { locale: fr })
-                        : '-'
-                      }
-                    </TableCell>
-                    <TableCell className="font-medium text-secondary">
-                      {sub.total_savings?.toFixed(2)} €
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={statusLabels[sub.status]?.variant || 'secondary'}>
-                        {statusLabels[sub.status]?.label || sub.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        {sub.status === 'active' && (
+                {filteredSubscriptions?.map((sub) => {
+                  const monthlyTotal = sub.items?.reduce((t, item) => t + (item.unit_price * item.quantity), 0) || 0;
+                  
+                  return (
+                    <TableRow key={sub.id}>
+                      <TableCell>
+                        <div className="font-medium">
+                          {sub.profile?.first_name} {sub.profile?.last_name}
+                        </div>
+                        <div className="text-xs text-muted-foreground">{sub.profile?.email}</div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm">
+                          {sub.items?.slice(0, 2).map((item, i) => (
+                            <div key={item.id} className="truncate max-w-[150px]">
+                              {item.product?.name} x{item.quantity}
+                            </div>
+                          ))}
+                          {(sub.items?.length || 0) > 2 && (
+                            <span className="text-xs text-muted-foreground">
+                              +{sub.items.length - 2} autres
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {monthlyTotal.toFixed(2)} €
+                      </TableCell>
+                      <TableCell>{sub.frequency_days}j</TableCell>
+                      <TableCell>
+                        {sub.next_delivery_date 
+                          ? format(new Date(sub.next_delivery_date), 'dd MMM', { locale: fr })
+                          : '-'
+                        }
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={statusLabels[sub.status]?.variant || 'secondary'}>
+                          {statusLabels[sub.status]?.label || sub.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-1">
                           <Button 
                             variant="ghost" 
                             size="icon"
-                            onClick={() => updateStatus.mutate({ id: sub.id, status: 'paused' })}
+                            onClick={() => handleViewDetails(sub)}
+                            title="Voir les détails"
                           >
-                            <Pause className="h-4 w-4" />
+                            <Eye className="h-4 w-4" />
                           </Button>
-                        )}
-                        {sub.status === 'paused' && (
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            onClick={() => updateStatus.mutate({ id: sub.id, status: 'active' })}
-                          >
-                            <Play className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                          {sub.status === 'active' && (
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => updateStatus.mutate({ id: sub.id, status: 'paused' })}
+                              title="Mettre en pause"
+                            >
+                              <Pause className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {sub.status === 'paused' && (
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => updateStatus.mutate({ id: sub.id, status: 'active' })}
+                              title="Réactiver"
+                            >
+                              <Play className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}
         </CardContent>
       </Card>
+
+      <SubscriptionDetailDialog
+        subscription={selectedSubscription}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+      />
     </div>
   );
 };
