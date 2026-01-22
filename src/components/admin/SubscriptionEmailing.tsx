@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,10 +8,14 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Mail, Send, Users, Loader2, CheckCircle2 } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Mail, Send, Users, Loader2, CheckCircle2, Clock, Calendar, X, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 interface Subscription {
   id: string;
@@ -27,6 +32,18 @@ interface Subscription {
     email: string;
   };
   items: { id: string; product_id: string; product_size: string | null; quantity: number; unit_price: number; product?: { name: string } }[];
+}
+
+interface ScheduledEmail {
+  id: string;
+  subject: string;
+  message: string;
+  recipient_emails: string[];
+  scheduled_at: string;
+  status: string;
+  created_at: string;
+  sent_at: string | null;
+  error_message: string | null;
 }
 
 interface SubscriptionEmailingProps {
@@ -49,6 +66,10 @@ const SubscriptionEmailing: React.FC<SubscriptionEmailingProps> = ({ subscriptio
   const [sending, setSending] = useState(false);
   const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set());
   const [selectAll, setSelectAll] = useState(false);
+  const [scheduleMode, setScheduleMode] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState('');
+  const [scheduledTime, setScheduledTime] = useState('09:00');
+  const queryClient = useQueryClient();
 
   const filteredSubscriptions = subscriptions.filter(sub => 
     targetStatus === 'all' || sub.status === targetStatus
@@ -100,6 +121,90 @@ const SubscriptionEmailing: React.FC<SubscriptionEmailingProps> = ({ subscriptio
       default:
         setSubject('');
         setMessage('');
+    }
+  };
+
+  // Fetch scheduled emails
+  const { data: scheduledEmails, isLoading: loadingScheduled } = useQuery({
+    queryKey: ['scheduled-emails'],
+    queryFn: async (): Promise<ScheduledEmail[]> => {
+      const { data, error } = await supabase
+        .from('scheduled_emails')
+        .select('*')
+        .order('scheduled_at', { ascending: true });
+      if (error) throw error;
+      return (data || []) as ScheduledEmail[];
+    },
+  });
+
+  const cancelScheduledEmail = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('scheduled_emails')
+        .update({ status: 'cancelled' })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['scheduled-emails'] });
+      toast.success('Email programmé annulé');
+    },
+  });
+
+  const scheduleEmail = async () => {
+    if (selectedEmails.size === 0) {
+      toast.error('Veuillez sélectionner au moins un destinataire');
+      return;
+    }
+
+    if (!subject.trim() || !message.trim()) {
+      toast.error('Veuillez remplir le sujet et le message');
+      return;
+    }
+
+    if (!scheduledDate || !scheduledTime) {
+      toast.error('Veuillez sélectionner une date et une heure');
+      return;
+    }
+
+    const scheduledAt = new Date(`${scheduledDate}T${scheduledTime}:00`);
+    if (scheduledAt <= new Date()) {
+      toast.error('La date doit être dans le futur');
+      return;
+    }
+
+    setSending(true);
+
+    try {
+      const { error } = await supabase
+        .from('scheduled_emails')
+        .insert({
+          subject,
+          message,
+          recipient_emails: Array.from(selectedEmails),
+          recipient_filter: { status: targetStatus },
+          scheduled_at: scheduledAt.toISOString(),
+        });
+
+      if (error) throw error;
+
+      toast.success('Email programmé avec succès');
+      queryClient.invalidateQueries({ queryKey: ['scheduled-emails'] });
+      
+      // Reset form
+      setSelectedEmails(new Set());
+      setSelectAll(false);
+      setSubject('');
+      setMessage('');
+      setSelectedTemplate('custom');
+      setScheduleMode(false);
+      setScheduledDate('');
+      setScheduledTime('09:00');
+    } catch (error) {
+      console.error('Error scheduling email:', error);
+      toast.error('Erreur lors de la programmation');
+    } finally {
+      setSending(false);
     }
   };
 
@@ -180,6 +285,9 @@ const SubscriptionEmailing: React.FC<SubscriptionEmailingProps> = ({ subscriptio
       setSending(false);
     }
   };
+
+  const pendingEmails = scheduledEmails?.filter(e => e.status === 'pending') || [];
+  const sentEmails = scheduledEmails?.filter(e => e.status === 'sent') || [];
 
   return (
     <div className="space-y-6">
@@ -302,44 +410,202 @@ const SubscriptionEmailing: React.FC<SubscriptionEmailingProps> = ({ subscriptio
               </p>
             </div>
 
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button 
-                  className="w-full gap-2" 
-                  disabled={selectedEmails.size === 0 || !subject || !message || sending}
-                >
-                  {sending ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Envoi en cours...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="h-4 w-4" />
-                      Envoyer à {selectedEmails.size} destinataire(s)
-                    </>
-                  )}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Confirmer l'envoi</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Vous êtes sur le point d'envoyer un email à {selectedEmails.size} destinataire(s).
-                    Cette action ne peut pas être annulée.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Annuler</AlertDialogCancel>
-                  <AlertDialogAction onClick={sendEmails}>
-                    Confirmer l'envoi
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            {/* Schedule Toggle */}
+            <div className="flex items-center gap-2 p-3 border rounded-lg">
+              <Checkbox 
+                id="schedule-mode"
+                checked={scheduleMode}
+                onCheckedChange={(checked) => setScheduleMode(checked === true)}
+              />
+              <Label htmlFor="schedule-mode" className="flex items-center gap-2 cursor-pointer">
+                <Clock className="h-4 w-4" />
+                Programmer l'envoi
+              </Label>
+            </div>
+
+            {scheduleMode && (
+              <div className="grid grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
+                <div>
+                  <Label htmlFor="schedule-date">Date</Label>
+                  <Input
+                    id="schedule-date"
+                    type="date"
+                    value={scheduledDate}
+                    onChange={(e) => setScheduledDate(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="schedule-time">Heure</Label>
+                  <Input
+                    id="schedule-time"
+                    type="time"
+                    value={scheduledTime}
+                    onChange={(e) => setScheduledTime(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
+
+            {scheduleMode ? (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    className="w-full gap-2" 
+                    disabled={selectedEmails.size === 0 || !subject || !message || !scheduledDate || sending}
+                  >
+                    {sending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Programmation...
+                      </>
+                    ) : (
+                      <>
+                        <Calendar className="h-4 w-4" />
+                        Programmer pour {selectedEmails.size} destinataire(s)
+                      </>
+                    )}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Confirmer la programmation</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      L'email sera envoyé à {selectedEmails.size} destinataire(s) le{' '}
+                      {scheduledDate && format(new Date(`${scheduledDate}T${scheduledTime}`), "d MMMM yyyy 'à' HH:mm", { locale: fr })}.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                    <AlertDialogAction onClick={scheduleEmail}>
+                      Confirmer
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            ) : (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    className="w-full gap-2" 
+                    disabled={selectedEmails.size === 0 || !subject || !message || sending}
+                  >
+                    {sending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Envoi en cours...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4" />
+                        Envoyer à {selectedEmails.size} destinataire(s)
+                      </>
+                    )}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Confirmer l'envoi</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Vous êtes sur le point d'envoyer un email à {selectedEmails.size} destinataire(s).
+                      Cette action ne peut pas être annulée.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                    <AlertDialogAction onClick={sendEmails}>
+                      Confirmer l'envoi
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
           </CardContent>
         </Card>
       </div>
+
+      {/* Scheduled Emails Section */}
+      {pendingEmails.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Emails programmés ({pendingEmails.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Sujet</TableHead>
+                  <TableHead>Destinataires</TableHead>
+                  <TableHead>Date programmée</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pendingEmails.map((email) => (
+                  <TableRow key={email.id}>
+                    <TableCell className="font-medium">{email.subject}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{email.recipient_emails.length} destinataires</Badge>
+                    </TableCell>
+                    <TableCell>
+                      {format(new Date(email.scheduled_at), "d MMM yyyy 'à' HH:mm", { locale: fr })}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => cancelScheduledEmail.mutate(email.id)}
+                        title="Annuler"
+                      >
+                        <X className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Sent Emails History */}
+      {sentEmails.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-green-600" />
+              Emails envoyés récemment
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Sujet</TableHead>
+                  <TableHead>Destinataires</TableHead>
+                  <TableHead>Envoyé le</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sentEmails.slice(0, 5).map((email) => (
+                  <TableRow key={email.id}>
+                    <TableCell className="font-medium">{email.subject}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{email.recipient_emails.length} destinataires</Badge>
+                    </TableCell>
+                    <TableCell>
+                      {email.sent_at && format(new Date(email.sent_at), "d MMM yyyy 'à' HH:mm", { locale: fr })}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

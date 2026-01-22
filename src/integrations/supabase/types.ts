@@ -1577,6 +1577,48 @@ export type Database = {
           },
         ]
       }
+      scheduled_emails: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          error_message: string | null
+          id: string
+          message: string
+          recipient_emails: string[]
+          recipient_filter: Json
+          scheduled_at: string
+          sent_at: string | null
+          status: string
+          subject: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          error_message?: string | null
+          id?: string
+          message: string
+          recipient_emails?: string[]
+          recipient_filter?: Json
+          scheduled_at: string
+          sent_at?: string | null
+          status?: string
+          subject: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          error_message?: string | null
+          id?: string
+          message?: string
+          recipient_emails?: string[]
+          recipient_filter?: Json
+          scheduled_at?: string
+          sent_at?: string | null
+          status?: string
+          subject?: string
+        }
+        Relationships: []
+      }
       stock_alerts: {
         Row: {
           created_at: string
@@ -1916,6 +1958,38 @@ export type Database = {
           },
           {
             foreignKeyName: "subscription_items_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscription_reminders: {
+        Row: {
+          email_sent_to: string
+          id: string
+          reminder_type: string
+          sent_at: string
+          subscription_id: string
+        }
+        Insert: {
+          email_sent_to: string
+          id?: string
+          reminder_type: string
+          sent_at?: string
+          subscription_id: string
+        }
+        Update: {
+          email_sent_to?: string
+          id?: string
+          reminder_type?: string
+          sent_at?: string
+          subscription_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_reminders_subscription_id_fkey"
             columns: ["subscription_id"]
             isOneToOne: false
             referencedRelation: "subscriptions"
