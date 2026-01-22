@@ -7,11 +7,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Search, Loader2, RefreshCw, Pause, Play, Eye, TrendingUp, Users, Euro, Calendar } from 'lucide-react';
+import { Search, Loader2, RefreshCw, Pause, Play, Eye, TrendingUp, Users, Euro, Calendar, BarChart3, Mail } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import SubscriptionDetailDialog from '@/components/admin/SubscriptionDetailDialog';
+import SubscriptionExport from '@/components/admin/SubscriptionExport';
+import SubscriptionAnalytics from '@/components/admin/SubscriptionAnalytics';
+import SubscriptionEmailing from '@/components/admin/SubscriptionEmailing';
 
 const statusLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' }> = {
   active: { label: 'Actif', variant: 'default' },
@@ -19,7 +23,7 @@ const statusLabels: Record<string, { label: string; variant: 'default' | 'second
   cancelled: { label: 'Annulé', variant: 'destructive' },
 };
 
-interface SubscriptionItem {
+export interface SubscriptionItem {
   id: string;
   product_id: string;
   product_size: string | null;
@@ -28,7 +32,7 @@ interface SubscriptionItem {
   product?: { name: string };
 }
 
-interface Subscription {
+export interface Subscription {
   id: string;
   user_id: string;
   status: 'active' | 'paused' | 'cancelled';
@@ -136,9 +140,12 @@ const AdminSubscriptions: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-display font-bold">Abonnements</h1>
-        <p className="text-muted-foreground">Gérez les abonnements clients</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-display font-bold">Abonnements</h1>
+          <p className="text-muted-foreground">Gérez les abonnements clients</p>
+        </div>
+        {subscriptions && <SubscriptionExport subscriptions={subscriptions} />}
       </div>
 
       {/* Enhanced Stats Grid */}
@@ -196,6 +203,33 @@ const AdminSubscriptions: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Tabs for different views */}
+      <Tabs defaultValue="list" className="w-full">
+        <TabsList>
+          <TabsTrigger value="list" className="gap-2">
+            <Users className="h-4 w-4" />
+            Liste
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Analytics
+          </TabsTrigger>
+          <TabsTrigger value="emailing" className="gap-2">
+            <Mail className="h-4 w-4" />
+            Emailing
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="analytics" className="mt-6">
+          {subscriptions && <SubscriptionAnalytics subscriptions={subscriptions} />}
+        </TabsContent>
+
+        <TabsContent value="emailing" className="mt-6">
+          {subscriptions && <SubscriptionEmailing subscriptions={subscriptions} />}
+        </TabsContent>
+
+        <TabsContent value="list" className="mt-6">
 
       <Card>
         <CardHeader>
@@ -325,7 +359,9 @@ const AdminSubscriptions: React.FC = () => {
             </Table>
           )}
         </CardContent>
-      </Card>
+        </Card>
+      </TabsContent>
+      </Tabs>
 
       <SubscriptionDetailDialog
         subscription={selectedSubscription}
