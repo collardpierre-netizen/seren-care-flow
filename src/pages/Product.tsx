@@ -238,11 +238,11 @@ const ProductPage = () => {
               animate={{ opacity: 1, x: 0 }}
               className="space-y-4"
             >
-              <div className="relative bg-muted/30 rounded-2xl aspect-[4/3] md:aspect-square overflow-hidden">
+              <div className="relative bg-muted/30 rounded-2xl h-[280px] sm:h-[350px] md:h-auto md:aspect-square overflow-hidden">
                 <img
                   src={images[currentImageIndex]?.image_url || '/placeholder.svg'}
                   alt={images[currentImageIndex]?.alt_text || product.name}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover md:object-contain"
                 />
                 
                 {images.length > 1 && (
