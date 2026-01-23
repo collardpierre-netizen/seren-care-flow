@@ -241,20 +241,30 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation - Full screen overlay */}
         <AnimatePresence>
           {isOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ 
-                duration: 0.25,
-                ease: [0.4, 0, 0.2, 1]
-              }}
-              className="lg:hidden overflow-hidden border-t border-border/40"
-              id="mobile-menu"
-            >
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="lg:hidden fixed inset-0 top-[72px] bg-background/95 backdrop-blur-sm z-40"
+                onClick={() => setIsOpen(false)}
+              />
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ 
+                  duration: 0.25,
+                  ease: [0.4, 0, 0.2, 1]
+                }}
+                className="lg:hidden fixed left-0 right-0 top-[72px] bg-background border-b border-border shadow-lg z-50 max-h-[calc(100vh-72px)] overflow-y-auto"
+                id="mobile-menu"
+              >
               <motion.div 
                 className="py-4 space-y-1"
                 initial="closed"
@@ -332,6 +342,7 @@ const Header = () => {
                 </div>
               </motion.div>
             </motion.div>
+            </>
           )}
         </AnimatePresence>
       </nav>

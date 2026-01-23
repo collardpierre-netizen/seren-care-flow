@@ -242,7 +242,7 @@ const ProductPage = () => {
                 <img
                   src={images[currentImageIndex]?.image_url || '/placeholder.svg'}
                   alt={images[currentImageIndex]?.alt_text || product.name}
-                  className="w-full h-full object-contain p-8"
+                  className="w-full h-full object-contain p-4 md:p-8"
                 />
                 
                 {images.length > 1 && (
