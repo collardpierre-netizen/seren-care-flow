@@ -106,6 +106,7 @@ export const useProducts = (filters?: {
           sizes:product_sizes(*)
         `)
         .eq('is_active', true)
+        .eq('is_coming_soon', false) // Exclure les produits "prochainement"
         .gt('price', 0) // Filtrer les produits sans prix
         .order('created_at', { ascending: false });
 
@@ -124,7 +125,18 @@ export const useProducts = (filters?: {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as Product[];
+      
+      // Filtrer les produits sans tailles actives avec prix valide
+      const productsWithValidOffers = (data as Product[]).filter(product => {
+        const activeSizes = product.sizes?.filter(s => s.is_active !== false) || [];
+        // Le produit doit avoir au moins une taille active OU pas de tailles du tout (prix de base)
+        if (activeSizes.length === 0 && product.sizes && product.sizes.length > 0) {
+          return false; // Produit avec tailles mais aucune active
+        }
+        return true;
+      });
+      
+      return productsWithValidOffers;
     },
   });
 };
