@@ -2,8 +2,9 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useHeroMedia, type HeroMedia } from "@/hooks/useHeroMedia";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Fallback static media for initial render or if DB is empty
 import heroImage1 from "@/assets/hero-1.jpeg";
@@ -16,10 +17,11 @@ type MediaItem = {
   duration: number | null;
   transition: "fade" | "zoom" | "slide";
   alt?: string | null;
+  poster?: string;
 };
 
 const fallbackMedia: MediaItem[] = [
-  { type: "video", src: heroVideo, duration: null, transition: "fade" },
+  { type: "video", src: heroVideo, duration: null, transition: "fade", poster: heroImage1 },
   { type: "image", src: heroImage1, duration: 6000, transition: "fade" },
   { type: "image", src: heroImage2, duration: 6000, transition: "fade" },
 ];
@@ -50,34 +52,48 @@ const getTransitionVariants = (effect: "fade" | "zoom" | "slide") => {
 
 const HeroSection = () => {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
-  const [loadedMedia, setLoadedMedia] = useState<Set<number>>(new Set([0]));
+  const [mediaReady, setMediaReady] = useState(false);
+  const [loadedMedia, setLoadedMedia] = useState<Set<number>>(new Set());
+  const videoRef = useRef<HTMLVideoElement>(null);
   const { data: heroMediaFromDB, isLoading } = useHeroMedia();
 
   // Use DB media if available, otherwise fallback
   const heroMedia: MediaItem[] = heroMediaFromDB && heroMediaFromDB.length > 0
-    ? heroMediaFromDB.map((m) => ({
+    ? heroMediaFromDB.map((m, index) => ({
         type: m.type,
         src: m.file_url,
         duration: m.display_duration,
         transition: m.transition_effect,
         alt: m.alt_text,
+        // Use first image as poster for videos
+        poster: m.type === 'video' && heroMediaFromDB[index + 1]?.type === 'image' 
+          ? heroMediaFromDB[index + 1].file_url 
+          : undefined,
       }))
     : fallbackMedia;
+
+  // Mark media as loaded
+  const handleMediaLoad = useCallback((index: number) => {
+    setLoadedMedia(prev => new Set([...prev, index]));
+    if (index === currentMediaIndex) {
+      setMediaReady(true);
+    }
+  }, [currentMediaIndex]);
 
   // Preload next media when current changes
   useEffect(() => {
     if (heroMedia.length <= 1) return;
     
     const nextIndex = (currentMediaIndex + 1) % heroMedia.length;
-    setLoadedMedia(prev => new Set([...prev, currentMediaIndex, nextIndex]));
     
     // Preload next image
     const nextItem = heroMedia[nextIndex];
     if (nextItem?.type === 'image') {
       const img = new Image();
       img.src = nextItem.src;
+      img.onload = () => handleMediaLoad(nextIndex);
     }
-  }, [currentMediaIndex, heroMedia]);
+  }, [currentMediaIndex, heroMedia, handleMediaLoad]);
 
   const handleVideoEnd = () => {
     setCurrentMediaIndex((prev) => (prev + 1) % heroMedia.length);
@@ -110,26 +126,39 @@ const HeroSection = () => {
 
   const currentItem = heroMedia[currentMediaIndex];
   const variants = currentItem ? getTransitionVariants(currentItem.transition) : getTransitionVariants('fade');
-  const shouldRenderMedia = loadedMedia.has(currentMediaIndex);
+  const isCurrentLoaded = loadedMedia.has(currentMediaIndex);
 
   return (
     <section className="relative overflow-hidden min-h-[90vh] flex items-center">
       {/* Media Background Gallery */}
       <div className="absolute inset-0 z-0">
+        {/* Loading skeleton */}
+        {(!mediaReady || isLoading) && (
+          <div className="absolute inset-0 z-10">
+            <Skeleton className="w-full h-full rounded-none" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/20 to-transparent" />
+          </div>
+        )}
+        
         <AnimatePresence mode="wait">
-          {shouldRenderMedia && currentItem && (
+          {currentItem && (
             currentItem.type === "video" ? (
               <motion.video
+                ref={videoRef}
                 key={`video-${currentMediaIndex}`}
                 src={currentItem.src}
+                poster={currentItem.poster}
                 autoPlay
                 muted
                 playsInline
+                preload="auto"
+                onLoadedData={() => handleMediaLoad(currentMediaIndex)}
+                onCanPlayThrough={() => setMediaReady(true)}
                 onEnded={handleVideoEnd}
                 initial={variants.initial}
-                animate={variants.animate}
+                animate={mediaReady ? variants.animate : { opacity: 0 }}
                 exit={variants.exit}
-                transition={{ duration: 1.2, ease: "easeInOut" }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
                 className="absolute inset-0 w-full h-full object-cover"
               />
             ) : (
@@ -138,17 +167,19 @@ const HeroSection = () => {
                 src={currentItem.src}
                 alt={currentItem.alt || "SerenCare"}
                 loading="eager"
+                fetchPriority={currentMediaIndex === 0 ? "high" : "auto"}
+                onLoad={() => handleMediaLoad(currentMediaIndex)}
                 initial={variants.initial}
-                animate={variants.animate}
+                animate={isCurrentLoaded ? variants.animate : { opacity: 0 }}
                 exit={variants.exit}
-                transition={{ duration: 1.2, ease: "easeInOut" }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
                 className="absolute inset-0 w-full h-full object-cover"
               />
             )
           )}
         </AnimatePresence>
-        {/* Loading placeholder */}
-        {!shouldRenderMedia && (
+        {/* Fallback loading placeholder */}
+        {!isCurrentLoaded && !mediaReady && (
           <div className="absolute inset-0 bg-primary/20 animate-pulse" />
         )}
         {/* Color Overlay #0058A0 at 12% */}
