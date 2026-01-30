@@ -132,10 +132,9 @@ const HeroSection = () => {
     <section className="relative overflow-hidden min-h-[90vh] flex items-center">
       {/* Media Background Gallery */}
       <div className="absolute inset-0 z-0">
-        {/* Loading skeleton */}
-        {(!mediaReady || isLoading) && (
-          <div className="absolute inset-0 z-10">
-            <Skeleton className="w-full h-full rounded-none" />
+        {/* Loading skeleton - only show during initial load, not with partial content */}
+        {isLoading && (
+          <div className="absolute inset-0 z-10 bg-muted animate-pulse">
             <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/20 to-transparent" />
           </div>
         )}
