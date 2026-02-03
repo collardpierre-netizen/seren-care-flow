@@ -16,7 +16,7 @@ const faqItems = [
 
 Les avantages :
 - **10% d'économie** sur chaque commande
-- **Livraison gratuite** dès 49€
+- **Livraison gratuite** dès 69€ TTC
 - Un espace client pour modifier ou arrêter votre abonnement quand vous le souhaitez
 - Des livraisons sur mesure : choisissez la fréquence qui vous convient (2, 3 ou 4 semaines)`,
       },
@@ -73,14 +73,13 @@ Si vous devez changer de carte bancaire, vous pouvez le faire depuis votre espac
       {
         id: "delivery-time",
         question: "Quels sont les délais de livraison ?",
-        answer: `Nous livrons en **France métropolitaine sous 2-3 jours ouvrés** à partir de l'expédition.
+        answer: `Nous livrons en **Belgique sous 2-3 jours ouvrés** à partir de l'expédition.
 
 Modes de livraison disponibles :
-- **Point relais** : Gratuit dès 49€ (sinon 4,90€)
-- **À domicile** : Gratuit dès 49€ (sinon 5,90€)
-- **Express** : 12,90€ (7,90€ pour les abonnés) – livraison sous 24-48h
+- **Point relais** : Gratuit dès 69€ TTC (sinon 4,90€)
+- **À domicile** : Gratuit dès 69€ TTC (sinon 8,75€)
 
-Pour les abonnés, la **livraison est gratuite** dès 49€ d'achat.`,
+Pour les abonnés, la **livraison est gratuite** dès 69€ TTC d'achat.`,
       },
       {
         id: "track-order",
