@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useHeroMedia, type HeroMedia } from "@/hooks/useHeroMedia";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -56,9 +56,10 @@ const HeroSection = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const { data: heroMediaFromDB, isLoading } = useHeroMedia();
 
-  // Use DB media if available, otherwise fallback
-  const heroMedia: MediaItem[] = heroMediaFromDB && heroMediaFromDB.length > 0
-    ? heroMediaFromDB.map((m, index) => ({
+  // Use DB media if available, otherwise fallback - memoized to prevent useEffect re-runs
+  const heroMedia: MediaItem[] = useMemo(() => {
+    if (heroMediaFromDB && heroMediaFromDB.length > 0) {
+      return heroMediaFromDB.map((m, index) => ({
         type: m.type,
         src: m.file_url,
         duration: m.display_duration,
@@ -68,8 +69,10 @@ const HeroSection = () => {
         poster: m.type === 'video' && heroMediaFromDB[index + 1]?.type === 'image' 
           ? heroMediaFromDB[index + 1].file_url 
           : undefined,
-      }))
-    : fallbackMedia;
+      }));
+    }
+    return fallbackMedia;
+  }, [heroMediaFromDB]);
 
   // Mark media as loaded
   const handleMediaLoad = useCallback((index: number) => {
