@@ -96,16 +96,20 @@ const HeroSection = () => {
   };
 
   useEffect(() => {
-    if (heroMedia.length === 0) return;
+    if (heroMedia.length <= 1) return;
     
     const currentItem = heroMedia[currentMediaIndex];
+    if (!currentItem) return;
+    
     // Only auto-advance for images, videos advance on end
     if (currentItem.type === "image") {
       const duration = currentItem.duration || 6000;
-      const interval = setInterval(() => {
+      console.log(`[HeroSection] Image ${currentMediaIndex}, will advance in ${duration}ms`);
+      const timer = setTimeout(() => {
+        console.log(`[HeroSection] Advancing from ${currentMediaIndex} to ${(currentMediaIndex + 1) % heroMedia.length}`);
         setCurrentMediaIndex((prev) => (prev + 1) % heroMedia.length);
       }, duration);
-      return () => clearInterval(interval);
+      return () => clearTimeout(timer);
     }
   }, [currentMediaIndex, heroMedia]);
 
