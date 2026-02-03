@@ -52,7 +52,6 @@ const getTransitionVariants = (effect: "fade" | "zoom" | "slide") => {
 
 const HeroSection = () => {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
-  const [mediaReady, setMediaReady] = useState(false);
   const [loadedMedia, setLoadedMedia] = useState<Set<number>>(new Set());
   const videoRef = useRef<HTMLVideoElement>(null);
   const { data: heroMediaFromDB, isLoading } = useHeroMedia();
@@ -75,10 +74,7 @@ const HeroSection = () => {
   // Mark media as loaded
   const handleMediaLoad = useCallback((index: number) => {
     setLoadedMedia(prev => new Set([...prev, index]));
-    if (index === currentMediaIndex) {
-      setMediaReady(true);
-    }
-  }, [currentMediaIndex]);
+  }, []);
 
   // Preload next media when current changes
   useEffect(() => {
@@ -152,10 +148,9 @@ const HeroSection = () => {
                 playsInline
                 preload="auto"
                 onLoadedData={() => handleMediaLoad(currentMediaIndex)}
-                onCanPlayThrough={() => setMediaReady(true)}
                 onEnded={handleVideoEnd}
                 initial={variants.initial}
-                animate={mediaReady ? variants.animate : { opacity: 0 }}
+                animate={variants.animate}
                 exit={variants.exit}
                 transition={{ duration: 0.8, ease: "easeOut" }}
                 className="absolute inset-0 w-full h-full object-cover"
@@ -178,8 +173,8 @@ const HeroSection = () => {
           )}
         </AnimatePresence>
         {/* Fallback loading placeholder */}
-        {!isCurrentLoaded && !mediaReady && (
-          <div className="absolute inset-0 bg-primary/20 animate-pulse" />
+        {!isCurrentLoaded && (
+          <div className="absolute inset-0 bg-muted animate-pulse" />
         )}
         {/* Color Overlay #0058A0 at 12% */}
         <div 
