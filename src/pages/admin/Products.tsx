@@ -719,6 +719,75 @@ const AdminProducts: React.FC = () => {
     }
   };
 
+  // Download empty CSV template for mass import
+  const handleDownloadTemplate = () => {
+    const headers = [
+      'name', 'slug', 'sku', 'brand', 'category', 'short_description', 'description',
+      'incontinence_level', 'mobility', 'usage_time', 'mobility_levels', 'usage_times', 'gender',
+      'recommended_price', 'price', 'subscription_price', 'subscription_discount_percent',
+      'purchase_price', 'units_per_product', 'min_order_quantity', 'stock_quantity', 'stock_status',
+      'ean_code', 'cnk_code', 'manufacturer_url',
+      'is_active', 'is_featured', 'is_coming_soon', 'show_size_guide',
+      'is_subscription_eligible', 'is_addon', 'addon_category',
+      // Size variants columns
+      'sizes'
+    ];
+
+    const exampleRow = [
+      'Protection Plus Taille M', 'protection-plus-taille-m', 'PROT-PLUS-001',
+      'TENA', 'Protections', 'Protection absorbante confort', 'Description longue du produit...',
+      'moderate', 'mobile', 'day', 'mobile,reduite', 'day,night', 'unisex',
+      '15.90', '12.90', '11.61', '10',
+      '6.50', '28', '1', '100', 'in_stock',
+      '5412345678901', 'CNK1234567', 'https://fabricant.com/produit',
+      'true', 'false', 'false', 'true',
+      'true', 'false', '',
+      'S:SKU-S:EAN-S:CNK-S:28:15.90:12.90:6.50:50:true | M:SKU-M:EAN-M:CNK-M:28:15.90:12.90:6.50:100:true'
+    ];
+
+    const instructions = [
+      '# INSTRUCTIONS IMPORT PRODUITS SERENCARE',
+      '#',
+      '# Colonnes obligatoires: name, slug, price',
+      '# Colonnes optionnelles: toutes les autres',
+      '#',
+      '# Valeurs possibles:',
+      '#   incontinence_level: light, moderate, heavy, very_heavy',
+      '#   mobility: mobile, reduced, bedridden',
+      '#   usage_time: day, night, day_night',
+      '#   mobility_levels: mobile,reduite,alitee (séparés par virgule)',
+      '#   usage_times: day,night (séparés par virgule)',
+      '#   gender: male, female, unisex',
+      '#   stock_status: in_stock, limited, out_of_stock, coming_soon',
+      '#   addon_category: pharma, hygiene, soins, accessoires, confort',
+      '#   is_active/is_featured/is_coming_soon/show_size_guide/is_subscription_eligible/is_addon: true ou false',
+      '#',
+      '#   brand/category: nom exact tel que configuré dans l admin',
+      '#',
+      '#   sizes: format TAILLE:SKU:EAN:CNK:UNITES:PRIX_PUBLIC:PRIX_VENTE:PRIX_ACHAT:STOCK:ACTIF',
+      '#          séparez plusieurs tailles par " | "',
+      '#          Exemple: S:SKU-S:EAN-S:CNK-S:28:15.90:12.90:6.50:50:true | M:SKU-M:::28::12.90:6.50:100:true',
+      '#',
+      '# Supprimez ces lignes commençant par # avant l import',
+      '#',
+    ];
+
+    const csvContent = [
+      ...instructions,
+      headers.join(';'),
+      exampleRow.join(';'),
+    ].join('\n');
+
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `template-import-produits-serencare.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success('Template CSV téléchargé');
+  };
+
   // Export products to CSV
   const handleExportCSV = () => {
     if (!products || products.length === 0) {
@@ -918,6 +987,12 @@ const AdminProducts: React.FC = () => {
             Importer CSV
           </Button>
           
+          {/* Template CSV */}
+          <Button variant="outline" onClick={handleDownloadTemplate}>
+            <Download className="h-4 w-4 mr-2" />
+            Template CSV
+          </Button>
+
           {/* Export CSV */}
           <Button variant="outline" onClick={handleExportCSV}>
             <Download className="h-4 w-4 mr-2" />
