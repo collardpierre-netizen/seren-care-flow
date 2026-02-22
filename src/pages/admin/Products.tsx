@@ -14,8 +14,9 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Loader2, Search, Package, Upload, Link, X, Image as ImageIcon, Download, FileUp, Copy, CheckSquare } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, Search, Package, Upload, Link, X, Image as ImageIcon, Download, FileUp, Copy, CheckSquare, FileSpreadsheet } from 'lucide-react';
 import { ProductSizesManager } from '@/components/admin/ProductSizesManager';
+import * as XLSX from 'xlsx';
 
 interface ProductFormData {
   name: string;
@@ -721,6 +722,9 @@ const AdminProducts: React.FC = () => {
 
   // Download empty CSV template for mass import
   const handleDownloadTemplate = () => {
+    const wb = XLSX.utils.book_new();
+
+    // ── Feuille "Produits" ──
     const headers = [
       'name', 'slug', 'sku', 'brand', 'category', 'short_description', 'description',
       'incontinence_level', 'mobility', 'usage_time', 'mobility_levels', 'usage_times', 'gender',
@@ -729,63 +733,72 @@ const AdminProducts: React.FC = () => {
       'ean_code', 'cnk_code', 'manufacturer_url',
       'is_active', 'is_featured', 'is_coming_soon', 'show_size_guide',
       'is_subscription_eligible', 'is_addon', 'addon_category',
-      // Size variants columns
-      'sizes'
     ];
 
     const exampleRow = [
       'Protection Plus Taille M', 'protection-plus-taille-m', 'PROT-PLUS-001',
       'TENA', 'Protections', 'Protection absorbante confort', 'Description longue du produit...',
       'moderate', 'mobile', 'day', 'mobile,reduite', 'day,night', 'unisex',
-      '15.90', '12.90', '11.61', '10',
-      '6.50', '28', '1', '100', 'in_stock',
+      15.90, 12.90, 11.61, 10,
+      6.50, 28, 1, 100, 'in_stock',
       '5412345678901', 'CNK1234567', 'https://fabricant.com/produit',
       'true', 'false', 'false', 'true',
       'true', 'false', '',
-      'S:SKU-S:EAN-S:CNK-S:28:15.90:12.90:6.50:50:true | M:SKU-M:EAN-M:CNK-M:28:15.90:12.90:6.50:100:true'
     ];
 
+    const wsProducts = XLSX.utils.aoa_to_sheet([headers, exampleRow]);
+    // Set column widths
+    wsProducts['!cols'] = headers.map(h => ({ wch: Math.max(h.length + 2, 16) }));
+    XLSX.utils.book_append_sheet(wb, wsProducts, 'Produits');
+
+    // ── Feuille "Variantes (tailles)" ──
+    const sizeHeaders = [
+      'product_slug', 'size', 'sku', 'ean_code', 'cnk_code',
+      'units_per_size', 'public_price', 'sale_price', 'purchase_price',
+      'stock_quantity', 'is_active',
+    ];
+
+    const sizeExamples = [
+      ['protection-plus-taille-m', 'S', 'PROT-PLUS-001-S', '5412345678902', 'CNK1234568', 28, 15.90, 12.90, 6.50, 50, 'true'],
+      ['protection-plus-taille-m', 'M', 'PROT-PLUS-001-M', '5412345678903', 'CNK1234569', 28, 15.90, 12.90, 6.50, 100, 'true'],
+      ['protection-plus-taille-m', 'L', 'PROT-PLUS-001-L', '5412345678904', 'CNK1234570', 28, 15.90, 12.90, 6.50, 75, 'true'],
+    ];
+
+    const wsSizes = XLSX.utils.aoa_to_sheet([sizeHeaders, ...sizeExamples]);
+    wsSizes['!cols'] = sizeHeaders.map(h => ({ wch: Math.max(h.length + 2, 16) }));
+    XLSX.utils.book_append_sheet(wb, wsSizes, 'Variantes');
+
+    // ── Feuille "Instructions" ──
     const instructions = [
-      '# INSTRUCTIONS IMPORT PRODUITS SERENCARE',
-      '#',
-      '# Colonnes obligatoires: name, slug, price',
-      '# Colonnes optionnelles: toutes les autres',
-      '#',
-      '# Valeurs possibles:',
-      '#   incontinence_level: light, moderate, heavy, very_heavy',
-      '#   mobility: mobile, reduced, bedridden',
-      '#   usage_time: day, night, day_night',
-      '#   mobility_levels: mobile,reduite,alitee (séparés par virgule)',
-      '#   usage_times: day,night (séparés par virgule)',
-      '#   gender: male, female, unisex',
-      '#   stock_status: in_stock, limited, out_of_stock, coming_soon',
-      '#   addon_category: pharma, hygiene, soins, accessoires, confort',
-      '#   is_active/is_featured/is_coming_soon/show_size_guide/is_subscription_eligible/is_addon: true ou false',
-      '#',
-      '#   brand/category: nom exact tel que configuré dans l admin',
-      '#',
-      '#   sizes: format TAILLE:SKU:EAN:CNK:UNITES:PRIX_PUBLIC:PRIX_VENTE:PRIX_ACHAT:STOCK:ACTIF',
-      '#          séparez plusieurs tailles par " | "',
-      '#          Exemple: S:SKU-S:EAN-S:CNK-S:28:15.90:12.90:6.50:50:true | M:SKU-M:::28::12.90:6.50:100:true',
-      '#',
-      '# Supprimez ces lignes commençant par # avant l import',
-      '#',
+      ['INSTRUCTIONS IMPORT PRODUITS SERENCARE'],
+      [],
+      ['Colonnes obligatoires (feuille Produits):', 'name, slug, price'],
+      ['Colonnes optionnelles:', 'toutes les autres'],
+      [],
+      ['VALEURS POSSIBLES'],
+      ['incontinence_level', 'light, moderate, heavy, very_heavy'],
+      ['mobility', 'mobile, reduced, bedridden'],
+      ['usage_time', 'day, night, day_night'],
+      ['mobility_levels', 'mobile, reduite, alitee (séparés par virgule)'],
+      ['usage_times', 'day, night (séparés par virgule)'],
+      ['gender', 'male, female, unisex'],
+      ['stock_status', 'in_stock, limited, out_of_stock, coming_soon'],
+      ['addon_category', 'pharma, hygiene, soins, accessoires, confort'],
+      ['Booléens', 'true ou false'],
+      [],
+      ['brand / category', 'Nom exact tel que configuré dans l\'admin'],
+      [],
+      ['FEUILLE VARIANTES'],
+      ['product_slug', 'Doit correspondre au slug du produit dans la feuille Produits'],
+      ['Ajoutez une ligne par taille/variante'],
     ];
 
-    const csvContent = [
-      ...instructions,
-      headers.join(';'),
-      exampleRow.join(';'),
-    ].join('\n');
+    const wsInstructions = XLSX.utils.aoa_to_sheet(instructions);
+    wsInstructions['!cols'] = [{ wch: 35 }, { wch: 60 }];
+    XLSX.utils.book_append_sheet(wb, wsInstructions, 'Instructions');
 
-    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `template-import-produits-serencare.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-    toast.success('Template CSV téléchargé');
+    XLSX.writeFile(wb, `template-import-produits-serencare.xlsx`);
+    toast.success('Template Excel téléchargé');
   };
 
   // Export products to CSV
@@ -989,8 +1002,8 @@ const AdminProducts: React.FC = () => {
           
           {/* Template CSV */}
           <Button variant="outline" onClick={handleDownloadTemplate}>
-            <Download className="h-4 w-4 mr-2" />
-            Template CSV
+            <FileSpreadsheet className="h-4 w-4 mr-2" />
+            Template Excel
           </Button>
 
           {/* Export CSV */}
