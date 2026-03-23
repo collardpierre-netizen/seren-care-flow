@@ -249,6 +249,7 @@ const SubscriptionFAQ: React.FC<SubscriptionFAQProps> = ({ category, maxItems })
                       dangerouslySetInnerHTML={{ 
                         __html: item.answer
                           .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                          .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary underline underline-offset-2">$1</a>')
                           .replace(/\n/g, '<br />')
                       }}
                     />
