@@ -178,7 +178,15 @@ const GuideArticle = () => {
         {/* Article Content */}
         <section className="pb-16 md:pb-24">
           <div className="container-main max-w-4xl">
-            {guide.content ? (
+            {slug === 'remboursement-protections-incontinence-belgique' ? (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <GuideRemboursement />
+              </motion.div>
+            ) : guide.content ? (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -203,23 +211,6 @@ const GuideArticle = () => {
             ) : (
               <p className="text-muted-foreground">Contenu à venir...</p>
             )}
-
-            {/* CTA */}
-            <Card className="mt-16 bg-primary/5 border-primary/20">
-              <CardContent className="p-8 text-center">
-                <h3 className="font-display text-xl font-bold text-foreground mb-2">
-                  Prêt à trouver votre produit ?
-                </h3>
-                <p className="text-muted-foreground mb-6">
-                  Utilisez notre sélecteur de produits pour trouver la protection idéale.
-                </p>
-                <Link to="/boutique">
-                  <Button className="gap-2">
-                    Voir nos produits <ArrowRight className="w-4 h-4" />
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
           </div>
         </section>
       </Layout>
