@@ -1079,7 +1079,7 @@ const AdminProducts: React.FC = () => {
           <input
             ref={importInputRef}
             type="file"
-            accept=".csv"
+            accept=".csv,.xlsx,.xls"
             onChange={handleImportCSV}
             className="hidden"
           />
