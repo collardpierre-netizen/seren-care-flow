@@ -374,6 +374,16 @@ const ProductPage = () => {
                     })()}
                   </div>
                 )}
+
+                {/* Reimbursement badge */}
+                <Link 
+                  to="/guides/remboursement-protections-incontinence-belgique"
+                  className="inline-flex items-center gap-2 mt-2 px-3 py-2 rounded-lg bg-accent/50 border border-accent text-sm text-foreground hover:bg-accent transition-colors"
+                >
+                  <span>💳</span>
+                  <span>Remboursable partiellement par votre mutuelle — jusqu'à 205€/an</span>
+                  <span className="text-primary font-medium whitespace-nowrap">En savoir plus →</span>
+                </Link>
               </div>
 
               {/* Product attributes */}

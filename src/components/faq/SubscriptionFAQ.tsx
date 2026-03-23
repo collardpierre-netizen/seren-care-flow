@@ -166,6 +166,50 @@ Le délai total peut être de 2 à 3 semaines en comptant le transport du colis 
       },
     ],
   },
+  {
+    category: "Remboursement mutuelle",
+    questions: [
+      {
+        id: "mutuelle-remboursement",
+        question: "Est-ce que ma mutuelle rembourse les protections SerenCare ?",
+        answer: `En Belgique, l'assurance soins de santé (INAMI) prévoit **deux forfaits annuels** pour les personnes souffrant d'incontinence urinaire :
+
+- **Forfait 1 — Personnes dépendantes** : environ **580€/an** (accordé automatiquement si vous bénéficiez de soins infirmiers avec un score Katz 3 ou 4 pour l'incontinence)
+- **Forfait 2 — Incontinence non traitable** : environ **205€/an** (sur attestation de votre médecin, accord valable 3 ans)
+
+Ces forfaits sont versés directement par votre mutuelle sur votre compte. Ils ne sont pas liés à un prestataire spécifique — vous pouvez les utiliser librement pour financer vos commandes SerenCare.
+
+👉 Consultez notre **guide complet** : [En savoir plus](/guides/remboursement-protections-incontinence-belgique)`,
+      },
+      {
+        id: "mutuelle-demarches",
+        question: "Comment demander le remboursement à la MC / Solidaris ?",
+        answer: `Toutes les mutuelles belges (MC, Solidaris, Partenamut, Mutualité Libre, CAAMI) appliquent les mêmes forfaits INAMI. La démarche est simple :
+
+1. **Consultez votre médecin traitant** — il remplit le formulaire de demande d'intervention pour incontinence
+2. **Remettez le formulaire à votre mutuelle** (guichet, courrier ou en ligne)
+3. **Recevez le versement annuel** directement sur votre compte bancaire
+
+L'accord est valable **3 ans** et renouvelable. Vous n'avez pas à refaire la démarche chaque année.
+
+Pour le **Forfait 1**, tout se fait automatiquement si vous avez des soins infirmiers à domicile.`,
+      },
+      {
+        id: "mutuelle-conditions",
+        question: "Quelles conditions remplir pour le forfait incontinence ?",
+        answer: `**Pour le Forfait 1 (~580€/an)** :
+- Bénéficier de soins infirmiers (forfaits B ou C) pendant au moins **4 mois sur 12**
+- Score **3 ou 4 sur l'échelle de Katz** pour le critère incontinence
+- Ne pas résider en maison de repos
+
+**Pour le Forfait 2 (~205€/an)** :
+- Souffrir d'une **incontinence durable et incurable**, reconnue par un médecin
+- Ne pas bénéficier simultanément du Forfait 1
+
+**Bon à savoir** : le forfait mutuelle se cumule avec la réduction **-10% de l'abonnement SerenCare**. Les deux sont totalement indépendants.`,
+      },
+    ],
+  },
 ];
 
 interface SubscriptionFAQProps {
