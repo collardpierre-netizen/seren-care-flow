@@ -801,57 +801,73 @@ const AdminProducts: React.FC = () => {
     toast.success('Template Excel téléchargé');
   };
 
-  // Export products to CSV
+  // Export products to XLSX
   const handleExportCSV = () => {
     if (!products || products.length === 0) {
       toast.error('Aucun produit à exporter');
       return;
     }
 
-    const headers = [
+    const wb = XLSX.utils.book_new();
+
+    // ── Feuille Produits ──
+    const prodHeaders = [
       'name', 'slug', 'sku', 'brand', 'category', 'short_description', 'description',
-      'incontinence_level', 'mobility', 'usage_time',
-      'recommended_price', 'price', 'subscription_price', 'purchase_price',
-      'units_per_product', 'min_order_quantity', 'stock_quantity',
-      'is_active', 'is_featured'
+      'incontinence_level', 'mobility', 'usage_time', 'mobility_levels', 'usage_times', 'gender',
+      'recommended_price', 'price', 'subscription_price', 'subscription_discount_percent',
+      'purchase_price', 'units_per_product', 'min_order_quantity', 'stock_quantity', 'stock_status',
+      'ean_code', 'cnk_code', 'manufacturer_url',
+      'is_active', 'is_featured', 'is_coming_soon', 'show_size_guide',
+      'is_subscription_eligible', 'is_addon', 'addon_category',
     ];
 
-    const csvRows = [headers.join(';')];
-    
-    for (const product of products) {
-      const row = [
-        product.name || '',
-        product.slug || '',
-        product.sku || '',
-        product.brand?.name || '',
-        product.category?.name || '',
-        (product.short_description || '').replace(/;/g, ',').replace(/\n/g, ' '),
-        (product.description || '').replace(/;/g, ',').replace(/\n/g, ' '),
-        product.incontinence_level || '',
-        product.mobility || '',
-        product.usage_time || '',
-        product.recommended_price || 0,
-        product.price || 0,
-        product.subscription_price || 0,
-        product.purchase_price || 0,
-        product.units_per_product || 1,
-        product.min_order_quantity || 1,
-        product.stock_quantity || 0,
-        product.is_active ? 'true' : 'false',
-        product.is_featured ? 'true' : 'false'
-      ];
-      csvRows.push(row.join(';'));
+    const prodRows = products.map((p: any) => [
+      p.name || '', p.slug || '', p.sku || '',
+      p.brand?.name || '', p.category?.name || '',
+      p.short_description || '', p.description || '',
+      p.incontinence_level || '', p.mobility || '', p.usage_time || '',
+      p.mobility_levels || '', p.usage_times || '', p.gender || '',
+      p.recommended_price ?? '', p.price ?? 0, p.subscription_price ?? '', p.subscription_discount_percent ?? 10,
+      p.purchase_price ?? '', p.units_per_product ?? 1, p.min_order_quantity ?? 1,
+      p.stock_quantity ?? 0, p.stock_status || 'in_stock',
+      p.ean_code || '', p.cnk_code || '', p.manufacturer_url || '',
+      p.is_active ? 'true' : 'false', p.is_featured ? 'true' : 'false',
+      p.is_coming_soon ? 'true' : 'false', p.show_size_guide ? 'true' : 'false',
+      p.is_subscription_eligible !== false ? 'true' : 'false',
+      p.is_addon ? 'true' : 'false', p.addon_category || '',
+    ]);
+
+    const wsProducts = XLSX.utils.aoa_to_sheet([prodHeaders, ...prodRows]);
+    wsProducts['!cols'] = prodHeaders.map(h => ({ wch: Math.max(h.length + 2, 14) }));
+    XLSX.utils.book_append_sheet(wb, wsProducts, 'Produits');
+
+    // ── Feuille Variantes ──
+    const sizeHeaders = [
+      'product_slug', 'size', 'sku', 'ean_code', 'cnk_code',
+      'units_per_size', 'public_price', 'sale_price', 'purchase_price',
+      'stock_quantity', 'is_active',
+    ];
+
+    const sizeRows: any[][] = [];
+    for (const p of products as any[]) {
+      if (p.product_sizes && p.product_sizes.length > 0) {
+        for (const s of p.product_sizes) {
+          sizeRows.push([
+            p.slug, s.size, s.sku || '', s.ean_code || '', s.cnk_code || '',
+            s.units_per_size ?? 1, s.public_price ?? '', s.sale_price ?? '',
+            s.purchase_price ?? '', s.stock_quantity ?? 0,
+            s.is_active !== false ? 'true' : 'false',
+          ]);
+        }
+      }
     }
 
-    const csvContent = csvRows.join('\n');
-    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `produits-serencare-${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-    toast.success(`${products.length} produits exportés`);
+    const wsSizes = XLSX.utils.aoa_to_sheet([sizeHeaders, ...sizeRows]);
+    wsSizes['!cols'] = sizeHeaders.map(h => ({ wch: Math.max(h.length + 2, 14) }));
+    XLSX.utils.book_append_sheet(wb, wsSizes, 'Variantes');
+
+    XLSX.writeFile(wb, `produits-serencare-${new Date().toISOString().split('T')[0]}.xlsx`);
+    toast.success(`${products.length} produits exportés (XLSX)`);
   };
 
   // Import products from CSV
