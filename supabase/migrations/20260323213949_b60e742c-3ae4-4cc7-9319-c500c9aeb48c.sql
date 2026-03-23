@@ -1,0 +1,1 @@
+UPDATE guides SET image_url = 'https://obkfkygjisxvgrmclhnb.supabase.co/storage/v1/object/public/media/guides%2Fguide-remboursement.jpg' WHERE slug = 'remboursement-protections-incontinence-belgique';
