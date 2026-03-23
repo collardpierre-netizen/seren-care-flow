@@ -1105,7 +1105,7 @@ const AdminProducts: React.FC = () => {
           {/* Export CSV */}
           <Button variant="outline" onClick={handleExportCSV}>
             <Download className="h-4 w-4 mr-2" />
-            Exporter CSV
+            Exporter Excel
           </Button>
 
           <Dialog open={isDialogOpen} onOpenChange={(open) => {
