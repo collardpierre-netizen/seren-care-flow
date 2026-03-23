@@ -31,6 +31,17 @@ const fadeIn = {
 const GuideRemboursement = () => {
   return (
     <div className="space-y-16">
+      {/* Hero illustration */}
+      <motion.div {...fadeIn} className="rounded-2xl overflow-hidden bg-gradient-to-br from-primary/5 to-accent/10 flex items-center justify-center p-8 md:p-12">
+        <img 
+          src={guideIllustration} 
+          alt="Remboursement mutuelle pour protections d'incontinence en Belgique" 
+          width={800} 
+          height={512} 
+          className="max-w-xs md:max-w-sm h-auto"
+        />
+      </motion.div>
+
       {/* SECTION 1: Les deux forfaits */}
       <motion.section {...fadeIn} className="space-y-6">
         <div>
