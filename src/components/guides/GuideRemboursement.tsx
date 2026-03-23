@@ -19,6 +19,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { AlertTriangle, ArrowRight, CheckCircle2, Info, Phone } from 'lucide-react';
+import guideIllustration from '@/assets/guide-remboursement.jpg';
 
 const fadeIn = {
   initial: { opacity: 0, y: 16 },
