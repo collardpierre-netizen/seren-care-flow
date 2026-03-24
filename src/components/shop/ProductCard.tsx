@@ -48,11 +48,20 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, compact = false }) =
         aria-label={`Voir le produit ${product.name}${hasRecommendedPrice ? `, -${savingsPercent}%` : ''}`}
       >
         <div className={`relative bg-muted/30 overflow-hidden ${compact ? 'aspect-[4/3]' : 'aspect-square'}`}>
-          <img
-            src={primaryImage?.image_url || '/placeholder.svg'}
-            alt={primaryImage?.alt_text || product.name}
-            className={`w-full h-full object-contain transition-transform duration-300 group-hover:scale-105 ${compact ? 'p-2' : 'p-4'}`}
-          />
+          {primaryImage?.image_url ? (
+            <img
+              src={primaryImage.image_url}
+              alt={primaryImage.alt_text || product.name}
+              className={`w-full h-full object-contain transition-transform duration-300 group-hover:scale-105 ${compact ? 'p-2' : 'p-4'}`}
+            />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center gap-2 p-4">
+              <Package className={`text-muted-foreground/40 ${compact ? 'h-8 w-8' : 'h-16 w-16'}`} />
+              <span className={`text-muted-foreground/50 text-center font-medium ${compact ? 'text-[10px] line-clamp-1' : 'text-xs line-clamp-2'}`}>
+                {product.brand?.name || 'Photo à venir'}
+              </span>
+            </div>
+          )}
           {product.is_coming_soon && (
             <Badge className={`absolute ${compact ? 'top-1.5 right-1.5 text-[10px] px-1.5 py-0.5' : 'top-3 right-3'} bg-amber-500 text-white`}>
               Prochainement
