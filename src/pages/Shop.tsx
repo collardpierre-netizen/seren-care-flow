@@ -454,78 +454,82 @@ const Shop = () => {
                     </div>
                   </div>
 
-                  {/* Absorption */}
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide flex items-center gap-1">
-                      <Droplet className="w-3 h-3" /> Absorption
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {incontinenceLevelOptions.map((opt) => (
-                        <button
-                          key={opt.id}
-                          onClick={() => setSelectedIncontinence(opt.id)}
-                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                            selectedIncontinence === opt.id
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-muted text-foreground"
-                          }`}
-                        >
-                          {opt.label}
-                          {opt.icon && (
-                            <span className="flex items-center gap-0.5">
-                              {Array.from({ length: opt.icon }).map((_, i) => (
-                                <Droplet key={i} className={`w-2.5 h-2.5 ${selectedIncontinence === opt.id ? 'fill-primary-foreground' : 'fill-primary'}`} />
-                              ))}
-                            </span>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  {showIncontinenceFilters && (
+                    <>
+                      {/* Absorption */}
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide flex items-center gap-1">
+                          <Droplet className="w-3 h-3" /> Absorption
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {incontinenceLevelOptions.map((opt) => (
+                            <button
+                              key={opt.id}
+                              onClick={() => setSelectedIncontinence(opt.id)}
+                              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                                selectedIncontinence === opt.id
+                                  ? "bg-primary text-primary-foreground"
+                                  : "bg-muted text-foreground"
+                              }`}
+                            >
+                              {opt.label}
+                              {opt.icon && (
+                                <span className="flex items-center gap-0.5">
+                                  {Array.from({ length: opt.icon }).map((_, i) => (
+                                    <Droplet key={i} className={`w-2.5 h-2.5 ${selectedIncontinence === opt.id ? 'fill-primary-foreground' : 'fill-primary'}`} />
+                                  ))}
+                                </span>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
 
-                  {/* Mobilité */}
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide flex items-center gap-1">
-                      <Footprints className="w-3 h-3" /> Mobilité
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {mobilityFilterOptions.map((opt) => (
-                        <button
-                          key={opt.id}
-                          onClick={() => setSelectedMobility(opt.id)}
-                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                            selectedMobility === opt.id
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-muted text-foreground"
-                          }`}
-                        >
-                          {opt.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                      {/* Mobilité */}
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide flex items-center gap-1">
+                          <Footprints className="w-3 h-3" /> Mobilité
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {mobilityFilterOptions.map((opt) => (
+                            <button
+                              key={opt.id}
+                              onClick={() => setSelectedMobility(opt.id)}
+                              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                                selectedMobility === opt.id
+                                  ? "bg-primary text-primary-foreground"
+                                  : "bg-muted text-foreground"
+                              }`}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
 
-                  {/* Moment d'utilisation */}
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide flex items-center gap-1">
-                      <Sun className="w-3 h-3" /> Moment
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {usageTimeFilterOptions.map((opt) => (
-                        <button
-                          key={opt.id}
-                          onClick={() => setSelectedUsageTime(opt.id)}
-                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                            selectedUsageTime === opt.id
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-muted text-foreground"
-                          }`}
-                        >
-                          {opt.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                      {/* Moment d'utilisation */}
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide flex items-center gap-1">
+                          <Sun className="w-3 h-3" /> Moment
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {usageTimeFilterOptions.map((opt) => (
+                            <button
+                              key={opt.id}
+                              onClick={() => setSelectedUsageTime(opt.id)}
+                              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                                selectedUsageTime === opt.id
+                                  ? "bg-primary text-primary-foreground"
+                                  : "bg-muted text-foreground"
+                              }`}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
 
                   {/* Genre */}
                   <div>
