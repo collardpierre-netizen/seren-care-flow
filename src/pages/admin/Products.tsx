@@ -176,6 +176,15 @@ const AdminProducts: React.FC = () => {
     },
   });
 
+  const { data: suppliers } = useQuery({
+    queryKey: ['suppliers-all'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('suppliers').select('*').eq('is_active', true).order('name');
+      if (error) throw error;
+      return data;
+    },
+  });
+
   // Helper to auto-create Stripe subscription price
   const createStripePrice = async (productId: string, subscriptionPrice: number) => {
     if (!subscriptionPrice || subscriptionPrice <= 0) return;
