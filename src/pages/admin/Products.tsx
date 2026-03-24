@@ -910,8 +910,8 @@ const AdminProducts: React.FC = () => {
     const imgHeaders = ['product_slug', 'image_url', 'alt_text', 'sort_order', 'is_primary'];
     const imgRows: any[][] = [];
     for (const p of products as any[]) {
-      if (p.product_images && p.product_images.length > 0) {
-        for (const img of p.product_images) {
+      if (p.images && p.images.length > 0) {
+        for (const img of p.images) {
           imgRows.push([
             p.slug, img.image_url || '', img.alt_text || '',
             img.sort_order ?? 0, img.is_primary ? 'true' : 'false',
