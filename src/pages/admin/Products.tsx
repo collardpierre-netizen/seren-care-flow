@@ -814,7 +814,7 @@ const AdminProducts: React.FC = () => {
   };
 
   // Export products to XLSX
-  const handleExportCSV = () => {
+  const handleExportCSV = async () => {
     if (!products || products.length === 0) {
       toast.error('Aucun produit à exporter');
       return;
