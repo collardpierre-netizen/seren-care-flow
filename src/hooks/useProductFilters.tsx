@@ -144,7 +144,8 @@ export const useProductFilters = (
     searchQuery,
     selectedCategory,
     selectedBrand,
-    selectedIncontinence 
+    selectedIncontinence,
+    categories 
   } = filters;
 
   const filteredProducts = useMemo(() => {
