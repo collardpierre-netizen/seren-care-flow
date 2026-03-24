@@ -906,6 +906,23 @@ const AdminProducts: React.FC = () => {
     wsSizes['!cols'] = sizeHeaders.map(h => ({ wch: Math.max(h.length + 2, 14) }));
     XLSX.utils.book_append_sheet(wb, wsSizes, 'Variantes');
 
+    // ── Feuille Images ──
+    const imgHeaders = ['product_slug', 'image_url', 'alt_text', 'sort_order', 'is_primary'];
+    const imgRows: any[][] = [];
+    for (const p of products as any[]) {
+      if (p.product_images && p.product_images.length > 0) {
+        for (const img of p.product_images) {
+          imgRows.push([
+            p.slug, img.image_url || '', img.alt_text || '',
+            img.sort_order ?? 0, img.is_primary ? 'true' : 'false',
+          ]);
+        }
+      }
+    }
+    const wsImages = XLSX.utils.aoa_to_sheet([imgHeaders, ...imgRows]);
+    wsImages['!cols'] = imgHeaders.map(h => ({ wch: Math.max(h.length + 2, 20) }));
+    XLSX.utils.book_append_sheet(wb, wsImages, 'Images');
+
     XLSX.writeFile(wb, `produits-serencare-${new Date().toISOString().split('T')[0]}.xlsx`);
     toast.success(`${products.length} produits exportés (XLSX)`);
   };
