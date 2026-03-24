@@ -689,9 +689,31 @@ const AdminProducts: React.FC = () => {
     });
   };
 
-  const filteredProducts = products?.filter(p => 
-    p.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredProducts = products?.filter(p => {
+    // Text search
+    if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false;
+    // Category
+    if (filterCategory !== 'all' && p.category_id !== filterCategory) return false;
+    // Brand
+    if (filterBrand !== 'all' && p.brand_id !== filterBrand) return false;
+    // Status
+    if (filterStatus === 'active' && p.is_active === false) return false;
+    if (filterStatus === 'inactive' && p.is_active !== false) return false;
+    // Stock
+    if (filterStock === 'in_stock' && (p.stock_quantity || 0) <= 0) return false;
+    if (filterStock === 'low' && ((p.stock_quantity || 0) <= 0 || (p.stock_quantity || 0) > 10)) return false;
+    if (filterStock === 'out_of_stock' && (p.stock_quantity || 0) > 0) return false;
+    // Abo
+    if (filterAbo === 'yes' && p.is_subscription_eligible === false) return false;
+    if (filterAbo === 'no' && p.is_subscription_eligible !== false) return false;
+    return true;
+  });
+
+  // Stats
+  const totalProducts = products?.length || 0;
+  const totalSizes = products?.reduce((sum, p) => sum + (p.product_sizes?.length || 0), 0) || 0;
+  const activeProducts = products?.filter(p => p.is_active !== false).length || 0;
+  const outOfStockProducts = products?.filter(p => (p.stock_quantity || 0) <= 0).length || 0;
 
   // Selection handlers
   const handleSelectAll = () => {
