@@ -117,6 +117,7 @@ interface ProductFiltersState {
   selectedCategory: string;
   selectedBrand: string;
   selectedIncontinence: string;
+  categories?: { id: string; parent_id: string | null }[];
 }
 
 interface UseProductFiltersResult {
@@ -143,7 +144,8 @@ export const useProductFilters = (
     searchQuery,
     selectedCategory,
     selectedBrand,
-    selectedIncontinence 
+    selectedIncontinence,
+    categories 
   } = filters;
 
   const filteredProducts = useMemo(() => {
@@ -159,9 +161,13 @@ export const useProductFilters = (
         if (!matchesName && !matchesBrand && !matchesDescription) return false;
       }
 
-      // Category filter
+      // Category filter (includes child categories when selecting a parent)
       if (selectedCategory !== 'all') {
-        if (product.category_id !== selectedCategory) {
+        const childIds = categories
+          ?.filter(c => c.parent_id === selectedCategory)
+          .map(c => c.id) || [];
+        const matchIds = [selectedCategory, ...childIds];
+        if (!product.category_id || !matchIds.includes(product.category_id)) {
           return false;
         }
       }
@@ -211,7 +217,7 @@ export const useProductFilters = (
 
       return true;
     });
-  }, [products, searchQuery, selectedCategory, selectedBrand, selectedIncontinence, selectedMobility, selectedUsageTime, selectedGender]);
+  }, [products, searchQuery, selectedCategory, selectedBrand, selectedIncontinence, selectedMobility, selectedUsageTime, selectedGender, categories]);
 
   // Calculate counts for filter options
   const filterCounts = useMemo(() => {
