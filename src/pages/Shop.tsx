@@ -283,6 +283,61 @@ const Shop = () => {
           )}
         </AnimatePresence>
 
+        {/* Category CTAs */}
+        {categories && categories.length > 0 && (
+          <section className="py-8 md:py-10 border-b border-border">
+            <div className="container-main">
+              <h2 className="font-display text-xl md:text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
+                <Package className="w-5 h-5 text-primary" />
+                Catégories populaires
+              </h2>
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8">
+                {categories
+                  .filter(c => !c.parent_id) // Only parent categories
+                  .map((cat) => {
+                    const isActive = selectedCategory === cat.id;
+                    return (
+                      <button
+                        key={cat.id}
+                        onClick={() => {
+                          setSelectedCategory(isActive ? "all" : cat.id);
+                        }}
+                        className={cn(
+                          "flex-shrink-0 w-[120px] md:w-auto flex flex-col items-center gap-2 p-3 md:p-4 rounded-xl border-2 transition-all duration-200 group",
+                          isActive
+                            ? "border-primary bg-primary/5 shadow-md ring-2 ring-primary/20"
+                            : "border-border bg-card hover:border-primary/50 hover:shadow-md hover:-translate-y-0.5"
+                        )}
+                      >
+                        <div className={cn(
+                          "w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden bg-muted flex items-center justify-center transition-transform duration-200 group-hover:scale-105",
+                          isActive && "ring-2 ring-primary/30"
+                        )}>
+                          {cat.image_url ? (
+                            <img 
+                              src={cat.image_url} 
+                              alt={cat.name} 
+                              className="w-full h-full object-contain p-1"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <Package className="w-8 h-8 text-muted-foreground" />
+                          )}
+                        </div>
+                        <span className={cn(
+                          "text-xs md:text-sm font-medium text-center leading-tight line-clamp-2",
+                          isActive ? "text-primary" : "text-foreground"
+                        )}>
+                          {cat.name}
+                        </span>
+                      </button>
+                    );
+                  })}
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Filters & Products */}
         <section className="py-8 md:py-12">
           <div className="container-main">
