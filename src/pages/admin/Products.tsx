@@ -742,6 +742,7 @@ const AdminProducts: React.FC = () => {
       'ean_code', 'cnk_code', 'manufacturer_url',
       'is_active', 'is_featured', 'is_coming_soon', 'show_size_guide',
       'is_subscription_eligible', 'is_addon', 'addon_category',
+      'supplier',
     ];
 
     const exampleRow = [
@@ -753,6 +754,7 @@ const AdminProducts: React.FC = () => {
       '5412345678901', 'CNK1234567', 'https://fabricant.com/produit',
       'true', 'false', 'false', 'true',
       'true', 'false', '',
+      'Nom du fournisseur',
     ];
 
     const wsProducts = XLSX.utils.aoa_to_sheet([headers, exampleRow]);
