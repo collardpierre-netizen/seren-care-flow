@@ -831,7 +831,18 @@ const AdminProducts: React.FC = () => {
       'ean_code', 'cnk_code', 'manufacturer_url',
       'is_active', 'is_featured', 'is_coming_soon', 'show_size_guide',
       'is_subscription_eligible', 'is_addon', 'addon_category',
+      'supplier',
     ];
+
+    // Fetch preferred suppliers for export
+    const { data: productSuppliers } = await supabase
+      .from('product_suppliers')
+      .select('product_id, supplier:suppliers(name)')
+      .eq('is_preferred', true);
+    const supplierMap: Record<string, string> = {};
+    productSuppliers?.forEach((ps: any) => {
+      if (ps.supplier?.name) supplierMap[ps.product_id] = ps.supplier.name;
+    });
 
     const prodRows = products.map((p: any) => [
       p.name || '', p.slug || '', p.sku || '',
@@ -847,6 +858,7 @@ const AdminProducts: React.FC = () => {
       p.is_coming_soon ? 'true' : 'false', p.show_size_guide ? 'true' : 'false',
       p.is_subscription_eligible !== false ? 'true' : 'false',
       p.is_addon ? 'true' : 'false', p.addon_category || '',
+      supplierMap[p.id] || '',
     ]);
 
     const wsProducts = XLSX.utils.aoa_to_sheet([prodHeaders, ...prodRows]);
