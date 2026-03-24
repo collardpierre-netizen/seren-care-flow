@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Product } from '@/hooks/useProducts';
 import { Badge } from '@/components/ui/badge';
+import { Package } from 'lucide-react';
 import AbsorptionDroplets from './AbsorptionDroplets';
 import SubscriptionBadge from './SubscriptionBadge';
 import { CompareButton } from './ProductComparator';
