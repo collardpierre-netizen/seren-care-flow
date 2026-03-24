@@ -73,6 +73,7 @@ const Shop = () => {
     selectedCategory,
     selectedBrand,
     selectedIncontinence,
+    categories: categories as { id: string; parent_id: string | null }[],
   });
 
   const activeFiltersCount = [
