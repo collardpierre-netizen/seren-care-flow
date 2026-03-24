@@ -133,6 +133,11 @@ interface ProductImage {
 
 const AdminProducts: React.FC = () => {
   const [search, setSearch] = useState('');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [filterBrand, setFilterBrand] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all'); // all, active, inactive
+  const [filterStock, setFilterStock] = useState('all'); // all, in_stock, low, out_of_stock
+  const [filterAbo, setFilterAbo] = useState('all'); // all, yes, no
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [formData, setFormData] = useState<ProductFormData>(initialFormData);
