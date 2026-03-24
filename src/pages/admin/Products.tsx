@@ -1967,9 +1967,26 @@ const AdminProducts: React.FC = () => {
                         })()}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={product.is_active ? 'default' : 'secondary'}>
-                          {product.is_active ? 'Actif' : 'Inactif'}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={product.is_active !== false}
+                            onCheckedChange={async (checked) => {
+                              const { error } = await supabase
+                                .from('products')
+                                .update({ is_active: checked })
+                                .eq('id', product.id);
+                              if (error) {
+                                toast.error('Erreur lors de la mise à jour');
+                              } else {
+                                toast.success(checked ? 'Produit activé' : 'Produit désactivé');
+                                queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+                              }
+                            }}
+                          />
+                          <span className={`text-xs ${product.is_active !== false ? 'text-green-600' : 'text-muted-foreground'}`}>
+                            {product.is_active !== false ? 'Actif' : 'Inactif'}
+                          </span>
+                        </div>
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
