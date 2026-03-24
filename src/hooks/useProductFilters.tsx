@@ -161,9 +161,13 @@ export const useProductFilters = (
         if (!matchesName && !matchesBrand && !matchesDescription) return false;
       }
 
-      // Category filter
+      // Category filter (includes child categories when selecting a parent)
       if (selectedCategory !== 'all') {
-        if (product.category_id !== selectedCategory) {
+        const childIds = categories
+          ?.filter(c => c.parent_id === selectedCategory)
+          .map(c => c.id) || [];
+        const matchIds = [selectedCategory, ...childIds];
+        if (!product.category_id || !matchIds.includes(product.category_id)) {
           return false;
         }
       }
