@@ -133,6 +133,11 @@ interface ProductImage {
 
 const AdminProducts: React.FC = () => {
   const [search, setSearch] = useState('');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [filterBrand, setFilterBrand] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all'); // all, active, inactive
+  const [filterStock, setFilterStock] = useState('all'); // all, in_stock, low, out_of_stock
+  const [filterAbo, setFilterAbo] = useState('all'); // all, yes, no
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [formData, setFormData] = useState<ProductFormData>(initialFormData);
@@ -684,9 +689,31 @@ const AdminProducts: React.FC = () => {
     });
   };
 
-  const filteredProducts = products?.filter(p => 
-    p.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredProducts = products?.filter(p => {
+    // Text search
+    if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false;
+    // Category
+    if (filterCategory !== 'all' && p.category_id !== filterCategory) return false;
+    // Brand
+    if (filterBrand !== 'all' && p.brand_id !== filterBrand) return false;
+    // Status
+    if (filterStatus === 'active' && p.is_active === false) return false;
+    if (filterStatus === 'inactive' && p.is_active !== false) return false;
+    // Stock
+    if (filterStock === 'in_stock' && (p.stock_quantity || 0) <= 0) return false;
+    if (filterStock === 'low' && ((p.stock_quantity || 0) <= 0 || (p.stock_quantity || 0) > 10)) return false;
+    if (filterStock === 'out_of_stock' && (p.stock_quantity || 0) > 0) return false;
+    // Abo
+    if (filterAbo === 'yes' && p.is_subscription_eligible === false) return false;
+    if (filterAbo === 'no' && p.is_subscription_eligible !== false) return false;
+    return true;
+  });
+
+  // Stats
+  const totalProducts = products?.length || 0;
+  const totalSizes = products?.reduce((sum, p) => sum + (p.product_sizes?.length || 0), 0) || 0;
+  const activeProducts = products?.filter(p => p.is_active !== false).length || 0;
+  const outOfStockProducts = products?.filter(p => (p.stock_quantity || 0) <= 0).length || 0;
 
   // Selection handlers
   const handleSelectAll = () => {
@@ -1933,9 +1960,39 @@ const AdminProducts: React.FC = () => {
       </AlertDialog>
 
       <Card>
-        <CardHeader>
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1 max-w-sm">
+        <CardHeader className="space-y-4">
+          {/* Stats bar */}
+          <div className="flex flex-wrap gap-4 text-sm">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-lg">
+              <Package className="h-4 w-4 text-primary" />
+              <span className="font-medium">{totalProducts}</span>
+              <span className="text-muted-foreground">produits</span>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-lg">
+              <span className="font-medium">{totalSizes}</span>
+              <span className="text-muted-foreground">variantes</span>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-lg">
+              <span className="font-medium text-green-600">{activeProducts}</span>
+              <span className="text-muted-foreground">actifs</span>
+            </div>
+            {outOfStockProducts > 0 && (
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-destructive/10 rounded-lg">
+                <span className="font-medium text-destructive">{outOfStockProducts}</span>
+                <span className="text-muted-foreground">en rupture</span>
+              </div>
+            )}
+            {filteredProducts && filteredProducts.length !== totalProducts && (
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-lg">
+                <span className="font-medium text-primary">{filteredProducts.length}</span>
+                <span className="text-muted-foreground">résultats filtrés</span>
+              </div>
+            )}
+          </div>
+
+          {/* Search + Filters */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative flex-1 min-w-[200px] max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Rechercher un produit..."
@@ -1944,6 +2001,71 @@ const AdminProducts: React.FC = () => {
                 className="pl-10"
               />
             </div>
+            <Select value={filterCategory} onValueChange={setFilterCategory}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="Catégorie" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toutes catégories</SelectItem>
+                {categories?.map(c => (
+                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={filterBrand} onValueChange={setFilterBrand}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Marque" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toutes marques</SelectItem>
+                {brands?.map(b => (
+                  <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder="Statut" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous</SelectItem>
+                <SelectItem value="active">Actifs</SelectItem>
+                <SelectItem value="inactive">Inactifs</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={filterStock} onValueChange={setFilterStock}>
+              <SelectTrigger className="w-[130px]">
+                <SelectValue placeholder="Stock" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tout stock</SelectItem>
+                <SelectItem value="in_stock">En stock</SelectItem>
+                <SelectItem value="low">Stock bas</SelectItem>
+                <SelectItem value="out_of_stock">Rupture</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={filterAbo} onValueChange={setFilterAbo}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder="Abo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tout abo</SelectItem>
+                <SelectItem value="yes">Abo activé</SelectItem>
+                <SelectItem value="no">Abo désactivé</SelectItem>
+              </SelectContent>
+            </Select>
+            {(filterCategory !== 'all' || filterBrand !== 'all' || filterStatus !== 'all' || filterStock !== 'all' || filterAbo !== 'all') && (
+              <Button variant="ghost" size="sm" onClick={() => {
+                setFilterCategory('all');
+                setFilterBrand('all');
+                setFilterStatus('all');
+                setFilterStock('all');
+                setFilterAbo('all');
+              }}>
+                <X className="h-4 w-4 mr-1" />
+                Effacer
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent>
