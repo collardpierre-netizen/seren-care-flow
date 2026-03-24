@@ -105,7 +105,7 @@ const Shop = () => {
     selectedMobility, 
     selectedUsageTime,
     selectedGender
-  ].filter(f => f !== "all").length;
+  ].filter(f => f !== "all").length + (isPriceFilterActive ? 1 : 0);
 
   const clearFilters = () => {
     setSelectedCategory("all");
