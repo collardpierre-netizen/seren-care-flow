@@ -779,6 +779,16 @@ const AdminProducts: React.FC = () => {
     wsSizes['!cols'] = sizeHeaders.map(h => ({ wch: Math.max(h.length + 2, 16) }));
     XLSX.utils.book_append_sheet(wb, wsSizes, 'Variantes');
 
+    // ── Feuille "Images" ──
+    const imageHeaders = ['product_slug', 'image_url', 'alt_text', 'sort_order', 'is_primary'];
+    const imageExamples = [
+      ['protection-plus-taille-m', 'https://example.com/image1.jpg', 'Protection Plus vue de face', 0, 'true'],
+      ['protection-plus-taille-m', 'https://example.com/image2.jpg', 'Protection Plus vue de dos', 1, 'false'],
+    ];
+    const wsImages = XLSX.utils.aoa_to_sheet([imageHeaders, ...imageExamples]);
+    wsImages['!cols'] = imageHeaders.map(h => ({ wch: Math.max(h.length + 2, 20) }));
+    XLSX.utils.book_append_sheet(wb, wsImages, 'Images');
+
     // ── Feuille "Instructions" ──
     const instructions = [
       ['INSTRUCTIONS IMPORT PRODUITS SERENCARE'],
@@ -803,6 +813,12 @@ const AdminProducts: React.FC = () => {
       ['FEUILLE VARIANTES'],
       ['product_slug', 'Doit correspondre au slug du produit dans la feuille Produits'],
       ['Ajoutez une ligne par taille/variante'],
+      [],
+      ['FEUILLE IMAGES'],
+      ['product_slug', 'Doit correspondre au slug du produit'],
+      ['image_url', 'URL complète de l\'image (hébergée ou stockage)'],
+      ['is_primary', 'true pour l\'image principale du produit (une seule par produit)'],
+      ['sort_order', 'Ordre d\'affichage (0 = première)'],
     ];
 
     const wsInstructions = XLSX.utils.aoa_to_sheet(instructions);
