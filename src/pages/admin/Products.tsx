@@ -988,6 +988,9 @@ const AdminProducts: React.FC = () => {
           if (category) productData.category_id = category.id;
         }
 
+        // Match supplier by name
+        const supplierName = str(val('supplier'));
+
         try {
           const { data: existing } = await supabase
             .from('products')
@@ -995,12 +998,36 @@ const AdminProducts: React.FC = () => {
             .eq('slug', productData.slug)
             .single();
 
+          let productId: string;
           if (existing) {
             await supabase.from('products').update(productData).eq('id', existing.id);
+            productId = existing.id;
             updated++;
           } else {
-            await supabase.from('products').insert(productData);
+            const { data: newProd } = await supabase.from('products').insert(productData).select('id').single();
+            productId = newProd?.id;
             imported++;
+          }
+
+          // Link supplier if specified
+          if (supplierName && suppliers && productId) {
+            const supplier = suppliers.find(s => s.name.toLowerCase() === supplierName.toLowerCase());
+            if (supplier) {
+              const { data: existingLink } = await supabase
+                .from('product_suppliers')
+                .select('id')
+                .eq('product_id', productId)
+                .eq('supplier_id', supplier.id)
+                .single();
+              if (!existingLink) {
+                await supabase.from('product_suppliers').insert({
+                  product_id: productId,
+                  supplier_id: supplier.id,
+                  is_preferred: true,
+                  purchase_price: productData.purchase_price,
+                });
+              }
+            }
           }
         } catch {
           errors++;
