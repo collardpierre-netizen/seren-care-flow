@@ -403,6 +403,46 @@ const Shop = () => {
               )}
               <FilterButton options={genderFilterOptions} value={selectedGender} onChange={setSelectedGender} label="Genre" counts={filterCounts.gender} />
               
+              {/* Price Range Filter */}
+              <div className="relative group">
+                <button className={cn(
+                  "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all",
+                  isPriceFilterActive 
+                    ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/20" 
+                    : "bg-card border border-border text-foreground hover:border-primary"
+                )}>
+                  <Euro className="w-4 h-4" />
+                  <span className={cn(isPriceFilterActive && "font-semibold")}>
+                    {isPriceFilterActive ? `${priceRange[0]}€ – ${priceRange[1]}€` : "Prix"}
+                  </span>
+                  {isPriceFilterActive ? (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setPriceRange([priceBounds.min, priceBounds.max]); }}
+                      className="ml-1 p-0.5 rounded-full hover:bg-primary-foreground/20 transition-colors"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                  )}
+                </button>
+                <div className="absolute top-full left-0 mt-2 w-72 bg-card rounded-xl border border-border shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 p-4">
+                  <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">Fourchette de prix</p>
+                  <Slider
+                    min={priceBounds.min}
+                    max={priceBounds.max}
+                    step={1}
+                    value={priceRange}
+                    onValueChange={(v) => setPriceRange(v as [number, number])}
+                    className="mb-3"
+                  />
+                  <div className="flex items-center justify-between text-sm text-foreground">
+                    <span>{priceRange[0]}€</span>
+                    <span>{priceRange[1]}€</span>
+                  </div>
+                </div>
+              </div>
+              
               {activeFiltersCount > 0 && (
                 <button
                   onClick={clearFilters}
