@@ -151,7 +151,7 @@ const AdminProducts: React.FC = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select(`*, brand:brands(name), category:categories(name), images:product_images(*)`)
+        .select(`*, brand:brands(name), category:categories(name), images:product_images(*), product_sizes(*)`)
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
@@ -779,6 +779,16 @@ const AdminProducts: React.FC = () => {
     wsSizes['!cols'] = sizeHeaders.map(h => ({ wch: Math.max(h.length + 2, 16) }));
     XLSX.utils.book_append_sheet(wb, wsSizes, 'Variantes');
 
+    // ── Feuille "Images" ──
+    const imageHeaders = ['product_slug', 'image_url', 'alt_text', 'sort_order', 'is_primary'];
+    const imageExamples = [
+      ['protection-plus-taille-m', 'https://example.com/image1.jpg', 'Protection Plus vue de face', 0, 'true'],
+      ['protection-plus-taille-m', 'https://example.com/image2.jpg', 'Protection Plus vue de dos', 1, 'false'],
+    ];
+    const wsImages = XLSX.utils.aoa_to_sheet([imageHeaders, ...imageExamples]);
+    wsImages['!cols'] = imageHeaders.map(h => ({ wch: Math.max(h.length + 2, 20) }));
+    XLSX.utils.book_append_sheet(wb, wsImages, 'Images');
+
     // ── Feuille "Instructions" ──
     const instructions = [
       ['INSTRUCTIONS IMPORT PRODUITS SERENCARE'],
@@ -803,6 +813,12 @@ const AdminProducts: React.FC = () => {
       ['FEUILLE VARIANTES'],
       ['product_slug', 'Doit correspondre au slug du produit dans la feuille Produits'],
       ['Ajoutez une ligne par taille/variante'],
+      [],
+      ['FEUILLE IMAGES'],
+      ['product_slug', 'Doit correspondre au slug du produit'],
+      ['image_url', 'URL complète de l\'image (hébergée ou stockage)'],
+      ['is_primary', 'true pour l\'image principale du produit (une seule par produit)'],
+      ['sort_order', 'Ordre d\'affichage (0 = première)'],
     ];
 
     const wsInstructions = XLSX.utils.aoa_to_sheet(instructions);
@@ -889,6 +905,23 @@ const AdminProducts: React.FC = () => {
     const wsSizes = XLSX.utils.aoa_to_sheet([sizeHeaders, ...sizeRows]);
     wsSizes['!cols'] = sizeHeaders.map(h => ({ wch: Math.max(h.length + 2, 14) }));
     XLSX.utils.book_append_sheet(wb, wsSizes, 'Variantes');
+
+    // ── Feuille Images ──
+    const imgHeaders = ['product_slug', 'image_url', 'alt_text', 'sort_order', 'is_primary'];
+    const imgRows: any[][] = [];
+    for (const p of products as any[]) {
+      if (p.images && p.images.length > 0) {
+        for (const img of p.images) {
+          imgRows.push([
+            p.slug, img.image_url || '', img.alt_text || '',
+            img.sort_order ?? 0, img.is_primary ? 'true' : 'false',
+          ]);
+        }
+      }
+    }
+    const wsImages = XLSX.utils.aoa_to_sheet([imgHeaders, ...imgRows]);
+    wsImages['!cols'] = imgHeaders.map(h => ({ wch: Math.max(h.length + 2, 20) }));
+    XLSX.utils.book_append_sheet(wb, wsImages, 'Images');
 
     XLSX.writeFile(wb, `produits-serencare-${new Date().toISOString().split('T')[0]}.xlsx`);
     toast.success(`${products.length} produits exportés (XLSX)`);
@@ -1081,6 +1114,47 @@ const AdminProducts: React.FC = () => {
                 await supabase.from('product_sizes').update(sizeData).eq('id', existingSize.id);
               } else {
                 await supabase.from('product_sizes').insert(sizeData);
+              }
+            }
+          }
+        }
+        // ── Import images from "Images" sheet ──
+        if (workbook.SheetNames.includes('Images')) {
+          const imgSheet = workbook.Sheets['Images'];
+          const imgRows: string[][] = XLSX.utils.sheet_to_json(imgSheet, { header: 1 });
+          const iHeaders = imgRows[0]?.map(h => String(h).trim().toLowerCase()) || [];
+          const ii = (col: string) => iHeaders.indexOf(col);
+
+          if (ii('product_slug') >= 0 && ii('image_url') >= 0) {
+            for (let i = 1; i < imgRows.length; i++) {
+              const iv = imgRows[i];
+              const slug = str(iv[ii('product_slug')]);
+              const imageUrl = str(iv[ii('image_url')]);
+              if (!slug || !imageUrl) continue;
+
+              const { data: prod } = await supabase.from('products').select('id').eq('slug', slug).single();
+              if (!prod) continue;
+
+              const imgData: any = {
+                product_id: prod.id,
+                image_url: imageUrl,
+                alt_text: str(iv[ii('alt_text')]) || null,
+                sort_order: parseInt2(iv[ii('sort_order')]) ?? 0,
+                is_primary: ii('is_primary') >= 0 ? parseBool(iv[ii('is_primary')]) : false,
+              };
+
+              // Check if image already exists for this product + url
+              const { data: existingImg } = await supabase
+                .from('product_images')
+                .select('id')
+                .eq('product_id', prod.id)
+                .eq('image_url', imageUrl)
+                .single();
+
+              if (existingImg) {
+                await supabase.from('product_images').update(imgData).eq('id', existingImg.id);
+              } else {
+                await supabase.from('product_images').insert(imgData);
               }
             }
           }
