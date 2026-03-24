@@ -1973,6 +1973,7 @@ const AdminProducts: React.FC = () => {
                   <TableHead>Marge</TableHead>
                   <TableHead>Qté</TableHead>
                   <TableHead>Disponibilité</TableHead>
+                  <TableHead>Abo</TableHead>
                   <TableHead>Statut</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -2039,6 +2040,23 @@ const AdminProducts: React.FC = () => {
                           const config = statusConfig[status] || statusConfig.in_stock;
                           return <Badge variant={config.variant}>{config.label}</Badge>;
                         })()}
+                      </TableCell>
+                      <TableCell>
+                        <Switch
+                          checked={product.is_subscription_eligible !== false}
+                          onCheckedChange={async (checked) => {
+                            const { error } = await supabase
+                              .from('products')
+                              .update({ is_subscription_eligible: checked })
+                              .eq('id', product.id);
+                            if (error) {
+                              toast.error('Erreur lors de la mise à jour');
+                            } else {
+                              toast.success(checked ? 'Abonnement activé' : 'Abonnement désactivé');
+                              queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+                            }
+                          }}
+                        />
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
