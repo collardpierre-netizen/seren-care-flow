@@ -214,9 +214,17 @@ export const useCategories = (options?: { includeCount?: boolean; includeEmpty?:
         }
       });
       
+      // Aggregate child category counts into parent categories
+      const parentCounts: Record<string, number> = { ...counts };
+      categories?.forEach(cat => {
+        if (cat.parent_id && counts[cat.id]) {
+          parentCounts[cat.parent_id] = (parentCounts[cat.parent_id] || 0) + counts[cat.id];
+        }
+      });
+      
       const categoriesWithCount = categories?.map(cat => ({
         ...cat,
-        product_count: counts[cat.id] || 0
+        product_count: parentCounts[cat.id] || 0
       })) as CategoryWithCount[];
       
       // Filter out empty categories if requested
