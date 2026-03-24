@@ -117,6 +117,8 @@ interface ProductFiltersState {
   selectedCategory: string;
   selectedBrand: string;
   selectedIncontinence: string;
+  priceMin?: number;
+  priceMax?: number;
   categories?: { id: string; parent_id: string | null }[];
 }
 
@@ -145,6 +147,8 @@ export const useProductFilters = (
     selectedCategory,
     selectedBrand,
     selectedIncontinence,
+    priceMin,
+    priceMax,
     categories 
   } = filters;
 
@@ -186,6 +190,10 @@ export const useProductFilters = (
         }
       }
 
+      // Price filter
+      if (priceMin !== undefined && product.price < priceMin) return false;
+      if (priceMax !== undefined && product.price > priceMax) return false;
+
       // Mobility filter (multi-tag)
       if (selectedMobility !== 'all') {
         const effectiveMobility = getEffectiveMobilityLevels(product);
@@ -217,7 +225,7 @@ export const useProductFilters = (
 
       return true;
     });
-  }, [products, searchQuery, selectedCategory, selectedBrand, selectedIncontinence, selectedMobility, selectedUsageTime, selectedGender, categories]);
+  }, [products, searchQuery, selectedCategory, selectedBrand, selectedIncontinence, selectedMobility, selectedUsageTime, selectedGender, priceMin, priceMax, categories]);
 
   // Calculate counts for filter options
   const filterCounts = useMemo(() => {

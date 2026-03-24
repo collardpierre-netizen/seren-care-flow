@@ -4,7 +4,7 @@ import Layout from "@/components/Layout";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Filter, X, ChevronDown, Loader2, Package, Droplet, Moon, Sun, Footprints, Sparkles, User } from "lucide-react";
+import { Filter, X, ChevronDown, Loader2, Package, Droplet, Moon, Sun, Footprints, Sparkles, User, Euro } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useProducts, useBrands, useCategories, Product } from "@/hooks/useProducts";
 import { 
@@ -18,6 +18,7 @@ import ProductCard from "@/components/shop/ProductCard";
 import ProductQuickView from "@/components/shop/ProductQuickView";
 import SearchBar from "@/components/shop/SearchBar";
 import ProductSelector from "@/components/shop/ProductSelector";
+import { Slider } from "@/components/ui/slider";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -38,6 +39,8 @@ const Shop = () => {
   const [selectedUsageTime, setSelectedUsageTime] = useState<string>("all");
   const [selectedGender, setSelectedGender] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 500]);
+  const [priceRangeInitialized, setPriceRangeInitialized] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [showProductSelector, setShowProductSelector] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -64,6 +67,23 @@ const Shop = () => {
     }
   }, [userPreferences, preferencesApplied]);
 
+  // Compute global price bounds from all products
+  const priceBounds = useMemo(() => {
+    if (!products || products.length === 0) return { min: 0, max: 500 };
+    const prices = products.map(p => p.price);
+    return { min: Math.floor(Math.min(...prices)), max: Math.ceil(Math.max(...prices)) };
+  }, [products]);
+
+  // Initialize price range once products load
+  useEffect(() => {
+    if (products && products.length > 0 && !priceRangeInitialized) {
+      setPriceRange([priceBounds.min, priceBounds.max]);
+      setPriceRangeInitialized(true);
+    }
+  }, [products, priceBounds, priceRangeInitialized]);
+
+  const isPriceFilterActive = priceRangeInitialized && (priceRange[0] > priceBounds.min || priceRange[1] < priceBounds.max);
+
   // Use the new multi-tag filter system
   const { filteredProducts, filterCounts } = useProductFilters(products, {
     selectedMobility,
@@ -73,6 +93,8 @@ const Shop = () => {
     selectedCategory,
     selectedBrand,
     selectedIncontinence,
+    priceMin: priceRange[0],
+    priceMax: priceRange[1],
     categories: categories as { id: string; parent_id: string | null }[],
   });
 
@@ -83,7 +105,7 @@ const Shop = () => {
     selectedMobility, 
     selectedUsageTime,
     selectedGender
-  ].filter(f => f !== "all").length;
+  ].filter(f => f !== "all").length + (isPriceFilterActive ? 1 : 0);
 
   const clearFilters = () => {
     setSelectedCategory("all");
@@ -93,6 +115,7 @@ const Shop = () => {
     setSelectedUsageTime("all");
     setSelectedGender("all");
     setSearchQuery("");
+    setPriceRange([priceBounds.min, priceBounds.max]);
   };
 
   const handleProductClick = (product: Product) => {
@@ -380,6 +403,46 @@ const Shop = () => {
               )}
               <FilterButton options={genderFilterOptions} value={selectedGender} onChange={setSelectedGender} label="Genre" counts={filterCounts.gender} />
               
+              {/* Price Range Filter */}
+              <div className="relative group">
+                <button className={cn(
+                  "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all",
+                  isPriceFilterActive 
+                    ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/20" 
+                    : "bg-card border border-border text-foreground hover:border-primary"
+                )}>
+                  <Euro className="w-4 h-4" />
+                  <span className={cn(isPriceFilterActive && "font-semibold")}>
+                    {isPriceFilterActive ? `${priceRange[0]}€ – ${priceRange[1]}€` : "Prix"}
+                  </span>
+                  {isPriceFilterActive ? (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setPriceRange([priceBounds.min, priceBounds.max]); }}
+                      className="ml-1 p-0.5 rounded-full hover:bg-primary-foreground/20 transition-colors"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                  )}
+                </button>
+                <div className="absolute top-full left-0 mt-2 w-72 bg-card rounded-xl border border-border shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 p-4">
+                  <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">Fourchette de prix</p>
+                  <Slider
+                    min={priceBounds.min}
+                    max={priceBounds.max}
+                    step={1}
+                    value={priceRange}
+                    onValueChange={(v) => setPriceRange(v as [number, number])}
+                    className="mb-3"
+                  />
+                  <div className="flex items-center justify-between text-sm text-foreground">
+                    <span>{priceRange[0]}€</span>
+                    <span>{priceRange[1]}€</span>
+                  </div>
+                </div>
+              </div>
+              
               {activeFiltersCount > 0 && (
                 <button
                   onClick={clearFilters}
@@ -531,7 +594,7 @@ const Shop = () => {
                     </>
                   )}
 
-                  {/* Genre */}
+                   {/* Genre */}
                   <div>
                     <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide flex items-center gap-1">
                       <User className="w-3 h-3" /> Genre
@@ -550,6 +613,25 @@ const Shop = () => {
                           {opt.label}
                         </button>
                       ))}
+                    </div>
+                  </div>
+
+                  {/* Prix */}
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide flex items-center gap-1">
+                      <Euro className="w-3 h-3" /> Prix
+                    </p>
+                    <Slider
+                      min={priceBounds.min}
+                      max={priceBounds.max}
+                      step={1}
+                      value={priceRange}
+                      onValueChange={(v) => setPriceRange(v as [number, number])}
+                      className="mb-2"
+                    />
+                    <div className="flex items-center justify-between text-sm text-foreground">
+                      <span>{priceRange[0]}€</span>
+                      <span>{priceRange[1]}€</span>
                     </div>
                   </div>
 
