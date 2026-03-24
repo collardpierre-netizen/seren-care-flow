@@ -147,6 +147,8 @@ export const useProductFilters = (
     selectedCategory,
     selectedBrand,
     selectedIncontinence,
+    priceMin,
+    priceMax,
     categories 
   } = filters;
 
