@@ -115,6 +115,7 @@ const Shop = () => {
     setSelectedUsageTime("all");
     setSelectedGender("all");
     setSearchQuery("");
+    setPriceRange([priceBounds.min, priceBounds.max]);
   };
 
   const handleProductClick = (product: Product) => {
