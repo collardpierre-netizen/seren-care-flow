@@ -176,6 +176,15 @@ const AdminProducts: React.FC = () => {
     },
   });
 
+  const { data: suppliers } = useQuery({
+    queryKey: ['suppliers-all'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('suppliers').select('*').eq('is_active', true).order('name');
+      if (error) throw error;
+      return data;
+    },
+  });
+
   // Helper to auto-create Stripe subscription price
   const createStripePrice = async (productId: string, subscriptionPrice: number) => {
     if (!subscriptionPrice || subscriptionPrice <= 0) return;
@@ -733,6 +742,7 @@ const AdminProducts: React.FC = () => {
       'ean_code', 'cnk_code', 'manufacturer_url',
       'is_active', 'is_featured', 'is_coming_soon', 'show_size_guide',
       'is_subscription_eligible', 'is_addon', 'addon_category',
+      'supplier',
     ];
 
     const exampleRow = [
@@ -744,6 +754,7 @@ const AdminProducts: React.FC = () => {
       '5412345678901', 'CNK1234567', 'https://fabricant.com/produit',
       'true', 'false', 'false', 'true',
       'true', 'false', '',
+      'Nom du fournisseur',
     ];
 
     const wsProducts = XLSX.utils.aoa_to_sheet([headers, exampleRow]);
@@ -784,9 +795,10 @@ const AdminProducts: React.FC = () => {
       ['gender', 'male, female, unisex'],
       ['stock_status', 'in_stock, limited, out_of_stock, coming_soon'],
       ['addon_category', 'pharma, hygiene, soins, accessoires, confort'],
+      ['supplier', 'Nom exact du fournisseur tel que configuré dans l\'admin'],
       ['Booléens', 'true ou false'],
       [],
-      ['brand / category', 'Nom exact tel que configuré dans l\'admin'],
+      ['brand / category / supplier', 'Nom exact tel que configuré dans l\'admin'],
       [],
       ['FEUILLE VARIANTES'],
       ['product_slug', 'Doit correspondre au slug du produit dans la feuille Produits'],
@@ -802,7 +814,7 @@ const AdminProducts: React.FC = () => {
   };
 
   // Export products to XLSX
-  const handleExportCSV = () => {
+  const handleExportCSV = async () => {
     if (!products || products.length === 0) {
       toast.error('Aucun produit à exporter');
       return;
@@ -819,7 +831,18 @@ const AdminProducts: React.FC = () => {
       'ean_code', 'cnk_code', 'manufacturer_url',
       'is_active', 'is_featured', 'is_coming_soon', 'show_size_guide',
       'is_subscription_eligible', 'is_addon', 'addon_category',
+      'supplier',
     ];
+
+    // Fetch preferred suppliers for export
+    const { data: productSuppliers } = await supabase
+      .from('product_suppliers')
+      .select('product_id, supplier:suppliers(name)')
+      .eq('is_preferred', true);
+    const supplierMap: Record<string, string> = {};
+    productSuppliers?.forEach((ps: any) => {
+      if (ps.supplier?.name) supplierMap[ps.product_id] = ps.supplier.name;
+    });
 
     const prodRows = products.map((p: any) => [
       p.name || '', p.slug || '', p.sku || '',
@@ -835,6 +858,7 @@ const AdminProducts: React.FC = () => {
       p.is_coming_soon ? 'true' : 'false', p.show_size_guide ? 'true' : 'false',
       p.is_subscription_eligible !== false ? 'true' : 'false',
       p.is_addon ? 'true' : 'false', p.addon_category || '',
+      supplierMap[p.id] || '',
     ]);
 
     const wsProducts = XLSX.utils.aoa_to_sheet([prodHeaders, ...prodRows]);
@@ -964,6 +988,9 @@ const AdminProducts: React.FC = () => {
           if (category) productData.category_id = category.id;
         }
 
+        // Match supplier by name
+        const supplierName = str(val('supplier'));
+
         try {
           const { data: existing } = await supabase
             .from('products')
@@ -971,12 +998,36 @@ const AdminProducts: React.FC = () => {
             .eq('slug', productData.slug)
             .single();
 
+          let productId: string;
           if (existing) {
             await supabase.from('products').update(productData).eq('id', existing.id);
+            productId = existing.id;
             updated++;
           } else {
-            await supabase.from('products').insert(productData);
+            const { data: newProd } = await supabase.from('products').insert(productData).select('id').single();
+            productId = newProd?.id;
             imported++;
+          }
+
+          // Link supplier if specified
+          if (supplierName && suppliers && productId) {
+            const supplier = suppliers.find(s => s.name.toLowerCase() === supplierName.toLowerCase());
+            if (supplier) {
+              const { data: existingLink } = await supabase
+                .from('product_suppliers')
+                .select('id')
+                .eq('product_id', productId)
+                .eq('supplier_id', supplier.id)
+                .single();
+              if (!existingLink) {
+                await supabase.from('product_suppliers').insert({
+                  product_id: productId,
+                  supplier_id: supplier.id,
+                  is_preferred: true,
+                  purchase_price: productData.purchase_price,
+                });
+              }
+            }
           }
         } catch {
           errors++;
