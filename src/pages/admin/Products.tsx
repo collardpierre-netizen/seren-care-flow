@@ -1973,6 +1973,7 @@ const AdminProducts: React.FC = () => {
                   <TableHead>Marge</TableHead>
                   <TableHead>Qté</TableHead>
                   <TableHead>Disponibilité</TableHead>
+                  <TableHead>Abo</TableHead>
                   <TableHead>Statut</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
