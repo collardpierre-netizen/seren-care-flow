@@ -594,7 +594,7 @@ const Shop = () => {
                     </>
                   )}
 
-                  {/* Genre */}
+                   {/* Genre */}
                   <div>
                     <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide flex items-center gap-1">
                       <User className="w-3 h-3" /> Genre
@@ -613,6 +613,25 @@ const Shop = () => {
                           {opt.label}
                         </button>
                       ))}
+                    </div>
+                  </div>
+
+                  {/* Prix */}
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide flex items-center gap-1">
+                      <Euro className="w-3 h-3" /> Prix
+                    </p>
+                    <Slider
+                      min={priceBounds.min}
+                      max={priceBounds.max}
+                      step={1}
+                      value={priceRange}
+                      onValueChange={(v) => setPriceRange(v as [number, number])}
+                      className="mb-2"
+                    />
+                    <div className="flex items-center justify-between text-sm text-foreground">
+                      <span>{priceRange[0]}€</span>
+                      <span>{priceRange[1]}€</span>
                     </div>
                   </div>
 
