@@ -193,9 +193,6 @@ export const useProductFilters = (
       // Price filter
       if (priceMin !== undefined && product.price < priceMin) return false;
       if (priceMax !== undefined && product.price > priceMax) return false;
-          return false;
-        }
-      }
 
       // Mobility filter (multi-tag)
       if (selectedMobility !== 'all') {
