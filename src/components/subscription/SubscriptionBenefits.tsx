@@ -18,7 +18,7 @@ const benefits = [
   {
     icon: Truck,
     title: "Livraison gratuite",
-    description: "Dès 49€, livrée chez vous ou en point relais",
+    description: "Dès 69€ TTC, livrée chez vous ou en point relais",
   },
   {
     icon: Calendar,
@@ -181,7 +181,7 @@ const SubscriptionBenefits: React.FC<SubscriptionBenefitsProps> = ({
               </Link>
             </Button>
             <p className="text-sm text-muted-foreground mt-3">
-              Sans engagement · Annulation gratuite · Livraison offerte dès 49€
+              Sans engagement · Annulation gratuite · Livraison offerte dès 69€ TTC
             </p>
           </motion.div>
         )}

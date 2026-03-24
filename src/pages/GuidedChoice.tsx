@@ -289,7 +289,7 @@ const GuidedChoice = () => {
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Check className="w-4 h-4 text-secondary" />
-                  <span className="text-foreground">Livraison gratuite dès 49€</span>
+                  <span className="text-foreground">Livraison gratuite dès 69€ TTC</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Check className="w-4 h-4 text-secondary" />
