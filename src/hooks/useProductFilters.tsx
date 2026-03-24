@@ -217,7 +217,7 @@ export const useProductFilters = (
 
       return true;
     });
-  }, [products, searchQuery, selectedCategory, selectedBrand, selectedIncontinence, selectedMobility, selectedUsageTime, selectedGender]);
+  }, [products, searchQuery, selectedCategory, selectedBrand, selectedIncontinence, selectedMobility, selectedUsageTime, selectedGender, categories]);
 
   // Calculate counts for filter options
   const filterCounts = useMemo(() => {
