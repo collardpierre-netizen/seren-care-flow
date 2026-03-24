@@ -67,6 +67,23 @@ const Shop = () => {
     }
   }, [userPreferences, preferencesApplied]);
 
+  // Compute global price bounds from all products
+  const priceBounds = useMemo(() => {
+    if (!products || products.length === 0) return { min: 0, max: 500 };
+    const prices = products.map(p => p.price);
+    return { min: Math.floor(Math.min(...prices)), max: Math.ceil(Math.max(...prices)) };
+  }, [products]);
+
+  // Initialize price range once products load
+  useEffect(() => {
+    if (products && products.length > 0 && !priceRangeInitialized) {
+      setPriceRange([priceBounds.min, priceBounds.max]);
+      setPriceRangeInitialized(true);
+    }
+  }, [products, priceBounds, priceRangeInitialized]);
+
+  const isPriceFilterActive = priceRangeInitialized && (priceRange[0] > priceBounds.min || priceRange[1] < priceBounds.max);
+
   // Use the new multi-tag filter system
   const { filteredProducts, filterCounts } = useProductFilters(products, {
     selectedMobility,
@@ -76,6 +93,8 @@ const Shop = () => {
     selectedCategory,
     selectedBrand,
     selectedIncontinence,
+    priceMin: priceRange[0],
+    priceMax: priceRange[1],
     categories: categories as { id: string; parent_id: string | null }[],
   });
 
