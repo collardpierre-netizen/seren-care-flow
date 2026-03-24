@@ -1118,6 +1118,47 @@ const AdminProducts: React.FC = () => {
             }
           }
         }
+        // ── Import images from "Images" sheet ──
+        if (workbook.SheetNames.includes('Images')) {
+          const imgSheet = workbook.Sheets['Images'];
+          const imgRows: string[][] = XLSX.utils.sheet_to_json(imgSheet, { header: 1 });
+          const iHeaders = imgRows[0]?.map(h => String(h).trim().toLowerCase()) || [];
+          const ii = (col: string) => iHeaders.indexOf(col);
+
+          if (ii('product_slug') >= 0 && ii('image_url') >= 0) {
+            for (let i = 1; i < imgRows.length; i++) {
+              const iv = imgRows[i];
+              const slug = str(iv[ii('product_slug')]);
+              const imageUrl = str(iv[ii('image_url')]);
+              if (!slug || !imageUrl) continue;
+
+              const { data: prod } = await supabase.from('products').select('id').eq('slug', slug).single();
+              if (!prod) continue;
+
+              const imgData: any = {
+                product_id: prod.id,
+                image_url: imageUrl,
+                alt_text: str(iv[ii('alt_text')]) || null,
+                sort_order: parseInt2(iv[ii('sort_order')]) ?? 0,
+                is_primary: ii('is_primary') >= 0 ? parseBool(iv[ii('is_primary')]) : false,
+              };
+
+              // Check if image already exists for this product + url
+              const { data: existingImg } = await supabase
+                .from('product_images')
+                .select('id')
+                .eq('product_id', prod.id)
+                .eq('image_url', imageUrl)
+                .single();
+
+              if (existingImg) {
+                await supabase.from('product_images').update(imgData).eq('id', existingImg.id);
+              } else {
+                await supabase.from('product_images').insert(imgData);
+              }
+            }
+          }
+        }
       }
 
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
