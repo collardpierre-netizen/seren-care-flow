@@ -18,7 +18,7 @@ const benefits = [
   {
     icon: Truck,
     title: "Livraison gratuite",
-    description: "Dès 49€, livrée chez vous ou en point relais",
+    description: "Dès 69€ TTC, livrée chez vous ou en point relais",
   },
   {
     icon: Calendar,
