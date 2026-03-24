@@ -151,7 +151,7 @@ const AdminProducts: React.FC = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select(`*, brand:brands(name), category:categories(name), images:product_images(*)`)
+        .select(`*, brand:brands(name), category:categories(name), images:product_images(*), product_sizes(*)`)
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
