@@ -548,7 +548,19 @@ const Shop = () => {
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 lg:gap-5">
-                {filteredProducts?.map((product, index) => (
+                {[...filteredProducts]
+                  .sort((a, b) => {
+                    // Priority: incontinence products first, then by category
+                    const aIsIncontinence = !!a.incontinence_level;
+                    const bIsIncontinence = !!b.incontinence_level;
+                    if (aIsIncontinence && !bIsIncontinence) return -1;
+                    if (!aIsIncontinence && bIsIncontinence) return 1;
+                    // Then featured products
+                    if (a.is_featured && !b.is_featured) return -1;
+                    if (!a.is_featured && b.is_featured) return 1;
+                    return 0;
+                  })
+                  .map((product, index) => (
                   <motion.div
                     key={product.id}
                     initial={{ opacity: 0, y: 16 }}
