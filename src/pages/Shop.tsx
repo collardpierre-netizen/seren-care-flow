@@ -100,6 +100,31 @@ const Shop = () => {
     setIsQuickViewOpen(true);
   };
 
+  // Categories where incontinence-specific filters make sense
+  const INCONTINENCE_CATEGORY_IDS = useMemo(() => {
+    if (!categories) return new Set<string>();
+    const incontinenceParentId = '6c55f927-f627-41fa-bb30-fccefbc2475d';
+    const relatedTopLevel = [
+      'c958ff37-2b2c-4abe-92fb-61a52576ee4d', // Changes complets
+      '568a3823-0b40-4741-be64-ee66fadc73cf', // Protections anatomiques
+      'ec26095f-a47f-4608-85a6-f15864908796', // Sous-vêtements absorbants
+      'a4541b4c-59a0-4b52-90c5-a4b2f61e4baa', // Alèses
+    ];
+    const childIds = categories.filter(c => c.parent_id === incontinenceParentId).map(c => c.id);
+    return new Set([incontinenceParentId, ...childIds, ...relatedTopLevel]);
+  }, [categories]);
+
+  const showIncontinenceFilters = selectedCategory === 'all' || INCONTINENCE_CATEGORY_IDS.has(selectedCategory);
+
+  // Reset incontinence filters when switching to a non-incontinence category
+  useEffect(() => {
+    if (!showIncontinenceFilters) {
+      setSelectedIncontinence('all');
+      setSelectedMobility('all');
+      setSelectedUsageTime('all');
+    }
+  }, [showIncontinenceFilters]);
+
   const handleSelectorFiltersApply = (filters: {
     gender?: string;
     usageTime?: string;
