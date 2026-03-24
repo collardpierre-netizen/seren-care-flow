@@ -39,6 +39,8 @@ const Shop = () => {
   const [selectedUsageTime, setSelectedUsageTime] = useState<string>("all");
   const [selectedGender, setSelectedGender] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 500]);
+  const [priceRangeInitialized, setPriceRangeInitialized] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [showProductSelector, setShowProductSelector] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
