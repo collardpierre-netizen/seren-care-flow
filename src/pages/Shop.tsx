@@ -18,6 +18,7 @@ import ProductCard from "@/components/shop/ProductCard";
 import ProductQuickView from "@/components/shop/ProductQuickView";
 import SearchBar from "@/components/shop/SearchBar";
 import ProductSelector from "@/components/shop/ProductSelector";
+import { Slider } from "@/components/ui/slider";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 
