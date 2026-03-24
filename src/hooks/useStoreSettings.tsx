@@ -23,7 +23,7 @@ interface StoreSettings {
 
 const defaultSettings: StoreSettings = {
   shipping: {
-    free_shipping_threshold: 49,
+    free_shipping_threshold: 69,
     standard_shipping_fee: 4.90,
   },
   subscription: {
