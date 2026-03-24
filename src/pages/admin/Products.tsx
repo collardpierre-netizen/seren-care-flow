@@ -2042,6 +2042,23 @@ const AdminProducts: React.FC = () => {
                         })()}
                       </TableCell>
                       <TableCell>
+                        <Switch
+                          checked={product.is_subscription_eligible !== false}
+                          onCheckedChange={async (checked) => {
+                            const { error } = await supabase
+                              .from('products')
+                              .update({ is_subscription_eligible: checked })
+                              .eq('id', product.id);
+                            if (error) {
+                              toast.error('Erreur lors de la mise à jour');
+                            } else {
+                              toast.success(checked ? 'Abonnement activé' : 'Abonnement désactivé');
+                              queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+                            }
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>
                         <div className="flex items-center gap-2">
                           <Switch
                             checked={product.is_active !== false}
