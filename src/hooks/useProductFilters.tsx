@@ -117,6 +117,8 @@ interface ProductFiltersState {
   selectedCategory: string;
   selectedBrand: string;
   selectedIncontinence: string;
+  priceMin?: number;
+  priceMax?: number;
   categories?: { id: string; parent_id: string | null }[];
 }
 
