@@ -117,6 +117,7 @@ interface ProductFiltersState {
   selectedCategory: string;
   selectedBrand: string;
   selectedIncontinence: string;
+  categories?: { id: string; parent_id: string | null }[];
 }
 
 interface UseProductFiltersResult {
