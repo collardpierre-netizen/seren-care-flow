@@ -63,6 +63,22 @@ const Shop = () => {
     { from: string; to: { id: string; label: string } } | null
   >(null);
   const [showMobilityExplanation, setShowMobilityExplanation] = useState(false);
+  // Tracks whether the user has explicitly interacted with the mobility
+  // filter (including picking "Tous"). Used to suppress the conversion
+  // warning when the user voluntarily clears the filter — without this
+  // flag, validator + auto-apply states are indistinguishable from a
+  // deliberate "no filter" choice.
+  const [userOverrodeMobility, setUserOverrodeMobility] = useState(false);
+
+  // Wrapper for every UI surface that lets the user pick a mobility
+  // option. Marks the choice as user-driven so the warning banner can
+  // step out of the way. Auto-apply paths must keep calling
+  // `setSelectedMobility` directly to preserve the "auto-apply failed"
+  // detection.
+  const handleSelectMobility = (next: string) => {
+    setUserOverrodeMobility(true);
+    setSelectedMobility(next);
+  };
 
   // Load all products without category/brand filter - we filter client-side
   const { data: products, isLoading: productsLoading } = useProducts();
