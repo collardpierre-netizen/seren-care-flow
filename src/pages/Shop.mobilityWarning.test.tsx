@@ -152,9 +152,19 @@ describe('Shop — mobility conversion warning banner (e2e)', () => {
     // The structured status code is what the validator emits for this case.
     expect(alert).toHaveTextContent(/mapping_failed/);
 
-    // Actionable CTA: link to the account page so the user can fix it.
-    const cta = screen.getByRole('link', { name: /mettre à jour mon profil/i });
-    expect(cta).toHaveAttribute('href', '/compte');
+    // Actionable, status-aware guidance must point the user at the
+    // "Préférences de soins" section by name (this is the anchor target).
+    expect(alert).toHaveTextContent(/À corriger/i);
+    expect(alert).toHaveTextContent(/Préférences de soins/i);
+
+    // Actionable CTA: deep-link to the dedicated care-preferences section
+    // on the account page (with hash anchor for in-page scroll). Matched by
+    // its descriptive aria-label so the test stays robust if the visible
+    // copy is reworded later.
+    const cta = screen.getByRole('link', {
+      name: /préférences de soins.*mobilité/i,
+    });
+    expect(cta).toHaveAttribute('href', '/compte#preferences-soins');
   });
 
   it('does NOT show the warning banner when the mapper resolves to a valid tag', async () => {
