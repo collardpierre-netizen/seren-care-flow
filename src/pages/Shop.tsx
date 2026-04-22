@@ -711,7 +711,7 @@ const Shop = () => {
                         : 'Pourquoi je vois ce message\u00a0?'}
                     </button>
                     <span className="text-xs text-muted-foreground">
-                      C\u2019est rapide, en 2 clics.
+                      C’est rapide, en 2 clics.
                     </span>
                   </div>
                   {showMobilityExplanation && (
