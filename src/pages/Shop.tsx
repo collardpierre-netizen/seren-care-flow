@@ -642,34 +642,41 @@ const Shop = () => {
                   {/* h2 keeps the banner consistent with the page's section
                       hierarchy (h1 "Nos produits" → h2 for siblings like
                       "Catégories populaires"). Visually styled as inline
-                      body copy to preserve the compact banner layout. */}
+                      body copy to preserve the compact banner layout.
+                      Copy is intentionally short, calm, and reassurance-first:
+                      the very first thing the user reads is that nothing is
+                      hidden — the filter mismatch is a soft signal, not an
+                      error. */}
                   <h2
                     id="mobility-warning-heading"
                     className="text-sm font-bold inline"
                   >
-                    Filtre mobilité non appliqué.
+                    Aucun produit n’est masqué.
                   </h2>{" "}
                   <p className="inline">
-                    {mobilityConversion.warningMessage}
+                    Vous voyez tout le catalogue.
                   </p>
-                  {/* Status-specific, actionable guidance — tells the user
-                      exactly what to fix on the account screen. */}
+                  {/* Secondary line — explains *why* the banner is here, in
+                      one short sentence, without alarming vocabulary. */}
                   <p className="text-sm">
-                    <strong>À corriger&nbsp;:</strong>{" "}
+                    Nous n’avons pas pu appliquer votre filtre mobilité
+                    automatiquement.
+                  </p>
+                  {/* Status-specific, actionable guidance — kept to two short
+                      sentences max. Avoids "À corriger" framing (too directive)
+                      in favour of a calm suggestion. */}
+                  <p className="text-sm">
                     {mobilityConversion.status === 'invalid_profile_value' ? (
                       <>
-                        la valeur enregistrée pour votre niveau de mobilité
-                        (<span className="font-mono">"{mobilityConversion.rawProfileValue}"</span>)
-                        n'est plus reconnue. Ouvrez la section{" "}
-                        <em>Préférences de soins</em> de votre compte et
-                        sélectionnez à nouveau l'une des options proposées
-                        (Mobile, Mobilité réduite ou Alité·e).
+                        La valeur enregistrée dans votre profil n’est plus
+                        reconnue. Choisissez à nouveau votre niveau de
+                        mobilité dans <em>Préférences de soins</em>.
                       </>
                     ) : (
                       <>
-                        rouvrez la section <em>Préférences de soins</em> de
-                        votre compte et resélectionnez votre niveau de
-                        mobilité pour réappliquer le filtre automatiquement.
+                        Resélectionnez votre niveau de mobilité dans{" "}
+                        <em>Préférences de soins</em>. Le filtre se
+                        réappliquera tout seul.
                       </>
                     )}
                   </p>
