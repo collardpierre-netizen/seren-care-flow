@@ -172,12 +172,37 @@ serve(async (req) => {
     const { sessionId, orderId } = await req.json();
     logStep("Request parsed", { sessionId, orderId });
 
+    if (!sessionId || !orderId || typeof sessionId !== "string" || typeof orderId !== "string") {
+      return new Response(JSON.stringify({ success: false, error: "sessionId and orderId required" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      });
+    }
+
     // Retrieve the checkout session from Stripe
     const session = await stripe.checkout.sessions.retrieve(sessionId);
     logStep("Session retrieved", { 
       status: session.status, 
-      paymentStatus: session.payment_status 
+      paymentStatus: session.payment_status,
+      metadataOrderId: session.metadata?.order_id,
     });
+
+    // CRITICAL: ensure the Stripe session was actually created for this order.
+    // Without this check, an attacker could pay for a cheap order and use that
+    // session to confirm any other order (payment bypass).
+    if (session.metadata?.order_id !== orderId) {
+      logStep("Session/order mismatch", {
+        expected: orderId,
+        gotInSession: session.metadata?.order_id,
+      });
+      return new Response(JSON.stringify({
+        success: false,
+        error: "Session does not match this order",
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      });
+    }
 
     if (session.payment_status !== "paid") {
       return new Response(JSON.stringify({ 
