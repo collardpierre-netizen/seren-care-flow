@@ -28,11 +28,40 @@ export const genderFilterOptions = [
   { id: 'unisex', label: 'Unisexe', tag: 'unisex' as GenderTag },
 ];
 
-// Map English DB enum values to French UI tags
-const MOBILITY_ENUM_TO_TAG: Record<string, string> = {
+// Map English DB enum values (mobility_type) to French UI tags (used by filter options)
+export const MOBILITY_ENUM_TO_TAG: Record<string, string> = {
   'mobile': 'mobile',
   'reduced': 'reduite',
   'bedridden': 'alitee',
+};
+
+// Reverse map: French UI tag → English DB enum
+export const MOBILITY_TAG_TO_ENUM: Record<string, string> = {
+  'mobile': 'mobile',
+  'reduite': 'reduced',
+  'alitee': 'bedridden',
+};
+
+/**
+ * Normalise a mobility value to the English DB enum (`mobile`/`reduced`/`bedridden`).
+ * Accepts either a French UI tag or an English enum value.
+ */
+export const toMobilityEnum = (value: string | null | undefined): string | null => {
+  if (!value) return null;
+  if (MOBILITY_TAG_TO_ENUM[value]) return MOBILITY_TAG_TO_ENUM[value];
+  if (MOBILITY_ENUM_TO_TAG[value]) return value; // already an enum
+  return null;
+};
+
+/**
+ * Normalise a mobility value to the French UI tag (`mobile`/`reduite`/`alitee`).
+ * Accepts either an English enum value or a French UI tag.
+ */
+export const toMobilityTag = (value: string | null | undefined): string | null => {
+  if (!value) return null;
+  if (MOBILITY_ENUM_TO_TAG[value]) return MOBILITY_ENUM_TO_TAG[value];
+  if (MOBILITY_TAG_TO_ENUM[value]) return value; // already a tag
+  return null;
 };
 
 // Backfill rules for computing default tags
