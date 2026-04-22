@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { Product } from './useProducts';
+import { matchesIncontinenceLevel } from '@/lib/profileNormalization';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Mobility types
@@ -266,9 +267,11 @@ export const useProductFilters = (
         }
       }
 
-      // Incontinence filter (existing single-value)
+      // Incontinence filter — uses the normalised matcher so aliases/casing
+      // never cause silent zero-result filters.
       if (selectedIncontinence !== 'all') {
-        if (product.incontinence_level !== null && product.incontinence_level !== selectedIncontinence) {
+        if (product.incontinence_level !== null &&
+            !matchesIncontinenceLevel(product.incontinence_level, selectedIncontinence)) {
           return false;
         }
       }

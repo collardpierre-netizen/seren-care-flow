@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { matchesIncontinenceLevel, matchesGender } from '@/lib/profileNormalization';
 import {
   Dialog,
   DialogContent,
@@ -70,11 +71,14 @@ export const AddProductDialog = ({
   // Filter products - exclude already in subscription
   const availableProducts = products?.filter(p => !existingProductIds.includes(p.id)) || [];
 
-  // Separate suggested and other products
+  // Separate suggested and other products — use normalised matchers so
+  // alias/casing differences (e.g. 'Femme' vs 'female') never miss a match.
   const suggestedProducts = availableProducts.filter(p => {
     if (!userPreferences) return false;
-    const matchLevel = !userPreferences.incontinence_level || p.incontinence_level === userPreferences.incontinence_level;
-    const matchGender = !userPreferences.gender || p.gender === userPreferences.gender || p.gender === 'unisex';
+    const matchLevel = !userPreferences.incontinence_level
+      || matchesIncontinenceLevel(p.incontinence_level, userPreferences.incontinence_level);
+    const matchGender = !userPreferences.gender
+      || matchesGender(p.gender, userPreferences.gender);
     return matchLevel || matchGender;
   });
 
