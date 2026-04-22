@@ -263,7 +263,6 @@ describe('Shop — mobility conversion warning banner (e2e)', () => {
     fireEvent.click(toggle);
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
   });
-  });
 
   it('does NOT show the warning banner when the mapper resolves to a valid tag', async () => {
     mockedUseUserPreferences.mockReturnValue({
