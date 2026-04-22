@@ -158,8 +158,12 @@ describe('Shop — mobility conversion warning banner (e2e)', () => {
     expect(alert).toHaveTextContent(/Préférences de soins/i);
 
     // Actionable CTA: deep-link to the dedicated care-preferences section
-    // on the account page (with hash anchor for in-page scroll).
-    const cta = screen.getByRole('link', { name: /corriger ma mobilité/i });
+    // on the account page (with hash anchor for in-page scroll). Matched by
+    // its descriptive aria-label so the test stays robust if the visible
+    // copy is reworded later.
+    const cta = screen.getByRole('link', {
+      name: /préférences de soins.*mobilité/i,
+    });
     expect(cta).toHaveAttribute('href', '/compte#preferences-soins');
   });
 
