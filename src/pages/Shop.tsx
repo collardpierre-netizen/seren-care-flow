@@ -51,6 +51,12 @@ const Shop = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [preferencesApplied, setPreferencesApplied] = useState(false);
+  // Soft, non-blocking notice shown when the mobility value coming from the
+  // profile had to be auto-translated (e.g. DB enum "reduced" → UI tag "reduite").
+  const [mobilityAutoTranslation, setMobilityAutoTranslation] = useState<
+    { from: string; to: { id: string; label: string } } | null
+  >(null);
+  const [showMobilityExplanation, setShowMobilityExplanation] = useState(false);
 
   // Load all products without category/brand filter - we filter client-side
   const { data: products, isLoading: productsLoading } = useProducts();
