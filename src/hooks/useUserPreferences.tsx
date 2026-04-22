@@ -151,7 +151,8 @@ export const useUserPreferences = () => {
 
       if (!data) return null;
 
-      const { sanitized, warnings } = validateUserPreferences(data as UserPreferences);
+      const raw = data as UserPreferences;
+      const { sanitized, warnings } = validateUserPreferences(raw);
 
       if (warnings.length > 0) {
         console.warn('[useUserPreferences] invalid profile values detected', {
@@ -160,37 +161,42 @@ export const useUserPreferences = () => {
         });
       }
 
+      // Attach warnings to the cached value (non-enumerable so it does not
+      // pollute object spreads / shallow comparisons elsewhere).
+      Object.defineProperty(sanitized, '__warnings', {
+        value: warnings,
+        enumerable: false,
+      });
+
       return sanitized;
     },
     enabled: !!user?.id,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Surface a non-blocking toast for unknown mobility values specifically —
-  // this is the field most likely to break the shop UX (filters will silently
-  // return zero products). Other fields fall back gracefully so we keep the
-  // UI quiet and only log them in the console.
+  // Surface a single non-blocking toast for *dropped* mobility values —
+  // this is the field most likely to break the shop UX (filters will
+  // silently return zero products). Other dropped fields are only logged
+  // to the console because the UI degrades gracefully without them.
   useEffect(() => {
     if (!user?.id || !query.data) return;
+    const warnings = (query.data as UserPreferences & { __warnings?: PreferenceWarning[] }).__warnings;
+    if (!warnings || warnings.length === 0) return;
 
-    // We need access to the warnings, but the query caches the sanitised
-    // value. Re-run validation on the original raw value when present in
-    // the cache key by reconstructing from the latest fetch isn't possible
-    // here — instead, we detect the corrected case by comparing against
-    // what `mapProfileToFilters` would expose: if the stored mobility is
-    // present and `toMobilityTag` returns null, the value was dropped.
-    const rawMobility = query.data.mobility_level;
-    if (!rawMobility) return;
-    const dedupeKey = `${user.id}:mobility_level:${rawMobility}`;
+    const dropped = warnings.find(
+      w => w.field === 'mobility_level' && w.kind === 'dropped',
+    );
+    if (!dropped) return;
+
+    const dedupeKey = `${user.id}:mobility_level:${dropped.original}`;
     if (warnedRef.current.has(dedupeKey)) return;
-    if (toMobilityTag(rawMobility) === null) {
-      warnedRef.current.add(dedupeKey);
-      toast({
-        title: 'Préférence de mobilité non reconnue',
-        description:
-          "Nous n'avons pas pu interpréter votre niveau de mobilité enregistré. Vous pouvez le mettre à jour depuis votre profil.",
-      });
-    }
+    warnedRef.current.add(dedupeKey);
+
+    toast({
+      title: 'Préférence de mobilité non reconnue',
+      description:
+        "Nous n'avons pas pu interpréter votre niveau de mobilité enregistré. Vous pouvez le mettre à jour depuis votre profil.",
+    });
   }, [user?.id, query.data]);
 
   return query;
