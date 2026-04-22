@@ -17,6 +17,19 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 
+// jsdom doesn't ship ResizeObserver, but Radix's <Slider> (rendered inside
+// Shop's price filter) requires it on mount. A no-op stub is enough for our
+// non-visual assertions.
+if (!('ResizeObserver' in globalThis)) {
+  class ResizeObserverStub {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+  (globalThis as unknown as { ResizeObserver: typeof ResizeObserverStub }).ResizeObserver =
+    ResizeObserverStub;
+}
+
 // ---------------------------------------------------------------------------
 // Mocks: data layer
 // ---------------------------------------------------------------------------
