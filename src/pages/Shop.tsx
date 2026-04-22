@@ -127,6 +127,20 @@ const Shop = () => {
     }
   }, [mobilityHint]);
 
+  // End-to-end validation: compare the raw profile value with the tag that
+  // actually landed in the shop filter state. Surfaces a clear, non-blocking
+  // warning whenever the conversion silently failed (unknown profile value,
+  // mapping bug, etc.) — the user would otherwise see an unexplained empty
+  // product list. Result is `null` when there is nothing to compare yet.
+  const mobilityConversion = useMemo<MobilityConversionResult | null>(() => {
+    if (!preferencesApplied || !userPreferences) return null;
+    const tag = isMobilityTag(selectedMobility) ? selectedMobility : null;
+    return validateMobilityConversion(userPreferences.mobility_level, tag);
+  }, [preferencesApplied, userPreferences, selectedMobility]);
+
+  const showMobilityConversionWarning =
+    !!mobilityConversion && shouldWarnUser(mobilityConversion.status);
+
   // Initialize price range once products load
   useEffect(() => {
     if (products && products.length > 0 && !priceRangeInitialized) {
