@@ -66,11 +66,13 @@ const Shop = () => {
         // Helps diagnose mismatches between the DB enum stored on the profile
         // (`mobile`/`reduced`/`bedridden`) and the French UI tag pushed to filters
         // (`mobile`/`reduite`/`alitee`).
-        if (import.meta.env.DEV) {
-          console.debug('[Shop] mobility filter from profile', {
-            profile_mobility_level: userPreferences.mobility_level ?? null,
-            applied_filter_tag: profileFilters.mobility ?? null,
-          });
+        const debugPayload = buildMobilityDebugLog({
+          isDev: import.meta.env.DEV,
+          profileMobilityLevel: userPreferences.mobility_level,
+          appliedFilterTag: profileFilters.mobility,
+        });
+        if (debugPayload) {
+          console.debug('[Shop] mobility filter from profile', debugPayload);
         }
         if (profileFilters.gender) setSelectedGender(profileFilters.gender);
         if (profileFilters.mobility) setSelectedMobility(profileFilters.mobility);
