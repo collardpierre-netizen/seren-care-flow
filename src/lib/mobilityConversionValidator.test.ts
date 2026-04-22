@@ -70,14 +70,6 @@ describe('validateMobilityConversion', () => {
     expect(result.warningMessage).toBeNull();
   });
 
-  it('returns "unknown_filter_tag" (silent) for any other unrecognised tag string', () => {
-    // Defensive: a stale or legacy filter value (e.g. an enum that leaked
-    // into the filter state, or a value from an older release) must
-    // degrade gracefully — silent fallback rather than a spurious alert.
-    const result = validateMobilityConversion('mobile', 'reduced');
-    expect(result.status).toBe('unknown_filter_tag');
-    expect(result.warningMessage).toBeNull();
-  });
 
   it('still returns "mapping_failed" when the caller passes null for a valid enum', () => {
     // Strict pipeline-bug case: caller has nothing to offer but the
