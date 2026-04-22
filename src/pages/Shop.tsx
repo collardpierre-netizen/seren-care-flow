@@ -201,7 +201,8 @@ const Shop = () => {
   const showMobilityConversionWarning =
     !!mobilityConversion &&
     shouldWarnUser(mobilityConversion.status) &&
-    !userClearedMobility;
+    !userClearedMobility &&
+    !mobilityWarningDismissed;
 
   // Initialize price range once products load
   useEffect(() => {
