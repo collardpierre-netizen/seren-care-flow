@@ -1004,6 +1004,27 @@ const AdminProducts: React.FC = () => {
       const str = (v: any) => (v != null && String(v).trim() !== '') ? String(v).trim() : null;
 
       let imported = 0, updated = 0, errors = 0;
+      // Track enum-field auto-corrections and rejections during import so the
+      // admin sees a precise summary instead of silent data loss.
+      const enumIssues: { row: number; field: string; raw: string; resolved: string | null }[] = [];
+
+      const normaliseEnum = <T extends string>(
+        rowIndex: number,
+        field: string,
+        raw: string | null,
+        normaliser: (v: string | null | undefined) => T | null,
+      ): T | null => {
+        if (!raw) return null;
+        const resolved = normaliser(raw);
+        if (resolved === null) {
+          enumIssues.push({ row: rowIndex + 1, field, raw, resolved: null });
+          return null;
+        }
+        if (resolved !== raw) {
+          enumIssues.push({ row: rowIndex + 1, field, raw, resolved });
+        }
+        return resolved;
+      };
 
       for (let i = 1; i < rows.length; i++) {
         const v = rows[i];
@@ -1016,12 +1037,14 @@ const AdminProducts: React.FC = () => {
           sku: str(val('sku')),
           short_description: str(val('short_description')),
           description: str(val('description')),
-          incontinence_level: str(val('incontinence_level')),
-          mobility: str(val('mobility')),
-          usage_time: str(val('usage_time')),
+          // Normalise enum-typed fields so FR aliases / casing variants never
+          // crash the insert with "invalid input value for enum".
+          incontinence_level: normaliseEnum(i, 'incontinence_level', str(val('incontinence_level')), toIncontinenceLevel),
+          mobility: normaliseEnum(i, 'mobility', str(val('mobility')), toMobilityEnum),
+          usage_time: normaliseEnum(i, 'usage_time', str(val('usage_time')), toUsageTime),
           mobility_levels: str(val('mobility_levels')) || '',
           usage_times: str(val('usage_times')) || '',
-          gender: str(val('gender')) || '',
+          gender: normaliseEnum(i, 'gender', str(val('gender')), toGender) || '',
           recommended_price: parseNum(val('recommended_price')),
           price: parseNum(val('price')) ?? 0,
           subscription_price: parseNum(val('subscription_price')),
