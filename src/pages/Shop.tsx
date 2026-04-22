@@ -74,6 +74,21 @@ const Shop = () => {
     return { min: Math.floor(Math.min(...prices)), max: Math.ceil(Math.max(...prices)) };
   }, [products]);
 
+  // Detect when the active mobility filter doesn't match any known UI option
+  // and suggest the auto-translated value (e.g. profile sent "reduced" → "reduite")
+  const mobilityHint = useMemo(() => {
+    if (selectedMobility === 'all') return null;
+    const matchesOption = mobilityFilterOptions.some(opt => opt.id === selectedMobility);
+    if (matchesOption) return null;
+    // Try to translate via mapProfileToFilters (English DB enum → French UI tag)
+    const translated = mapProfileToFilters({ mobility_level: selectedMobility } as any)?.mobility;
+    const suggestion = translated && mobilityFilterOptions.find(opt => opt.id === translated);
+    return {
+      currentValue: selectedMobility,
+      suggestion: suggestion ? { id: suggestion.id, label: suggestion.label } : null,
+    };
+  }, [selectedMobility]);
+
   // Initialize price range once products load
   useEffect(() => {
     if (products && products.length > 0 && !priceRangeInitialized) {
