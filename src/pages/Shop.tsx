@@ -589,6 +589,37 @@ const Shop = () => {
               </div>
             )}
 
+            {/* End-to-end conversion warning: profile value → filter tag failed */}
+            {showMobilityConversionWarning && mobilityConversion && (
+              <div
+                role="alert"
+                aria-live="assertive"
+                className="mb-6 flex flex-col sm:flex-row sm:items-start gap-3 p-4 rounded-xl border border-destructive/30 bg-destructive/10 text-foreground"
+              >
+                <div className="flex-1 text-sm space-y-2">
+                  <p>
+                    <strong>Filtre mobilité non appliqué.</strong>{" "}
+                    {mobilityConversion.warningMessage}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Détails techniques :{" "}
+                    <span className="font-mono">
+                      profil = "{mobilityConversion.rawProfileValue ?? '∅'}"
+                      {" → "}
+                      filtre = "{mobilityConversion.resolvedFilterTag ?? '∅'}"
+                    </span>
+                    {" "}(<span className="font-mono">{mobilityConversion.status}</span>)
+                  </p>
+                </div>
+                <Link
+                  to="/compte"
+                  className="self-start px-3 py-1.5 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity whitespace-nowrap"
+                >
+                  Mettre à jour mon profil
+                </Link>
+              </div>
+            )}
+
             <div className="lg:hidden mb-6">
               <Button
                 variant="outline"
