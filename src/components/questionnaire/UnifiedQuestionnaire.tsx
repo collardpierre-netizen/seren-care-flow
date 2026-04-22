@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { ArrowRight, ArrowLeft, Check, X, Droplet, User, Users, Sun, Moon, Footprints, Armchair, BedDouble, RefreshCw, Package, Truck, Heart } from "lucide-react";
 import { useProducts, Product } from "@/hooks/useProducts";
 import { useUserPreferences, mapProfileToFilters } from "@/hooks/useUserPreferences";
-import { toMobilityEnum } from "@/hooks/useProductFilters";
+import { getRecommendedProducts as scoreAndRecommendProducts } from "@/lib/questionnaireScoring";
 
 interface QuestionOption {
   id: string;
