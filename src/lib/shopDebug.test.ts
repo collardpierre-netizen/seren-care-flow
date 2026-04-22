@@ -64,16 +64,15 @@ describe('buildMobilityDebugLog', () => {
   });
 
   it('does not include arbitrary fields even if extra props are passed at call site', () => {
-    // TypeScript would normally reject this, but we want runtime confidence too.
+    // Cast through unknown to bypass the strict input type and simulate a
+    // call site that tried to sneak PII into the payload.
     const payload = buildMobilityDebugLog({
       isDev: true,
       profileMobilityLevel: 'mobile',
       appliedFilterTag: 'mobile',
-      // @ts-expect-error - intentionally passing forbidden PII fields
       email: 'user@example.com',
-      // @ts-expect-error
       first_name: 'Alice',
-    });
+    } as unknown as Parameters<typeof buildMobilityDebugLog>[0]);
 
     expect(payload).not.toHaveProperty('email');
     expect(payload).not.toHaveProperty('first_name');
