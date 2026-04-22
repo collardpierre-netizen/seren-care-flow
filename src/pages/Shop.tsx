@@ -502,25 +502,64 @@ const Shop = () => {
               )}
             </div>
 
-            {/* Mobility filter mismatch hint */}
-            {mobilityHint && (
+            {/* Non-blocking info: mobility value was auto-translated */}
+            {mobilityAutoTranslation && (
+              <div
+                role="status"
+                aria-live="polite"
+                className="mb-6 flex flex-col sm:flex-row sm:items-start gap-3 p-4 rounded-xl border border-primary/30 bg-primary/5 text-foreground"
+              >
+                <div className="flex-1 text-sm space-y-2">
+                  <p>
+                    <strong>Filtre mobilité ajusté :</strong>{" "}
+                    la valeur <span className="font-mono">"{mobilityAutoTranslation.from}"</span>{" "}
+                    a été automatiquement traduite en{" "}
+                    <strong>{mobilityAutoTranslation.to.label}</strong>.
+                    {" "}
+                    <button
+                      type="button"
+                      onClick={() => setShowMobilityExplanation(v => !v)}
+                      className="underline text-primary hover:text-primary/80 transition-colors"
+                      aria-expanded={showMobilityExplanation}
+                    >
+                      {showMobilityExplanation ? "Masquer l'explication" : "Pourquoi ?"}
+                    </button>
+                  </p>
+                  {showMobilityExplanation && (
+                    <p className="text-xs text-muted-foreground">
+                      Votre profil enregistre le niveau de mobilité avec un code interne
+                      (par ex. <span className="font-mono">reduced</span>), tandis que la
+                      boutique utilise des libellés en français
+                      (par ex. <span className="font-mono">reduite</span>).
+                      Nous avons appliqué la correspondance automatiquement pour vous
+                      afficher les bons produits.{" "}
+                      <Link
+                        to="/compte"
+                        className="underline text-primary hover:text-primary/80"
+                      >
+                        Mettre à jour mes préférences
+                      </Link>
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={() => setMobilityAutoTranslation(null)}
+                  className="self-start sm:self-auto p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  aria-label="Masquer ce message"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {/* Mobility filter mismatch hint (no auto-translation possible) */}
+            {mobilityHint && !mobilityHint.suggestion && (
               <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-xl border border-destructive/30 bg-destructive/10 text-foreground">
                 <div className="flex-1 text-sm">
                   <strong>Filtre mobilité non reconnu :</strong>{" "}
                   <span className="font-mono">"{mobilityHint.currentValue}"</span> ne correspond à aucune option disponible.
-                  {mobilityHint.suggestion && (
-                    <> Vouliez-vous dire <strong>{mobilityHint.suggestion.label}</strong> ?</>
-                  )}
                 </div>
                 <div className="flex gap-2">
-                  {mobilityHint.suggestion && (
-                    <button
-                      onClick={() => setSelectedMobility(mobilityHint.suggestion!.id)}
-                      className="px-3 py-1.5 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-                    >
-                      Appliquer "{mobilityHint.suggestion.label}"
-                    </button>
-                  )}
                   <button
                     onClick={() => setSelectedMobility('all')}
                     className="px-3 py-1.5 rounded-lg text-sm font-medium bg-card border border-border text-foreground hover:bg-muted transition-colors"
