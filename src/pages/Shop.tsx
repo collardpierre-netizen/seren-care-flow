@@ -69,6 +69,34 @@ const Shop = () => {
   // flag, validator + auto-apply states are indistinguishable from a
   // deliberate "no filter" choice.
   const [userOverrodeMobility, setUserOverrodeMobility] = useState(false);
+  // Per-session dismissal of the mobility-conversion warning. We use
+  // sessionStorage (not localStorage) so the safety net comes back the
+  // next time the user opens the site — dismissing here is "snooze, not
+  // disable". The feature itself stays fully active. Lazy initializer
+  // keeps SSR-safe (window guard) and avoids a flash of the banner on
+  // first paint when it was already dismissed.
+  const MOBILITY_WARNING_DISMISSED_KEY = 'shop:mobilityWarningDismissed';
+  const [mobilityWarningDismissed, setMobilityWarningDismissed] = useState(
+    () => {
+      if (typeof window === 'undefined') return false;
+      try {
+        return (
+          window.sessionStorage.getItem(MOBILITY_WARNING_DISMISSED_KEY) === '1'
+        );
+      } catch {
+        // Private mode / disabled storage → fall back to in-memory only.
+        return false;
+      }
+    },
+  );
+  const dismissMobilityWarning = () => {
+    setMobilityWarningDismissed(true);
+    try {
+      window.sessionStorage.setItem(MOBILITY_WARNING_DISMISSED_KEY, '1');
+    } catch {
+      // Best-effort persistence; in-memory state still hides the banner.
+    }
+  };
 
   // Wrapper for every UI surface that lets the user pick a mobility
   // option. Marks the choice as user-driven so the warning banner can
@@ -173,7 +201,8 @@ const Shop = () => {
   const showMobilityConversionWarning =
     !!mobilityConversion &&
     shouldWarnUser(mobilityConversion.status) &&
-    !userClearedMobility;
+    !userClearedMobility &&
+    !mobilityWarningDismissed;
 
   // Initialize price range once products load
   useEffect(() => {
@@ -720,6 +749,19 @@ const Shop = () => {
                     <span className="text-xs text-muted-foreground">
                       C’est rapide, en 2 clics.
                     </span>
+                    {/* Per-session dismissal — pushed to the right on wide
+                        screens via ml-auto so it reads as a tertiary action,
+                        not a primary one. The banner is a soft nudge, so we
+                        let users snooze it without disabling the safety net
+                        (it comes back next session). */}
+                    <button
+                      type="button"
+                      onClick={dismissMobilityWarning}
+                      aria-label="Masquer cet avertissement pour cette session"
+                      className="sm:ml-auto text-xs font-medium text-muted-foreground underline underline-offset-2 rounded-sm hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                    >
+                      Ne plus afficher
+                    </button>
                   </div>
                   {showMobilityExplanation && (
                     <div

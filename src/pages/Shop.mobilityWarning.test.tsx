@@ -110,6 +110,14 @@ const renderShop = () => {
 describe('Shop — mobility conversion warning banner (e2e)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Banner dismissal is persisted in sessionStorage for the tab. Each
+    // test must start from a clean slate so the dismissal of one test
+    // can't leak into the next and silently hide the banner.
+    try {
+      window.sessionStorage.clear();
+    } catch {
+      // No-op: jsdom always exposes sessionStorage; guarded just in case.
+    }
   });
 
   it('shows the warning banner when the mapper returns no mobility tag for a valid profile value', async () => {
@@ -409,5 +417,58 @@ describe('Shop — mobility conversion warning banner (e2e)', () => {
     // current filter value being "all" (initial state).
     const banner = await screen.findByRole('status');
     expect(banner).toBeInTheDocument();
+  });
+
+  it('lets the user dismiss the banner for the session via "Ne plus afficher" and persists the choice', async () => {
+    // Failing pipeline → banner is initially shown.
+    mockedUseUserPreferences.mockReturnValue({
+      data: {
+        gender: null,
+        mobility_level: 'mobile',
+        incontinence_level: null,
+        usage_time: null,
+      },
+      isLoading: false,
+    } as ReturnType<typeof useUserPreferences>);
+    mockedMapProfileToFilters.mockReturnValue({
+      gender: undefined,
+      mobility: undefined,
+      incontinenceLevel: undefined,
+      usageTime: undefined,
+    });
+
+    const { unmount } = renderShop();
+    await screen.findByRole('status');
+
+    // The dismiss control is a real <button> matched by its descriptive
+    // aria-label so the test stays robust if visible copy changes.
+    const dismiss = screen.getByRole('button', {
+      name: /masquer cet avertissement pour cette session/i,
+    });
+    expect(dismiss.tagName).toBe('BUTTON');
+    expect(dismiss).toHaveTextContent(/ne plus afficher/i);
+
+    fireEvent.click(dismiss);
+
+    // Banner must disappear immediately after dismissal.
+    await waitFor(() => {
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    });
+
+    // Per-session persistence: the dismissal is stored in sessionStorage
+    // (not localStorage — feature comes back next browser session).
+    expect(
+      window.sessionStorage.getItem('shop:mobilityWarningDismissed'),
+    ).toBe('1');
+
+    // Re-mount the Shop in the same "session" (sessionStorage intact):
+    // the banner must stay hidden — proving the snooze survives
+    // navigation away and back without disabling the safety net.
+    unmount();
+    renderShop();
+    await waitFor(() => {
+      expect(mockedMapProfileToFilters).toHaveBeenCalled();
+    });
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 });
