@@ -263,6 +263,12 @@ describe('Shop — mobility conversion warning banner (e2e)', () => {
     expect(panel).not.toBeNull();
     expect(panel).toHaveTextContent(/votre profil contient une indication/i);
     expect(panel).toHaveTextContent(/filtre/i);
+    // Explicit mismatch statement: the explainer must spell out, in plain
+    // French, that the active filter doesn't match the value stored in
+    // the profile. This is the user's mental model — keep it visible.
+    expect(panel).toHaveTextContent(
+      /filtre actif.*ne correspond pas à la valeur enregistrée dans votre profil/i,
+    );
     // Guardrail: the explainer must stay free of jargon.
     expect(panel?.textContent ?? '').not.toMatch(/tag|enum|mapping_failed|invalid_profile_value/i);
 
