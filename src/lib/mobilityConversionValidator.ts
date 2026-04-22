@@ -35,7 +35,17 @@ export type MobilityConversionStatus =
    * Should never happen — indicates a code bug between
    * `validateUserPreferences` and `mapProfileToFilters`.
    */
-  | 'mapping_failed';
+  | 'mapping_failed'
+  /**
+   * Caller passed a non-null filter value that is NOT a recognised
+   * `MobilityTag` — typically a UI sentinel ("all") or a stale/legacy
+   * value. Treated as a *safe, silent* state: the filter is simply not
+   * actively pointing to a mobility tag, and the user should not be
+   * pestered with a warning. Surfacing this as a distinct status (rather
+   * than collapsing it into `mapping_failed`) prevents false positives
+   * when the user voluntarily clears the filter.
+   */
+  | 'unknown_filter_tag';
 
 export interface MobilityConversionResult {
   status: MobilityConversionStatus;
@@ -45,7 +55,8 @@ export interface MobilityConversionResult {
   resolvedFilterTag: MobilityTag | null;
   /**
    * Human-readable message suitable for a non-blocking UI notice.
-   * `null` when the status does not warrant a warning (`ok` / `empty` / `auto_corrected`).
+   * `null` when the status does not warrant a warning
+   * (`ok` / `empty` / `auto_corrected` / `unknown_filter_tag`).
    */
   warningMessage: string | null;
 }
