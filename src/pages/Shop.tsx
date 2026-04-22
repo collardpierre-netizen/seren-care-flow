@@ -11,7 +11,8 @@ import {
   useProductFilters, 
   mobilityFilterOptions, 
   usageTimeFilterOptions, 
-  genderFilterOptions 
+  genderFilterOptions,
+  toMobilityTag,
 } from "@/hooks/useProductFilters";
 import { useUserPreferences, mapProfileToFilters } from "@/hooks/useUserPreferences";
 import ProductCard from "@/components/shop/ProductCard";
@@ -80,8 +81,8 @@ const Shop = () => {
     if (selectedMobility === 'all') return null;
     const matchesOption = mobilityFilterOptions.some(opt => opt.id === selectedMobility);
     if (matchesOption) return null;
-    // Try to translate via mapProfileToFilters (English DB enum → French UI tag)
-    const translated = mapProfileToFilters({ mobility_level: selectedMobility } as any)?.mobility;
+    // Try to translate (English DB enum → French UI tag)
+    const translated = toMobilityTag(selectedMobility);
     const suggestion = translated && mobilityFilterOptions.find(opt => opt.id === translated);
     return {
       currentValue: selectedMobility,
