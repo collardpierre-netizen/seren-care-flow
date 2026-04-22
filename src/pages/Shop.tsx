@@ -589,16 +589,33 @@ const Shop = () => {
               </div>
             )}
 
-            {/* End-to-end conversion warning: profile value → filter tag failed */}
+            {/* End-to-end conversion warning: profile value → filter tag failed.
+                a11y: this is informational, not an emergency. We use
+                role="status" with aria-live="polite" so screen readers
+                announce it on the next pause instead of interrupting the
+                user mid-sentence (which role="alert" / aria-live="assertive"
+                would do). aria-atomic ensures the full message is re-read
+                if it changes (e.g. when the explainer is toggled). */}
             {showMobilityConversionWarning && mobilityConversion && (
-              <div
-                role="alert"
-                aria-live="assertive"
+              <section
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+                aria-labelledby="mobility-warning-heading"
                 className="mb-6 flex flex-col sm:flex-row sm:items-start gap-3 p-4 rounded-xl border border-destructive/30 bg-destructive/10 text-foreground"
               >
                 <div className="flex-1 text-sm space-y-2">
-                  <p>
-                    <strong>Filtre mobilité non appliqué.</strong>{" "}
+                  {/* h2 keeps the banner consistent with the page's section
+                      hierarchy (h1 "Nos produits" → h2 for siblings like
+                      "Catégories populaires"). Visually styled as inline
+                      body copy to preserve the compact banner layout. */}
+                  <h2
+                    id="mobility-warning-heading"
+                    className="text-sm font-bold inline"
+                  >
+                    Filtre mobilité non appliqué.
+                  </h2>{" "}
+                  <p className="inline">
                     {mobilityConversion.warningMessage}
                   </p>
                   {/* Status-specific, actionable guidance — tells the user
