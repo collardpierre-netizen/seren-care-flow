@@ -69,6 +69,34 @@ const Shop = () => {
   // flag, validator + auto-apply states are indistinguishable from a
   // deliberate "no filter" choice.
   const [userOverrodeMobility, setUserOverrodeMobility] = useState(false);
+  // Per-session dismissal of the mobility-conversion warning. We use
+  // sessionStorage (not localStorage) so the safety net comes back the
+  // next time the user opens the site — dismissing here is "snooze, not
+  // disable". The feature itself stays fully active. Lazy initializer
+  // keeps SSR-safe (window guard) and avoids a flash of the banner on
+  // first paint when it was already dismissed.
+  const MOBILITY_WARNING_DISMISSED_KEY = 'shop:mobilityWarningDismissed';
+  const [mobilityWarningDismissed, setMobilityWarningDismissed] = useState(
+    () => {
+      if (typeof window === 'undefined') return false;
+      try {
+        return (
+          window.sessionStorage.getItem(MOBILITY_WARNING_DISMISSED_KEY) === '1'
+        );
+      } catch {
+        // Private mode / disabled storage → fall back to in-memory only.
+        return false;
+      }
+    },
+  );
+  const dismissMobilityWarning = () => {
+    setMobilityWarningDismissed(true);
+    try {
+      window.sessionStorage.setItem(MOBILITY_WARNING_DISMISSED_KEY, '1');
+    } catch {
+      // Best-effort persistence; in-memory state still hides the banner.
+    }
+  };
 
   // Wrapper for every UI surface that lets the user pick a mobility
   // option. Marks the choice as user-driven so the warning banner can
