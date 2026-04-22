@@ -636,7 +636,7 @@ const Shop = () => {
                 aria-live="polite"
                 aria-atomic="true"
                 aria-labelledby="mobility-warning-heading"
-                className="mb-6 flex flex-col sm:flex-row sm:items-start gap-3 p-4 rounded-xl border border-destructive/30 bg-destructive/10 text-foreground"
+                className="mb-6 p-4 rounded-xl border border-destructive/30 bg-destructive/10 text-foreground"
               >
                 <div className="flex-1 text-sm space-y-2">
                   {/* h2 keeps the banner consistent with the page's section
