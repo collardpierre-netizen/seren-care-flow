@@ -286,11 +286,8 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.create(sessionParams);
     logStep("Checkout session created", { sessionId: session.id, url: session.url });
 
-    // Update order with Stripe session ID
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
+    // Update order with Stripe session ID (reuse the supabaseAdmin client
+    // declared earlier for authoritative pricing).
 
     await supabaseAdmin
       .from("orders")
