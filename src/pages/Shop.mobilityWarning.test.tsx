@@ -177,11 +177,14 @@ describe('Shop — mobility conversion warning banner (e2e)', () => {
     // Actionable CTA: deep-link to the dedicated care-preferences section
     // on the account page (with hash anchor for in-page scroll). Matched by
     // its descriptive aria-label so the test stays robust if the visible
-    // copy is reworded later.
+    // copy is reworded later. The reassuring micro-copy lives next to it.
     const cta = screen.getByRole('link', {
-      name: /préférences de soins.*mobilité/i,
+      name: /corriger mes préférences de soins dans mon compte/i,
     });
     expect(cta).toHaveAttribute('href', '/compte#preferences-soins');
+    expect(cta).toHaveTextContent(/corriger dans mon compte/i);
+    // Reassuring micro-copy sits next to the CTA in the same action row.
+    expect(banner).toHaveTextContent(/c’est rapide, en 2 clics\./i);
   });
 
   it('reveals a plain-language explainer when the user clicks "Pourquoi je vois ce message ?"', async () => {
