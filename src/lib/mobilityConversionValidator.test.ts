@@ -49,15 +49,24 @@ describe('validateMobilityConversion', () => {
     expect(result.warningMessage).toContain('incohérence');
   });
 
-  it('returns "unknown_filter_tag" (silent) when the filter is the "Tous" sentinel', () => {
-    // "all" is the UI sentinel for the filter being inactive — typically
-    // because the user voluntarily picked "Tous". This is NOT a bug and
-    // must NOT trigger a warning, even though the profile has a valid
-    // value. Distinct from `mapping_failed` so the two cases stay
-    // separable for analytics/debugging.
+  it('returns "mapping_failed" when the filter is the "all" UI sentinel', () => {
+    // "all" means the auto-apply attempted but ended up at the default
+    // sentinel — the validator alone can't tell whether the user
+    // intentionally cleared the filter or whether the auto-apply silently
+    // failed. We surface it as `mapping_failed` here; the Shop layer
+    // suppresses the warning if the user explicitly chose "Tous".
     const result = validateMobilityConversion('mobile', 'all');
-    expect(result.status).toBe('unknown_filter_tag');
+    expect(result.status).toBe('mapping_failed');
     expect(result.resolvedFilterTag).toBeNull();
+  });
+
+  it('returns "unknown_filter_tag" (silent) for stale/legacy non-tag values', () => {
+    // Defensive: a stale value that is neither a tag nor the "all"
+    // sentinel (e.g. an enum like "reduced" leaking into filter state)
+    // must degrade gracefully — silent fallback rather than a spurious
+    // alert that the user can't act on.
+    const result = validateMobilityConversion('mobile', 'reduced');
+    expect(result.status).toBe('unknown_filter_tag');
     expect(result.warningMessage).toBeNull();
   });
 
