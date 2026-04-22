@@ -378,6 +378,81 @@ const Account = () => {
                     )}
                   </CardContent>
                 </Card>
+
+                {/* Care preferences card — landing target for the
+                    `/compte#preferences-soins` deep-link from the shop's
+                    mobility-conversion warning banner. The mobility level
+                    itself is set during the guided questionnaire, so we
+                    surface the current value here and offer a one-click
+                    path to redo (or correct) it. The id and scroll-margin
+                    cooperate with the hash-scroll effect declared above. */}
+                <Card
+                  id="preferences-soins"
+                  className="mt-6 scroll-mt-24 transition-shadow"
+                >
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Footprints className="h-5 w-5 text-primary" />
+                      Préférences de soins
+                    </CardTitle>
+                    <CardDescription>
+                      Ces réponses personnalisent les filtres de la boutique
+                      (niveau de mobilité, d'incontinence, moment d'usage…).
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">
+                          Niveau de mobilité
+                        </p>
+                        <p className="font-medium">
+                          {profile?.mobility_level === 'mobile' && 'Mobile'}
+                          {profile?.mobility_level === 'reduced' && 'Mobilité réduite'}
+                          {profile?.mobility_level === 'bedridden' && 'Alité·e'}
+                          {!['mobile', 'reduced', 'bedridden'].includes(profile?.mobility_level ?? '') && (
+                            <span className="text-destructive">
+                              {profile?.mobility_level
+                                ? `Valeur non reconnue : "${profile.mobility_level}"`
+                                : 'Non renseigné'}
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">
+                          Niveau d'incontinence
+                        </p>
+                        <p className="font-medium">
+                          {profile?.incontinence_level || 'Non renseigné'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="rounded-lg border border-border bg-muted/40 p-4 text-sm space-y-2">
+                      <p className="font-medium">
+                        Comment corriger une valeur invalide&nbsp;?
+                      </p>
+                      <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
+                        <li>
+                          Ouvrez le questionnaire guidé&nbsp;: il met à jour
+                          automatiquement votre niveau de mobilité avec une
+                          valeur reconnue par la boutique.
+                        </li>
+                        <li>
+                          Retournez ensuite sur la boutique — le filtre
+                          adapté sera réappliqué et la bannière
+                          d'avertissement disparaîtra.
+                        </li>
+                      </ol>
+                      <Button asChild className="mt-2">
+                        <Link to="/questionnaire">
+                          Refaire le questionnaire guidé
+                        </Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
               </TabsContent>
 
               {/* Orders Tab */}
