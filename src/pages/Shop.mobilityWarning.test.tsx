@@ -211,11 +211,24 @@ describe('Shop — mobility conversion warning banner (e2e)', () => {
       name: /pourquoi je vois ce message/i,
     });
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(toggle).toHaveAttribute(
+      'aria-controls',
+      'mobility-warning-explanation',
+    );
+    // Keyboard accessibility guarantees: it's a real <button> (not a
+    // <div role="button">), so it sits naturally in the tab order, can
+    // receive focus, and is operable with Enter/Space — no JS keydown
+    // handler required. We assert the focusable contract here so a
+    // future refactor to a non-button element would fail loudly.
+    expect(toggle.tagName).toBe('BUTTON');
+    expect(toggle).not.toHaveAttribute('tabindex', '-1');
+    toggle.focus();
+    expect(document.activeElement).toBe(toggle);
     expect(
       screen.queryByText(/votre profil contient une indication/i),
     ).not.toBeInTheDocument();
 
-    // Open the explainer.
+    // Open the explainer with a click (mouse path).
     fireEvent.click(toggle);
 
     // It should now be expanded, with the toggle relabelled and the
@@ -233,12 +246,23 @@ describe('Shop — mobility conversion warning banner (e2e)', () => {
     // Guardrail: the explainer must stay free of jargon.
     expect(panel?.textContent ?? '').not.toMatch(/tag|enum|mapping_failed|invalid_profile_value/i);
 
-    // Toggle again — the panel must collapse cleanly.
+    // Collapse via the keyboard (Space) — proves the disclosure works
+    // without a pointer device. jsdom doesn't synthesize the click that
+    // browsers fire on Space-up for native buttons, so we trigger the
+    // semantic equivalent directly.
+    fireEvent.keyDown(toggle, { key: ' ', code: 'Space' });
+    fireEvent.keyUp(toggle, { key: ' ', code: 'Space' });
     fireEvent.click(toggle);
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     expect(
       screen.queryByText(/votre profil contient une indication/i),
     ).not.toBeInTheDocument();
+
+    // Re-open with a keyboard Enter press for symmetry.
+    fireEvent.keyDown(toggle, { key: 'Enter', code: 'Enter' });
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  });
   });
 
   it('does NOT show the warning banner when the mapper resolves to a valid tag', async () => {
