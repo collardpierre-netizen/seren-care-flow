@@ -74,6 +74,21 @@ const Shop = () => {
     return { min: Math.floor(Math.min(...prices)), max: Math.ceil(Math.max(...prices)) };
   }, [products]);
 
+  // Detect when the active mobility filter doesn't match any known UI option
+  // and suggest the auto-translated value (e.g. profile sent "reduced" → "reduite")
+  const mobilityHint = useMemo(() => {
+    if (selectedMobility === 'all') return null;
+    const matchesOption = mobilityFilterOptions.some(opt => opt.id === selectedMobility);
+    if (matchesOption) return null;
+    // Try to translate via mapProfileToFilters (English DB enum → French UI tag)
+    const translated = mapProfileToFilters({ mobility_level: selectedMobility } as any)?.mobility;
+    const suggestion = translated && mobilityFilterOptions.find(opt => opt.id === translated);
+    return {
+      currentValue: selectedMobility,
+      suggestion: suggestion ? { id: suggestion.id, label: suggestion.label } : null,
+    };
+  }, [selectedMobility]);
+
   // Initialize price range once products load
   useEffect(() => {
     if (products && products.length > 0 && !priceRangeInitialized) {
@@ -454,7 +469,35 @@ const Shop = () => {
               )}
             </div>
 
-            {/* Mobile Filter Toggle */}
+            {/* Mobility filter mismatch hint */}
+            {mobilityHint && (
+              <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-xl border border-destructive/30 bg-destructive/10 text-foreground">
+                <div className="flex-1 text-sm">
+                  <strong>Filtre mobilité non reconnu :</strong>{" "}
+                  <span className="font-mono">"{mobilityHint.currentValue}"</span> ne correspond à aucune option disponible.
+                  {mobilityHint.suggestion && (
+                    <> Vouliez-vous dire <strong>{mobilityHint.suggestion.label}</strong> ?</>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  {mobilityHint.suggestion && (
+                    <button
+                      onClick={() => setSelectedMobility(mobilityHint.suggestion!.id)}
+                      className="px-3 py-1.5 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+                    >
+                      Appliquer "{mobilityHint.suggestion.label}"
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setSelectedMobility('all')}
+                    className="px-3 py-1.5 rounded-lg text-sm font-medium bg-card border border-border text-foreground hover:bg-muted transition-colors"
+                  >
+                    Réinitialiser
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="lg:hidden mb-6">
               <Button
                 variant="outline"
