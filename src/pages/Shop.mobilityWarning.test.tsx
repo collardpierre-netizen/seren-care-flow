@@ -154,12 +154,22 @@ describe('Shop — mobility conversion warning banner (e2e)', () => {
     // matching the page's existing section level (h1 "Nos produits" →
     // h2 for sibling sections like "Catégories populaires"). The banner
     // must also reference that heading via aria-labelledby for SR users.
+    // The heading is reassurance-first: it tells the user upfront that
+    // nothing has been hidden from them.
     const heading = screen.getByRole('heading', {
       level: 2,
-      name: /filtre mobilité non appliqué/i,
+      name: /aucun produit n’est masqué/i,
     });
     expect(heading).toBeInTheDocument();
     expect(banner).toHaveAttribute('aria-labelledby', heading.id);
+
+    // Calm, reassuring opening copy — the user sees "tout le catalogue"
+    // before any mention of a problem.
+    expect(banner).toHaveTextContent(/vous voyez tout le catalogue/i);
+    // The "what happened" line stays soft: no alarm vocabulary.
+    expect(banner).toHaveTextContent(
+      /n’avons pas pu appliquer votre filtre mobilité/i,
+    );
 
     // Technical breadcrumbs help support diagnose the issue without leaking
     // sensitive data — must show the raw profile value and the resolved tag.
@@ -171,7 +181,6 @@ describe('Shop — mobility conversion warning banner (e2e)', () => {
 
     // Actionable, status-aware guidance must point the user at the
     // "Préférences de soins" section by name (this is the anchor target).
-    expect(banner).toHaveTextContent(/À corriger/i);
     expect(banner).toHaveTextContent(/Préférences de soins/i);
 
     // Actionable CTA: deep-link to the dedicated care-preferences section
