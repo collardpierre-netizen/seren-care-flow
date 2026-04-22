@@ -749,15 +749,6 @@ const Shop = () => {
                     {" "}(<span className="font-mono">{mobilityConversion.status}</span>)
                   </p>
                 </div>
-                {/* Deep-link with hash anchor: Account.tsx scrolls the
-                    matching section into view on mount. */}
-                <Link
-                  to="/compte#preferences-soins"
-                  aria-label="Ouvrir mes préférences de soins pour corriger mon niveau de mobilité"
-                  className="self-start px-3 py-1.5 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity whitespace-nowrap"
-                >
-                  Corriger ma mobilité dans mon compte
-                </Link>
               </section>
             )}
 
