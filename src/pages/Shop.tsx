@@ -59,6 +59,16 @@ const Shop = () => {
     if (userPreferences && !preferencesApplied) {
       const profileFilters = mapProfileToFilters(userPreferences);
       if (profileFilters) {
+        // Safe debug log: only the mobility mapping (no PII like name/email/address).
+        // Helps diagnose mismatches between the DB enum stored on the profile
+        // (`mobile`/`reduced`/`bedridden`) and the French UI tag pushed to filters
+        // (`mobile`/`reduite`/`alitee`).
+        if (import.meta.env.DEV) {
+          console.debug('[Shop] mobility filter from profile', {
+            profile_mobility_level: userPreferences.mobility_level ?? null,
+            applied_filter_tag: profileFilters.mobility ?? null,
+          });
+        }
         if (profileFilters.gender) setSelectedGender(profileFilters.gender);
         if (profileFilters.mobility) setSelectedMobility(profileFilters.mobility);
         if (profileFilters.incontinenceLevel) setSelectedIncontinence(profileFilters.incontinenceLevel);
