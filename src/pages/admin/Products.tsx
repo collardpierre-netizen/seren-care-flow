@@ -1,4 +1,10 @@
 import React, { useState, useRef } from 'react';
+import { toMobilityEnum } from '@/hooks/useProductFilters';
+import {
+  toIncontinenceLevel,
+  toUsageTime,
+  toGender,
+} from '@/lib/profileNormalization';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -507,12 +513,15 @@ const AdminProducts: React.FC = () => {
       category_id: product.category_id || '',
       short_description: product.short_description || '',
       description: product.description || '',
-      incontinence_level: product.incontinence_level || '',
-      mobility: product.mobility || '',
-      usage_time: product.usage_time || '',
+      // Auto-correct legacy values (e.g. a French tag stored where the DB enum
+      // is expected) so the dropdown shows the matching option instead of an
+      // empty Select. Unknown values fall back to '' (no selection).
+      incontinence_level: toIncontinenceLevel(product.incontinence_level) || '',
+      mobility: toMobilityEnum(product.mobility) || '',
+      usage_time: toUsageTime(product.usage_time) || '',
       mobility_levels: product.mobility_levels || '',
       usage_times: product.usage_times || '',
-      gender: product.gender || '',
+      gender: toGender(product.gender) || '',
       recommended_price: product.recommended_price || 0,
       price: product.price,
       subscription_price: product.subscription_price || 0,
