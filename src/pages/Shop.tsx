@@ -197,7 +197,7 @@ const Shop = () => {
     showDroplets = false,
     counts
   }: { 
-    options: { id: string; label: string; icon?: number }[]; 
+    options: ReadonlyArray<{ id: string; label: string; icon?: number }>; 
     value: string; 
     onChange: (v: string) => void; 
     label: string;
