@@ -203,7 +203,7 @@ describe('Shop — mobility conversion warning banner (e2e)', () => {
     });
 
     renderShop();
-    await screen.findByRole('alert');
+    await screen.findByRole('status');
 
     // Disclosure starts collapsed: aria-expanded must be false and the
     // explainer text must NOT be in the DOM yet.
