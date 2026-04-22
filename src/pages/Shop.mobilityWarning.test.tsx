@@ -137,25 +137,42 @@ describe('Shop — mobility conversion warning banner (e2e)', () => {
 
     renderShop();
 
-    // Banner is rendered with role="alert" so screen readers announce it.
-    const alert = await screen.findByRole('alert');
-    expect(alert).toBeInTheDocument();
+    // a11y: the banner is informational, not an emergency. It must be
+    // announced *non-intrusively* — `role="status"` + `aria-live="polite"`
+    // means screen readers wait for the next pause instead of barging in.
+    // We deliberately do NOT use `role="alert"` here (that would imply
+    // assertive live-region semantics).
+    const banner = await screen.findByRole('status');
+    expect(banner).toBeInTheDocument();
+    expect(banner).toHaveAttribute('aria-live', 'polite');
+    expect(banner).toHaveAttribute('aria-atomic', 'true');
+    // Must NOT be advertised as an alert — that semantic is reserved for
+    // critical, time-sensitive information.
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 
-    // Headline copy that the user actually reads.
-    expect(alert).toHaveTextContent(/Filtre mobilité non appliqué/i);
+    // Heading hierarchy: the banner exposes its title as a real <h2>,
+    // matching the page's existing section level (h1 "Nos produits" →
+    // h2 for sibling sections like "Catégories populaires"). The banner
+    // must also reference that heading via aria-labelledby for SR users.
+    const heading = screen.getByRole('heading', {
+      level: 2,
+      name: /filtre mobilité non appliqué/i,
+    });
+    expect(heading).toBeInTheDocument();
+    expect(banner).toHaveAttribute('aria-labelledby', heading.id);
 
     // Technical breadcrumbs help support diagnose the issue without leaking
     // sensitive data — must show the raw profile value and the resolved tag.
-    expect(alert).toHaveTextContent(/profil = "mobile"/);
-    expect(alert).toHaveTextContent(/filtre = "∅"/);
+    expect(banner).toHaveTextContent(/profil = "mobile"/);
+    expect(banner).toHaveTextContent(/filtre = "∅"/);
 
     // The structured status code is what the validator emits for this case.
-    expect(alert).toHaveTextContent(/mapping_failed/);
+    expect(banner).toHaveTextContent(/mapping_failed/);
 
     // Actionable, status-aware guidance must point the user at the
     // "Préférences de soins" section by name (this is the anchor target).
-    expect(alert).toHaveTextContent(/À corriger/i);
-    expect(alert).toHaveTextContent(/Préférences de soins/i);
+    expect(banner).toHaveTextContent(/À corriger/i);
+    expect(banner).toHaveTextContent(/Préférences de soins/i);
 
     // Actionable CTA: deep-link to the dedicated care-preferences section
     // on the account page (with hash anchor for in-page scroll). Matched by
