@@ -7,12 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { Filter, X, ChevronDown, Loader2, Package, Droplet, Moon, Sun, Footprints, Sparkles, User, Euro } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useProducts, useBrands, useCategories, Product } from "@/hooks/useProducts";
-import { 
-  useProductFilters, 
-  mobilityFilterOptions, 
-  usageTimeFilterOptions, 
+import {
+  useProductFilters,
+  mobilityFilterOptions,
+  usageTimeFilterOptions,
   genderFilterOptions,
   toMobilityTag,
+  type MobilityFilterId,
 } from "@/hooks/useProductFilters";
 import { useUserPreferences, mapProfileToFilters } from "@/hooks/useUserPreferences";
 import ProductCard from "@/components/shop/ProductCard";
@@ -36,7 +37,9 @@ const Shop = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
   const [selectedIncontinence, setSelectedIncontinence] = useState<string>("all");
-  const [selectedMobility, setSelectedMobility] = useState<string>("all");
+  // `selectedMobility` should always be a French UI tag (or "all"). The
+  // mismatch banner below catches any external code that breaks this invariant.
+  const [selectedMobility, setSelectedMobility] = useState<MobilityFilterId | string>("all");
   const [selectedUsageTime, setSelectedUsageTime] = useState<string>("all");
   const [selectedGender, setSelectedGender] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
