@@ -24,6 +24,12 @@ import { Slider } from "@/components/ui/slider";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { logMobilityDebug } from "@/lib/shopDebug";
+import {
+  validateMobilityConversion,
+  shouldWarnUser,
+  type MobilityConversionResult,
+} from "@/lib/mobilityConversionValidator";
+import { isMobilityTag } from "@/hooks/useProductFilters";
 
 const incontinenceLevelOptions = [
   { id: "all", label: "Tous" },
@@ -120,6 +126,20 @@ const Shop = () => {
       setSelectedMobility(suggestion.id);
     }
   }, [mobilityHint]);
+
+  // End-to-end validation: compare the raw profile value with the tag that
+  // actually landed in the shop filter state. Surfaces a clear, non-blocking
+  // warning whenever the conversion silently failed (unknown profile value,
+  // mapping bug, etc.) — the user would otherwise see an unexplained empty
+  // product list. Result is `null` when there is nothing to compare yet.
+  const mobilityConversion = useMemo<MobilityConversionResult | null>(() => {
+    if (!preferencesApplied || !userPreferences) return null;
+    const tag = isMobilityTag(selectedMobility) ? selectedMobility : null;
+    return validateMobilityConversion(userPreferences.mobility_level, tag);
+  }, [preferencesApplied, userPreferences, selectedMobility]);
+
+  const showMobilityConversionWarning =
+    !!mobilityConversion && shouldWarnUser(mobilityConversion.status);
 
   // Initialize price range once products load
   useEffect(() => {
@@ -566,6 +586,37 @@ const Shop = () => {
                     Réinitialiser
                   </button>
                 </div>
+              </div>
+            )}
+
+            {/* End-to-end conversion warning: profile value → filter tag failed */}
+            {showMobilityConversionWarning && mobilityConversion && (
+              <div
+                role="alert"
+                aria-live="assertive"
+                className="mb-6 flex flex-col sm:flex-row sm:items-start gap-3 p-4 rounded-xl border border-destructive/30 bg-destructive/10 text-foreground"
+              >
+                <div className="flex-1 text-sm space-y-2">
+                  <p>
+                    <strong>Filtre mobilité non appliqué.</strong>{" "}
+                    {mobilityConversion.warningMessage}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Détails techniques :{" "}
+                    <span className="font-mono">
+                      profil = "{mobilityConversion.rawProfileValue ?? '∅'}"
+                      {" → "}
+                      filtre = "{mobilityConversion.resolvedFilterTag ?? '∅'}"
+                    </span>
+                    {" "}(<span className="font-mono">{mobilityConversion.status}</span>)
+                  </p>
+                </div>
+                <Link
+                  to="/compte"
+                  className="self-start px-3 py-1.5 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity whitespace-nowrap"
+                >
+                  Mettre à jour mon profil
+                </Link>
               </div>
             )}
 
