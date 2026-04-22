@@ -39,13 +39,24 @@ export const useUserPreferences = () => {
   });
 };
 
+// Map English DB mobility enum to French UI filter tags
+const mobilityEnumToFilterTag: Record<string, string> = {
+  'mobile': 'mobile',
+  'reduced': 'reduite',
+  'bedridden': 'alitee',
+};
+
 // Helper to convert profile values to filter values
 export const mapProfileToFilters = (preferences: UserPreferences | null | undefined) => {
   if (!preferences) return null;
 
+  const mobilityTag = preferences.mobility_level
+    ? mobilityEnumToFilterTag[preferences.mobility_level] || preferences.mobility_level
+    : undefined;
+
   return {
     gender: preferences.gender || undefined,
-    mobility: preferences.mobility_level || undefined,
+    mobility: mobilityTag,
     incontinenceLevel: preferences.incontinence_level || undefined,
     usageTime: preferences.usage_time || undefined,
   };
