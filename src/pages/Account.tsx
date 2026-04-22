@@ -41,6 +41,7 @@ const Account = () => {
   const { user, isLoading: authLoading } = useAuth();
   const { addItem, openCart } = useCart();
   const queryClient = useQueryClient();
+  const location = useLocation();
   const [editingProfile, setEditingProfile] = useState(false);
   const [isOpeningPortal, setIsOpeningPortal] = useState(false);
   const [profileForm, setProfileForm] = useState({
@@ -52,6 +53,27 @@ const Account = () => {
     postal_code: '',
     city: ''
   });
+
+  // Deep-link support: when the URL contains an anchor like
+  // `#preferences-soins`, smoothly scroll the matching section into view
+  // and briefly highlight it. This makes "Corriger ma mobilité" links from
+  // the shop banner land directly on the relevant card instead of dumping
+  // the user at the top of the page.
+  useEffect(() => {
+    if (!location.hash) return;
+    const id = location.hash.slice(1);
+    // Defer to the next frame so React has finished mounting the section.
+    const raf = requestAnimationFrame(() => {
+      const target = document.getElementById(id);
+      if (!target) return;
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      target.classList.add('ring-2', 'ring-primary', 'ring-offset-2');
+      window.setTimeout(() => {
+        target.classList.remove('ring-2', 'ring-primary', 'ring-offset-2');
+      }, 2400);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [location.hash]);
 
   // Fetch profile
   const { data: profile, isLoading: profileLoading } = useQuery({
