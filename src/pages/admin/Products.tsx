@@ -1221,7 +1221,19 @@ const AdminProducts: React.FC = () => {
       }
 
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
-      toast.success(`Import terminé: ${imported} créés, ${updated} mis à jour${errors > 0 ? `, ${errors} erreurs` : ''}`);
+
+      // Surface enum-field auto-corrections / rejections so the admin can
+      // review which rows had FR aliases or invalid values normalised.
+      const corrected = enumIssues.filter(e => e.resolved !== null);
+      const rejected = enumIssues.filter(e => e.resolved === null);
+      let issueSummary = '';
+      if (corrected.length > 0) issueSummary += ` · ${corrected.length} valeur(s) auto-corrigée(s) (FR → EN)`;
+      if (rejected.length > 0) issueSummary += ` · ${rejected.length} valeur(s) inconnue(s) ignorée(s)`;
+      if (enumIssues.length > 0) {
+        console.warn('[products import] enum field issues', enumIssues);
+      }
+
+      toast.success(`Import terminé: ${imported} créés, ${updated} mis à jour${errors > 0 ? `, ${errors} erreurs` : ''}${issueSummary}`);
     } catch (error) {
       toast.error('Erreur lors de l\'import du fichier');
     } finally {
@@ -1481,10 +1493,18 @@ const AdminProducts: React.FC = () => {
                     <SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger>
                     <SelectContent>
                       {mobilityTypes.map(m => (
-                        <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                        <SelectItem key={m.value} value={m.value}>
+                          <div className="flex items-center justify-between gap-3 w-full">
+                            <span>{m.label}</span>
+                            <span className="text-xs text-muted-foreground font-mono">{m.value}</span>
+                          </div>
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Valeur stockée en base : enum EN (<code className="font-mono">mobile</code> / <code className="font-mono">reduced</code> / <code className="font-mono">bedridden</code>). Les saisies FR sont rejetées par la base.
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label>Moment d'utilisation</Label>
