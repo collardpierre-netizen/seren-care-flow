@@ -681,12 +681,17 @@ const Shop = () => {
                       copy here intentionally avoids any tag/enum jargon —
                       the technical breadcrumbs live in the next paragraph. */}
                   <p>
+                    {/* Native <button> → focusable & operable via Enter/Space
+                        out of the box. We add an explicit focus-visible ring
+                        (semantic `--ring` token) so keyboard users get a
+                        clear focus indicator that survives theme changes,
+                        and rounded edges so the ring hugs the underline. */}
                     <button
                       type="button"
                       onClick={() => setShowMobilityExplanation((v) => !v)}
                       aria-expanded={showMobilityExplanation}
                       aria-controls="mobility-warning-explanation"
-                      className="text-sm font-medium text-primary underline underline-offset-2 hover:opacity-80 transition-opacity"
+                      className="text-sm font-medium text-primary underline underline-offset-2 rounded-sm hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                     >
                       {showMobilityExplanation
                         ? 'Masquer l\u2019explication'
