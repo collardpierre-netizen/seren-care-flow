@@ -112,6 +112,16 @@ const Shop = () => {
     };
   }, [selectedMobility]);
 
+  // Auto-apply the translated value when we have a confident suggestion, and
+  // surface a non-blocking info banner explaining what just happened.
+  useEffect(() => {
+    if (mobilityHint?.suggestion) {
+      const { currentValue, suggestion } = mobilityHint;
+      setMobilityAutoTranslation({ from: currentValue, to: suggestion });
+      setSelectedMobility(suggestion.id);
+    }
+  }, [mobilityHint]);
+
   // Initialize price range once products load
   useEffect(() => {
     if (products && products.length > 0 && !priceRangeInitialized) {
