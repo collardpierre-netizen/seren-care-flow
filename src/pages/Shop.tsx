@@ -23,7 +23,7 @@ import ProductSelector from "@/components/shop/ProductSelector";
 import { Slider } from "@/components/ui/slider";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { buildMobilityDebugLog } from "@/lib/shopDebug";
+import { logMobilityDebug } from "@/lib/shopDebug";
 
 const incontinenceLevelOptions = [
   { id: "all", label: "Tous" },
@@ -72,15 +72,13 @@ const Shop = () => {
         // Safe debug log: only the mobility mapping (no PII like name/email/address).
         // Helps diagnose mismatches between the DB enum stored on the profile
         // (`mobile`/`reduced`/`bedridden`) and the French UI tag pushed to filters
-        // (`mobile`/`reduite`/`alitee`).
-        const debugPayload = buildMobilityDebugLog({
+        // (`mobile`/`reduite`/`alitee`). The shared logger guarantees the same
+        // `[Shop]` prefix and field names everywhere.
+        logMobilityDebug({
           isDev: import.meta.env.DEV,
           profileMobilityLevel: userPreferences.mobility_level,
           appliedFilterTag: profileFilters.mobility,
         });
-        if (debugPayload) {
-          console.debug('[Shop] mobility filter from profile', debugPayload);
-        }
         if (profileFilters.gender) setSelectedGender(profileFilters.gender);
         if (profileFilters.mobility) setSelectedMobility(profileFilters.mobility);
         if (profileFilters.incontinenceLevel) setSelectedIncontinence(profileFilters.incontinenceLevel);
