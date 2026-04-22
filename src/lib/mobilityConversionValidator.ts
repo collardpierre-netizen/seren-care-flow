@@ -82,9 +82,16 @@ export function validateMobilityConversion(
     resolvedFilterTag && isMobilityTag(resolvedFilterTag)
       ? (resolvedFilterTag as MobilityTag)
       : null;
+  // True when the caller passed a non-empty value that *isn't* a tag AND
+  // isn't the "all" UI sentinel — e.g. a stale enum like "reduced" leaking
+  // into the filter state. The "all" case is intentionally excluded so that
+  // it still counts as `mapping_failed` (the auto-apply attempted to set a
+  // tag and ended up with the default sentinel). Shop-level intent tracking
+  // decides whether to surface or suppress the warning in that case.
   const callerProvidedNonTag =
     resolvedFilterTag != null &&
     resolvedFilterTag !== '' &&
+    resolvedFilterTag !== 'all' &&
     !isMobilityTag(resolvedFilterTag);
 
   if (!raw) {
