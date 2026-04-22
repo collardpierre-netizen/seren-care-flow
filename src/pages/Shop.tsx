@@ -471,7 +471,7 @@ const Shop = () => {
 
             {/* Mobility filter mismatch hint */}
             {mobilityHint && (
-              <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-900">
+              <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-xl border border-destructive/30 bg-destructive/10 text-foreground">
                 <div className="flex-1 text-sm">
                   <strong>Filtre mobilité non reconnu :</strong>{" "}
                   <span className="font-mono">"{mobilityHint.currentValue}"</span> ne correspond à aucune option disponible.
@@ -483,14 +483,14 @@ const Shop = () => {
                   {mobilityHint.suggestion && (
                     <button
                       onClick={() => setSelectedMobility(mobilityHint.suggestion!.id)}
-                      className="px-3 py-1.5 rounded-lg text-sm font-medium bg-amber-600 text-white hover:bg-amber-700 transition-colors"
+                      className="px-3 py-1.5 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
                     >
                       Appliquer "{mobilityHint.suggestion.label}"
                     </button>
                   )}
                   <button
                     onClick={() => setSelectedMobility('all')}
-                    className="px-3 py-1.5 rounded-lg text-sm font-medium bg-white border border-amber-300 text-amber-900 hover:bg-amber-100 transition-colors"
+                    className="px-3 py-1.5 rounded-lg text-sm font-medium bg-card border border-border text-foreground hover:bg-muted transition-colors"
                   >
                     Réinitialiser
                   </button>
