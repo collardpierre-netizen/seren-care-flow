@@ -110,6 +110,14 @@ const renderShop = () => {
 describe('Shop — mobility conversion warning banner (e2e)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Banner dismissal is persisted in sessionStorage for the tab. Each
+    // test must start from a clean slate so the dismissal of one test
+    // can't leak into the next and silently hide the banner.
+    try {
+      window.sessionStorage.clear();
+    } catch {
+      // No-op: jsdom always exposes sessionStorage; guarded just in case.
+    }
   });
 
   it('shows the warning banner when the mapper returns no mobility tag for a valid profile value', async () => {
