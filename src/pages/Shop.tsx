@@ -469,7 +469,35 @@ const Shop = () => {
               )}
             </div>
 
-            {/* Mobile Filter Toggle */}
+            {/* Mobility filter mismatch hint */}
+            {mobilityHint && (
+              <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-900">
+                <div className="flex-1 text-sm">
+                  <strong>Filtre mobilité non reconnu :</strong>{" "}
+                  <span className="font-mono">"{mobilityHint.currentValue}"</span> ne correspond à aucune option disponible.
+                  {mobilityHint.suggestion && (
+                    <> Vouliez-vous dire <strong>{mobilityHint.suggestion.label}</strong> ?</>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  {mobilityHint.suggestion && (
+                    <button
+                      onClick={() => setSelectedMobility(mobilityHint.suggestion!.id)}
+                      className="px-3 py-1.5 rounded-lg text-sm font-medium bg-amber-600 text-white hover:bg-amber-700 transition-colors"
+                    >
+                      Appliquer "{mobilityHint.suggestion.label}"
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setSelectedMobility('all')}
+                    className="px-3 py-1.5 rounded-lg text-sm font-medium bg-white border border-amber-300 text-amber-900 hover:bg-amber-100 transition-colors"
+                  >
+                    Réinitialiser
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="lg:hidden mb-6">
               <Button
                 variant="outline"
