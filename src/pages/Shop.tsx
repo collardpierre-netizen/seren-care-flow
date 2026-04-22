@@ -636,7 +636,7 @@ const Shop = () => {
                 aria-live="polite"
                 aria-atomic="true"
                 aria-labelledby="mobility-warning-heading"
-                className="mb-6 flex flex-col sm:flex-row sm:items-start gap-3 p-4 rounded-xl border border-destructive/30 bg-destructive/10 text-foreground"
+                className="mb-6 p-4 rounded-xl border border-destructive/30 bg-destructive/10 text-foreground"
               >
                 <div className="flex-1 text-sm space-y-2">
                   {/* h2 keeps the banner consistent with the page's section
@@ -680,7 +680,20 @@ const Shop = () => {
                       "profil vs filtre" distinction at first glance. The
                       copy here intentionally avoids any tag/enum jargon —
                       the technical breadcrumbs live in the next paragraph. */}
-                  <p>
+                  {/* Inline action row: "Corriger dans mon compte" CTA sits
+                      right next to the plain-language explainer toggle so the
+                      user sees the fix and the why side-by-side. The CTA copy
+                      is intentionally short and reassuring (no jargon, no
+                      "mobilité" technicality) to lower the friction of
+                      clicking through to /compte#preferences-soins. */}
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">
+                    <Link
+                      to="/compte#preferences-soins"
+                      aria-label="Corriger mes préférences de soins dans mon compte"
+                      className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                    >
+                      Corriger dans mon compte
+                    </Link>
                     {/* Native <button> → focusable & operable via Enter/Space
                         out of the box. We add an explicit focus-visible ring
                         (semantic `--ring` token) so keyboard users get a
@@ -697,7 +710,10 @@ const Shop = () => {
                         ? 'Masquer l\u2019explication'
                         : 'Pourquoi je vois ce message\u00a0?'}
                     </button>
-                  </p>
+                    <span className="text-xs text-muted-foreground">
+                      C’est rapide, en 2 clics.
+                    </span>
+                  </div>
                   {showMobilityExplanation && (
                     <div
                       id="mobility-warning-explanation"
@@ -733,15 +749,6 @@ const Shop = () => {
                     {" "}(<span className="font-mono">{mobilityConversion.status}</span>)
                   </p>
                 </div>
-                {/* Deep-link with hash anchor: Account.tsx scrolls the
-                    matching section into view on mount. */}
-                <Link
-                  to="/compte#preferences-soins"
-                  aria-label="Ouvrir mes préférences de soins pour corriger mon niveau de mobilité"
-                  className="self-start px-3 py-1.5 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity whitespace-nowrap"
-                >
-                  Corriger ma mobilité dans mon compte
-                </Link>
               </section>
             )}
 
