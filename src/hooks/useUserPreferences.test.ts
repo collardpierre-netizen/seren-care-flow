@@ -33,11 +33,13 @@ describe("mapProfileToFilters - mobility translation", () => {
     expect(mapProfileToFilters(undefined)).toBeNull();
   });
 
-  it("falls back to original value for unknown mobility_level", () => {
+  it("returns undefined mobility for unknown mobility_level (no leakage of non-tag strings)", () => {
     const result = mapProfileToFilters({
       mobility_level: "unknown_value",
     } as any);
-    expect(result?.mobility).toBe("unknown_value");
+    // The new strict typing forbids leaking arbitrary strings into the UI
+    // filter state — unknown values are dropped instead of passed through.
+    expect(result?.mobility).toBeUndefined();
   });
 
   it("preserves other preferences alongside mobility translation", () => {
