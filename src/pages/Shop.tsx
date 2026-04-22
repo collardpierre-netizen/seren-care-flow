@@ -29,7 +29,7 @@ import {
   shouldWarnUser,
   type MobilityConversionResult,
 } from "@/lib/mobilityConversionValidator";
-import { isMobilityTag } from "@/hooks/useProductFilters";
+
 
 const incontinenceLevelOptions = [
   { id: "all", label: "Tous" },
