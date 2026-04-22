@@ -729,19 +729,17 @@ const Shop = () => {
                       <p>
                         Votre <strong>profil</strong> contient une indication
                         sur votre mobilité (par exemple « Mobile » ou
-                        « Mobilité réduite »). La boutique s\u2019en sert
-                        pour activer automatiquement le bon{" "}
+                        « Mobilité réduite »). La boutique s’en sert pour
+                        activer automatiquement le bon{" "}
                         <strong>filtre</strong> de produits, afin de ne vous
                         montrer que ceux qui correspondent à votre situation.
                       </p>
                       <p>
-                        Ici, ces deux informations ne correspondent pas\u00a0:
-                        nous n\u2019avons pas pu choisir un filtre adapté à
-                        partir de la valeur enregistrée dans votre profil.
-                        Aucun produit n\u2019a été masqué\u00a0— vous pouvez
-                        continuer à parcourir la boutique normalement, ou
-                        mettre à jour votre profil pour retrouver des
-                        recommandations personnalisées.
+                        Ici, ces deux informations ne correspondent pas. Tout
+                        le catalogue reste visible — vous pouvez continuer à
+                        parcourir la boutique tranquillement, ou mettre à jour
+                        votre profil pour retrouver des recommandations
+                        personnalisées.
                       </p>
                     </div>
                   )}
