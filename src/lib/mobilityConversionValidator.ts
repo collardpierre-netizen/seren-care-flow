@@ -72,10 +72,20 @@ export function validateMobilityConversion(
   resolvedFilterTag: MobilityTag | string | null | undefined,
 ): MobilityConversionResult {
   const raw = rawProfileValue ?? null;
+  // Capture *both* facets of the input filter value:
+  //   - `tag`: normalised to a real `MobilityTag`, or null if not recognised
+  //   - `callerProvidedNonTag`: true when the caller passed a non-empty
+  //     value that *isn't* a tag (e.g. "all", legacy sentinel, stale enum).
+  //     Used below to keep the user-friendly silence guarantee for the
+  //     "Tous" case while still flagging genuine pipeline bugs.
   const tag =
     resolvedFilterTag && isMobilityTag(resolvedFilterTag)
       ? (resolvedFilterTag as MobilityTag)
       : null;
+  const callerProvidedNonTag =
+    resolvedFilterTag != null &&
+    resolvedFilterTag !== '' &&
+    !isMobilityTag(resolvedFilterTag);
 
   if (!raw) {
     return {
@@ -101,8 +111,22 @@ export function validateMobilityConversion(
     };
   }
 
-  // Enum is valid but no tag was produced → mapping bug.
+  // Enum is valid but the resolved value isn't a tag. Two sub-cases:
+  //   1. Caller passed a non-tag sentinel ("all", legacy value, …) →
+  //      `unknown_filter_tag`. Safe & silent: the filter just isn't
+  //      pointing to a mobility tag right now (e.g. user picked "Tous").
+  //   2. Caller passed null/undefined → `mapping_failed`. This is the
+  //      strict "validator and mapper disagree" pipeline bug we want
+  //      to surface to the user.
   if (!tag) {
+    if (callerProvidedNonTag) {
+      return {
+        status: 'unknown_filter_tag',
+        rawProfileValue: raw,
+        resolvedFilterTag: null,
+        warningMessage: null,
+      };
+    }
     return {
       status: 'mapping_failed',
       rawProfileValue: raw,
