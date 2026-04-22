@@ -1,17 +1,41 @@
 import { useMemo } from 'react';
 import { Product } from './useProducts';
 
-// Internal tag keys
+// ─────────────────────────────────────────────────────────────────────────────
+// Mobility types
+// We keep two strictly distinct sets of values to prevent accidental mixing:
+//   - MobilityEnum: English values stored in the DB (column `products.mobility`,
+//     `profiles.mobility_level`). Source of truth for persistence.
+//   - MobilityTag:  French slugs used by the shop UI (filter buttons, query
+//     state). Source of truth for presentation.
+// Use `toMobilityEnum` / `toMobilityTag` to cross the boundary explicitly.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** English DB enum for product/profile mobility. */
+export type MobilityEnum = 'mobile' | 'reduced' | 'bedridden';
+
+/** French UI tag used by the shop filter buttons. */
 export type MobilityTag = 'mobile' | 'reduite' | 'alitee';
+
+/** Either form, useful for input parameters that accept both. */
+export type MobilityValue = MobilityEnum | MobilityTag;
+
+/** Filter option ids include the special "all" sentinel. */
+export type MobilityFilterId = 'all' | MobilityTag;
+
 export type UsageTimeTag = 'day' | 'night';
 export type GenderTag = 'male' | 'female' | 'unisex';
 
 // Filter options with UI labels
-export const mobilityFilterOptions = [
+export const mobilityFilterOptions: ReadonlyArray<{
+  id: MobilityFilterId;
+  label: string;
+  tag: MobilityTag | null;
+}> = [
   { id: 'all', label: 'Toutes', tag: null },
-  { id: 'mobile', label: 'Mobile', tag: 'mobile' as MobilityTag },
-  { id: 'reduite', label: 'Réduite', tag: 'reduite' as MobilityTag },
-  { id: 'alitee', label: 'Alitée', tag: 'alitee' as MobilityTag },
+  { id: 'mobile', label: 'Mobile', tag: 'mobile' },
+  { id: 'reduite', label: 'Réduite', tag: 'reduite' },
+  { id: 'alitee', label: 'Alitée', tag: 'alitee' },
 ];
 
 export const usageTimeFilterOptions = [
@@ -28,39 +52,47 @@ export const genderFilterOptions = [
   { id: 'unisex', label: 'Unisexe', tag: 'unisex' as GenderTag },
 ];
 
-// Map English DB enum values (mobility_type) to French UI tags (used by filter options)
-export const MOBILITY_ENUM_TO_TAG: Record<string, string> = {
-  'mobile': 'mobile',
-  'reduced': 'reduite',
-  'bedridden': 'alitee',
+// Map English DB enum values (mobility_type) to French UI tags
+export const MOBILITY_ENUM_TO_TAG: Record<MobilityEnum, MobilityTag> = {
+  mobile: 'mobile',
+  reduced: 'reduite',
+  bedridden: 'alitee',
 };
 
 // Reverse map: French UI tag → English DB enum
-export const MOBILITY_TAG_TO_ENUM: Record<string, string> = {
-  'mobile': 'mobile',
-  'reduite': 'reduced',
-  'alitee': 'bedridden',
+export const MOBILITY_TAG_TO_ENUM: Record<MobilityTag, MobilityEnum> = {
+  mobile: 'mobile',
+  reduite: 'reduced',
+  alitee: 'bedridden',
 };
+
+export const isMobilityTag = (value: string): value is MobilityTag =>
+  Object.prototype.hasOwnProperty.call(MOBILITY_TAG_TO_ENUM, value);
+
+export const isMobilityEnum = (value: string): value is MobilityEnum =>
+  Object.prototype.hasOwnProperty.call(MOBILITY_ENUM_TO_TAG, value);
 
 /**
  * Normalise a mobility value to the English DB enum (`mobile`/`reduced`/`bedridden`).
- * Accepts either a French UI tag or an English enum value.
+ * Accepts either a French UI tag or an English enum value. Returns `null` when
+ * the input is unknown — never silently coerces unrelated strings.
  */
-export const toMobilityEnum = (value: string | null | undefined): string | null => {
+export const toMobilityEnum = (value: string | null | undefined): MobilityEnum | null => {
   if (!value) return null;
-  if (MOBILITY_TAG_TO_ENUM[value]) return MOBILITY_TAG_TO_ENUM[value];
-  if (MOBILITY_ENUM_TO_TAG[value]) return value; // already an enum
+  if (isMobilityTag(value)) return MOBILITY_TAG_TO_ENUM[value];
+  if (isMobilityEnum(value)) return value;
   return null;
 };
 
 /**
  * Normalise a mobility value to the French UI tag (`mobile`/`reduite`/`alitee`).
- * Accepts either an English enum value or a French UI tag.
+ * Accepts either an English enum value or a French UI tag. Returns `null` when
+ * the input is unknown.
  */
-export const toMobilityTag = (value: string | null | undefined): string | null => {
+export const toMobilityTag = (value: string | null | undefined): MobilityTag | null => {
   if (!value) return null;
-  if (MOBILITY_ENUM_TO_TAG[value]) return MOBILITY_ENUM_TO_TAG[value];
-  if (MOBILITY_TAG_TO_ENUM[value]) return value; // already a tag
+  if (isMobilityEnum(value)) return MOBILITY_ENUM_TO_TAG[value];
+  if (isMobilityTag(value)) return value;
   return null;
 };
 
