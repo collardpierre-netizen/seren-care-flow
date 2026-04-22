@@ -1,4 +1,10 @@
 import React, { useState, useRef } from 'react';
+import { toMobilityEnum } from '@/hooks/useProductFilters';
+import {
+  toIncontinenceLevel,
+  toUsageTime,
+  toGender,
+} from '@/lib/profileNormalization';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -507,12 +513,15 @@ const AdminProducts: React.FC = () => {
       category_id: product.category_id || '',
       short_description: product.short_description || '',
       description: product.description || '',
-      incontinence_level: product.incontinence_level || '',
-      mobility: product.mobility || '',
-      usage_time: product.usage_time || '',
+      // Auto-correct legacy values (e.g. a French tag stored where the DB enum
+      // is expected) so the dropdown shows the matching option instead of an
+      // empty Select. Unknown values fall back to '' (no selection).
+      incontinence_level: toIncontinenceLevel(product.incontinence_level) || '',
+      mobility: toMobilityEnum(product.mobility) || '',
+      usage_time: toUsageTime(product.usage_time) || '',
       mobility_levels: product.mobility_levels || '',
       usage_times: product.usage_times || '',
-      gender: product.gender || '',
+      gender: toGender(product.gender) || '',
       recommended_price: product.recommended_price || 0,
       price: product.price,
       subscription_price: product.subscription_price || 0,
@@ -995,6 +1004,27 @@ const AdminProducts: React.FC = () => {
       const str = (v: any) => (v != null && String(v).trim() !== '') ? String(v).trim() : null;
 
       let imported = 0, updated = 0, errors = 0;
+      // Track enum-field auto-corrections and rejections during import so the
+      // admin sees a precise summary instead of silent data loss.
+      const enumIssues: { row: number; field: string; raw: string; resolved: string | null }[] = [];
+
+      const normaliseEnum = <T extends string>(
+        rowIndex: number,
+        field: string,
+        raw: string | null,
+        normaliser: (v: string | null | undefined) => T | null,
+      ): T | null => {
+        if (!raw) return null;
+        const resolved = normaliser(raw);
+        if (resolved === null) {
+          enumIssues.push({ row: rowIndex + 1, field, raw, resolved: null });
+          return null;
+        }
+        if (resolved !== raw) {
+          enumIssues.push({ row: rowIndex + 1, field, raw, resolved });
+        }
+        return resolved;
+      };
 
       for (let i = 1; i < rows.length; i++) {
         const v = rows[i];
@@ -1007,12 +1037,14 @@ const AdminProducts: React.FC = () => {
           sku: str(val('sku')),
           short_description: str(val('short_description')),
           description: str(val('description')),
-          incontinence_level: str(val('incontinence_level')),
-          mobility: str(val('mobility')),
-          usage_time: str(val('usage_time')),
+          // Normalise enum-typed fields so FR aliases / casing variants never
+          // crash the insert with "invalid input value for enum".
+          incontinence_level: normaliseEnum(i, 'incontinence_level', str(val('incontinence_level')), toIncontinenceLevel),
+          mobility: normaliseEnum(i, 'mobility', str(val('mobility')), toMobilityEnum),
+          usage_time: normaliseEnum(i, 'usage_time', str(val('usage_time')), toUsageTime),
           mobility_levels: str(val('mobility_levels')) || '',
           usage_times: str(val('usage_times')) || '',
-          gender: str(val('gender')) || '',
+          gender: normaliseEnum(i, 'gender', str(val('gender')), toGender) || '',
           recommended_price: parseNum(val('recommended_price')),
           price: parseNum(val('price')) ?? 0,
           subscription_price: parseNum(val('subscription_price')),
@@ -1189,7 +1221,19 @@ const AdminProducts: React.FC = () => {
       }
 
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
-      toast.success(`Import terminé: ${imported} créés, ${updated} mis à jour${errors > 0 ? `, ${errors} erreurs` : ''}`);
+
+      // Surface enum-field auto-corrections / rejections so the admin can
+      // review which rows had FR aliases or invalid values normalised.
+      const corrected = enumIssues.filter(e => e.resolved !== null);
+      const rejected = enumIssues.filter(e => e.resolved === null);
+      let issueSummary = '';
+      if (corrected.length > 0) issueSummary += ` · ${corrected.length} valeur(s) auto-corrigée(s) (FR → EN)`;
+      if (rejected.length > 0) issueSummary += ` · ${rejected.length} valeur(s) inconnue(s) ignorée(s)`;
+      if (enumIssues.length > 0) {
+        console.warn('[products import] enum field issues', enumIssues);
+      }
+
+      toast.success(`Import terminé: ${imported} créés, ${updated} mis à jour${errors > 0 ? `, ${errors} erreurs` : ''}${issueSummary}`);
     } catch (error) {
       toast.error('Erreur lors de l\'import du fichier');
     } finally {
@@ -1449,10 +1493,18 @@ const AdminProducts: React.FC = () => {
                     <SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger>
                     <SelectContent>
                       {mobilityTypes.map(m => (
-                        <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                        <SelectItem key={m.value} value={m.value}>
+                          <div className="flex items-center justify-between gap-3 w-full">
+                            <span>{m.label}</span>
+                            <span className="text-xs text-muted-foreground font-mono">{m.value}</span>
+                          </div>
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Valeur stockée en base : enum EN (<code className="font-mono">mobile</code> / <code className="font-mono">reduced</code> / <code className="font-mono">bedridden</code>). Les saisies FR sont rejetées par la base.
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label>Moment d'utilisation</Label>
