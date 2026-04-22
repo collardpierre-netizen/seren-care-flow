@@ -601,6 +601,27 @@ const Shop = () => {
                     <strong>Filtre mobilité non appliqué.</strong>{" "}
                     {mobilityConversion.warningMessage}
                   </p>
+                  {/* Status-specific, actionable guidance — tells the user
+                      exactly what to fix on the account screen. */}
+                  <p className="text-sm">
+                    <strong>À corriger&nbsp;:</strong>{" "}
+                    {mobilityConversion.status === 'invalid_profile_value' ? (
+                      <>
+                        la valeur enregistrée pour votre niveau de mobilité
+                        (<span className="font-mono">"{mobilityConversion.rawProfileValue}"</span>)
+                        n'est plus reconnue. Ouvrez la section{" "}
+                        <em>Préférences de soins</em> de votre compte et
+                        sélectionnez à nouveau l'une des options proposées
+                        (Mobile, Mobilité réduite ou Alité·e).
+                      </>
+                    ) : (
+                      <>
+                        rouvrez la section <em>Préférences de soins</em> de
+                        votre compte et resélectionnez votre niveau de
+                        mobilité pour réappliquer le filtre automatiquement.
+                      </>
+                    )}
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     Détails techniques :{" "}
                     <span className="font-mono">
@@ -611,11 +632,14 @@ const Shop = () => {
                     {" "}(<span className="font-mono">{mobilityConversion.status}</span>)
                   </p>
                 </div>
+                {/* Deep-link with hash anchor: Account.tsx scrolls the
+                    matching section into view on mount. */}
                 <Link
-                  to="/compte"
+                  to="/compte#preferences-soins"
+                  aria-label="Ouvrir mes préférences de soins pour corriger mon niveau de mobilité"
                   className="self-start px-3 py-1.5 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity whitespace-nowrap"
                 >
-                  Mettre à jour mon profil
+                  Corriger ma mobilité dans mon compte
                 </Link>
               </div>
             )}
