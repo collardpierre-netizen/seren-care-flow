@@ -24,6 +24,12 @@ import { Slider } from "@/components/ui/slider";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { logMobilityDebug } from "@/lib/shopDebug";
+import {
+  validateMobilityConversion,
+  shouldWarnUser,
+  type MobilityConversionResult,
+} from "@/lib/mobilityConversionValidator";
+import { isMobilityTag } from "@/hooks/useProductFilters";
 
 const incontinenceLevelOptions = [
   { id: "all", label: "Tous" },
