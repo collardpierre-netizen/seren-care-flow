@@ -154,16 +154,34 @@ const UnifiedQuestionnaire: React.FC<UnifiedQuestionnaireProps> = ({
   };
 
   // Find recommended products based on answers
+  // Prioritizes actual protection products over accessories, sorted by relevance score
   const getRecommendedProducts = (): Product[] => {
-    return products.filter((product) => {
-      let score = 0;
-      
-      if (answers.mobility && product.mobility === answers.mobility) score += 2;
-      if (answers.incontinenceLevel && product.incontinence_level === answers.incontinenceLevel) score += 2;
-      if (answers.usageTime && product.usage_time === answers.usageTime) score += 1;
-      
-      return score >= 2;
-    }).slice(0, 3);
+    const scored = products
+      .map((product) => {
+        let score = 0;
+        if (answers.mobility && product.mobility === answers.mobility) score += 2;
+        if (answers.incontinenceLevel && product.incontinence_level === answers.incontinenceLevel) score += 2;
+        if (answers.usageTime && product.usage_time === answers.usageTime) score += 1;
+        // Gender matching (bonus, not required)
+        if (answers.gender && answers.gender !== 'any') {
+          const productGender = product.gender || 'unisex';
+          if (productGender === answers.gender || productGender === 'unisex') score += 1;
+        }
+        return { product, score };
+      })
+      .filter(({ score }) => score >= 2);
+
+    // Sort: non-addon products first, then by score descending, then by price descending
+    // (higher price = more likely a real protection product, not a small accessory)
+    scored.sort((a, b) => {
+      const aIsAddon = a.product.is_addon ? 1 : 0;
+      const bIsAddon = b.product.is_addon ? 1 : 0;
+      if (aIsAddon !== bIsAddon) return aIsAddon - bIsAddon;
+      if (b.score !== a.score) return b.score - a.score;
+      return b.product.price - a.product.price;
+    });
+
+    return scored.slice(0, 3).map(({ product }) => product);
   };
 
   const selectedAnswer = answers[currentQuestion?.id];
