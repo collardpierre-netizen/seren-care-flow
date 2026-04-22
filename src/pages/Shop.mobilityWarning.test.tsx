@@ -268,8 +268,8 @@ describe('Shop — mobility conversion warning banner (e2e)', () => {
       expect(mockedMapProfileToFilters).toHaveBeenCalled();
     });
 
-    // No alert should have been rendered for this healthy path.
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    // No status banner should have been rendered for this healthy path.
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 
   it('does NOT show the warning banner when the profile has no mobility value', async () => {
@@ -297,6 +297,6 @@ describe('Shop — mobility conversion warning banner (e2e)', () => {
     });
 
     // "empty" status must stay silent — no banner, no false positive.
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 });
