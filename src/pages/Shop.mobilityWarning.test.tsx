@@ -325,12 +325,20 @@ describe('Shop — mobility conversion warning banner (e2e)', () => {
     await screen.findByRole('status');
 
     // The user voluntarily picks "Toutes" in the mobility filter. The
-    // FilterButton dropdown renders every option as a real <button>;
-    // the mobility filter labels its "all" option "Toutes" (feminine
-    // plural — distinct from the masculine "Tous" used by other
-    // filters), which makes it easy to target unambiguously.
-    const toutesButton = screen.getByRole('button', { name: /^toutes$/i });
-    fireEvent.click(toutesButton);
+    // FilterButton dropdown renders every option as a real <button>.
+    // Scope to the mobility filter via its trigger label
+    // ("Mobilité: Tous" when inactive) → walk up to the dropdown
+    // container → grab the option button labelled "Toutes". This stays
+    // robust even though the page renders multiple "Toutes" options
+    // (one per filter — categories, brands, mobility, …).
+    const mobilityTrigger = screen.getByText('Mobilité: Tous');
+    const mobilityDropdown = mobilityTrigger.closest('.relative');
+    expect(mobilityDropdown).not.toBeNull();
+    const toutesButton = Array.from(
+      mobilityDropdown!.querySelectorAll('button'),
+    ).find((btn) => btn.textContent?.trim() === 'Toutes');
+    expect(toutesButton).toBeDefined();
+    fireEvent.click(toutesButton!);
 
     // Banner must now disappear: the user's intent overrides the
     // auto-apply failure signal.
