@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { toMobilityTag } from '@/hooks/useProductFilters';
 
 export interface UserPreferences {
   buying_for: string | null;
@@ -39,19 +40,14 @@ export const useUserPreferences = () => {
   });
 };
 
-// Map English DB mobility enum to French UI filter tags
-const mobilityEnumToFilterTag: Record<string, string> = {
-  'mobile': 'mobile',
-  'reduced': 'reduite',
-  'bedridden': 'alitee',
-};
-
 // Helper to convert profile values to filter values
 export const mapProfileToFilters = (preferences: UserPreferences | null | undefined) => {
   if (!preferences) return null;
 
+  // Translate English DB enum (`reduced`, `bedridden`) to French UI filter tags
+  // (`reduite`, `alitee`). Falls back to the original value if unknown.
   const mobilityTag = preferences.mobility_level
-    ? mobilityEnumToFilterTag[preferences.mobility_level] || preferences.mobility_level
+    ? toMobilityTag(preferences.mobility_level) || preferences.mobility_level
     : undefined;
 
   return {

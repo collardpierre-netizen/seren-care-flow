@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { ArrowRight, ArrowLeft, Check, X, Droplet, User, Users, Sun, Moon, Footprints, Armchair, BedDouble, RefreshCw, Package, Truck, Heart } from "lucide-react";
 import { useProducts, Product } from "@/hooks/useProducts";
 import { useUserPreferences, mapProfileToFilters } from "@/hooks/useUserPreferences";
+import { toMobilityEnum } from "@/hooks/useProductFilters";
 
 interface QuestionOption {
   id: string;
@@ -159,7 +160,11 @@ const UnifiedQuestionnaire: React.FC<UnifiedQuestionnaireProps> = ({
     const scored = products
       .map((product) => {
         let score = 0;
-        if (answers.mobility && product.mobility === answers.mobility) score += 2;
+        // Normalise both sides to the English DB enum so that French UI tags
+        // (`reduite`/`alitee`) coming from the profile still match `product.mobility`
+        // (`reduced`/`bedridden`).
+        const answerMobilityEnum = toMobilityEnum(answers.mobility);
+        if (answerMobilityEnum && product.mobility === answerMobilityEnum) score += 2;
         if (answers.incontinenceLevel && product.incontinence_level === answers.incontinenceLevel) score += 2;
         if (answers.usageTime && product.usage_time === answers.usageTime) score += 1;
         // Gender matching (bonus, not required)
