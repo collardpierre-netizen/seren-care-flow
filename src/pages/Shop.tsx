@@ -69,16 +69,17 @@ const Shop = () => {
     if (userPreferences && !preferencesApplied) {
       const profileFilters = mapProfileToFilters(userPreferences);
       if (profileFilters) {
-        // Safe debug log: only the mobility mapping (no PII like name/email/address).
-        // Helps diagnose mismatches between the DB enum stored on the profile
-        // (`mobile`/`reduced`/`bedridden`) and the French UI tag pushed to filters
-        // (`mobile`/`reduite`/`alitee`). The shared logger guarantees the same
-        // `[Shop]` prefix and field names everywhere.
-        logMobilityDebug({
-          isDev: import.meta.env.DEV,
-          profileMobilityLevel: userPreferences.mobility_level,
-          appliedFilterTag: profileFilters.mobility,
-        });
+        // DEV-only debug log. The literal `import.meta.env.DEV` guard lets
+        // Vite/esbuild fold the condition to `false` in production builds and
+        // strip the entire block (logger import, message string, lazy
+        // provider) via dead-code elimination. The provider is also lazy so
+        // the field values themselves are never even read in prod.
+        if (import.meta.env.DEV) {
+          logMobilityDebug(() => ({
+            profileMobilityLevel: userPreferences.mobility_level,
+            appliedFilterTag: profileFilters.mobility,
+          }));
+        }
         if (profileFilters.gender) setSelectedGender(profileFilters.gender);
         if (profileFilters.mobility) setSelectedMobility(profileFilters.mobility);
         if (profileFilters.incontinenceLevel) setSelectedIncontinence(profileFilters.incontinenceLevel);

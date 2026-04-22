@@ -1,53 +1,54 @@
 /**
  * Debug helpers for the Shop page.
  *
- * Kept as a tiny pure module so the behaviour can be unit-tested without
- * mounting the whole Shop component.
- *
  * Two layers:
- *   1. `buildShopDebugPayload` — generic, framework-agnostic payload builder
- *      that returns `null` outside of dev mode and otherwise normalises every
- *      value to `string | null` (so the log shape is always stable and
- *      strictly PII-free as long as callers stick to the documented fields).
- *   2. `logShopDebug` — thin wrapper that prefixes the message with `[Shop]`
- *      and delegates to `console.debug`. Use this from any Shop call site so
- *      every debug line shares the exact same prefix and field format.
+ *   1. Generic primitives (`buildShopDebugPayload`, `logShopDebug`).
+ *   2. Mobility-specific wrappers (`buildMobilityDebugLog`, `logMobilityDebug`).
  *
- * Mobility-specific helpers (`buildMobilityDebugLog`, `logMobilityDebug`) are
- * provided on top to lock down the field names used for the mobility flow.
+ * ## Production stripping
+ *
+ * Every helper short-circuits when `isDev` is `false`. On top of that, the
+ * mobility logger accepts a **lazy** field provider so the values themselves
+ * are never evaluated in production:
+ *
+ *     if (import.meta.env.DEV) {
+ *       logMobilityDebug(() => ({
+ *         profileMobilityLevel: profile.mobility_level,
+ *         appliedFilterTag: filters.mobility,
+ *       }));
+ *     }
+ *
+ * Combined with the literal `import.meta.env.DEV` guard at the call site,
+ * Vite/esbuild can statically eliminate the entire block from the production
+ * bundle (the constant folds to `false`, dead-code elimination removes the
+ * branch, and the message string disappears).
  */
 
 const SHOP_DEBUG_PREFIX = '[Shop]';
 
 /**
- * Anything that can safely be coerced to `string | null` without leaking
- * structured/PII data into the log.
+ * `true` only in dev builds. Re-exported so call sites do not have to import
+ * `import.meta` when they only need a boolean — but the strongest production
+ * stripping still requires the literal `import.meta.env.DEV` guard at the
+ * call site (constant folding works on the literal, not on a re-export).
  */
+export const IS_SHOP_DEBUG_ENABLED: boolean = Boolean(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (import.meta as any)?.env?.DEV,
+);
+
 export type ShopDebugValue = string | number | boolean | null | undefined;
 
 export type ShopDebugPayload<K extends string = string> = Record<K, string | null>;
 
 export interface BuildShopDebugPayloadOptions<K extends string> {
-  /**
-   * Inject the env flag from the call site (`import.meta.env.DEV`).
-   * The helper itself stays environment-agnostic so tests can flip the flag.
-   */
   isDev: boolean;
-  /**
-   * Allow-listed fields. Values are normalised to `string | null` to keep the
-   * shape stable across environments and prevent accidental object dumps.
-   */
   fields: Record<K, ShopDebugValue>;
 }
 
 /**
- * Build a normalised, dev-only payload for a Shop debug log.
- *
- * - Returns `null` outside of dev mode (caller can skip the log entirely).
- * - Coerces `undefined` and `null` to `null`.
- * - Coerces primitives (`string` / `number` / `boolean`) to `string`.
- * - Never spreads arbitrary objects, so PII can only sneak in if a caller
- *   explicitly passes it as a value (which the type narrows against).
+ * Build a normalised, dev-only payload. Returns `null` when `isDev` is false
+ * so callers can skip downstream work entirely.
  */
 export function buildShopDebugPayload<K extends string>(
   options: BuildShopDebugPayloadOptions<K>,
@@ -65,12 +66,13 @@ export function buildShopDebugPayload<K extends string>(
  * Generic Shop debug logger. Builds the payload via `buildShopDebugPayload`
  * and forwards it to `console.debug` with the shared `[Shop]` prefix.
  *
- * No-op outside of dev mode.
+ * No-op (and no message string built) when `isDev` is false.
  */
 export function logShopDebug<K extends string>(
   message: string,
   options: BuildShopDebugPayloadOptions<K>,
 ): ShopDebugPayload<K> | null {
+  if (!options.isDev) return null;
   const payload = buildShopDebugPayload(options);
   if (!payload) return null;
   // eslint-disable-next-line no-console
@@ -82,10 +84,6 @@ export function logShopDebug<K extends string>(
 // Mobility-specific helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Locked field names for the mobility debug flow. Centralised here so every
- * call site emits the exact same keys.
- */
 export const MOBILITY_DEBUG_FIELDS = [
   'profile_mobility_level',
   'applied_filter_tag',
@@ -95,18 +93,16 @@ export type MobilityDebugField = (typeof MOBILITY_DEBUG_FIELDS)[number];
 
 export type MobilityDebugPayload = ShopDebugPayload<MobilityDebugField>;
 
-export interface BuildMobilityDebugLogOptions {
-  isDev: boolean;
+export interface MobilityDebugFields {
   profileMobilityLevel: ShopDebugValue;
   appliedFilterTag: ShopDebugValue;
 }
 
 /**
- * Build the mobility debug payload. Thin wrapper around
- * `buildShopDebugPayload` that pins the field names.
+ * Build the mobility debug payload (eager variant). Pass `isDev` explicitly.
  */
 export function buildMobilityDebugLog(
-  options: BuildMobilityDebugLogOptions,
+  options: { isDev: boolean } & MobilityDebugFields,
 ): MobilityDebugPayload | null {
   return buildShopDebugPayload({
     isDev: options.isDev,
@@ -119,17 +115,31 @@ export function buildMobilityDebugLog(
 
 /**
  * Log the mobility debug payload via the shared Shop logger.
- * Use this from any Shop call site that needs to trace the
- * profile-mobility → filter-tag mapping.
+ *
+ * The single argument is a **lazy provider** — the function is only invoked
+ * when debug logging is actually enabled, so any expensive lookup (or PII
+ * field access) inside it is fully skipped in production.
+ *
+ * Pair with a literal `import.meta.env.DEV` guard at the call site to allow
+ * the bundler to drop the entire block:
+ *
+ *     if (import.meta.env.DEV) {
+ *       logMobilityDebug(() => ({
+ *         profileMobilityLevel: profile.mobility_level,
+ *         appliedFilterTag: filters.mobility,
+ *       }));
+ *     }
  */
 export function logMobilityDebug(
-  options: BuildMobilityDebugLogOptions,
+  fieldsProvider: () => MobilityDebugFields,
 ): MobilityDebugPayload | null {
+  if (!IS_SHOP_DEBUG_ENABLED) return null;
+  const fields = fieldsProvider();
   return logShopDebug('mobility filter from profile', {
-    isDev: options.isDev,
+    isDev: true,
     fields: {
-      profile_mobility_level: options.profileMobilityLevel,
-      applied_filter_tag: options.appliedFilterTag,
+      profile_mobility_level: fields.profileMobilityLevel,
+      applied_filter_tag: fields.appliedFilterTag,
     },
   });
 }
