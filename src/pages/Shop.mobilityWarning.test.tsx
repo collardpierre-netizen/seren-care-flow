@@ -152,6 +152,11 @@ describe('Shop — mobility conversion warning banner (e2e)', () => {
     // The structured status code is what the validator emits for this case.
     expect(alert).toHaveTextContent(/mapping_failed/);
 
+    // Actionable, status-aware guidance must point the user at the
+    // "Préférences de soins" section by name (this is the anchor target).
+    expect(alert).toHaveTextContent(/À corriger/i);
+    expect(alert).toHaveTextContent(/Préférences de soins/i);
+
     // Actionable CTA: deep-link to the dedicated care-preferences section
     // on the account page (with hash anchor for in-page scroll).
     const cta = screen.getByRole('link', { name: /corriger ma mobilité/i });
