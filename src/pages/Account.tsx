@@ -33,7 +33,8 @@ import {
   Bell,
   CreditCard,
   ExternalLink,
-  ChevronDown
+  ChevronDown,
+  Footprints
 } from 'lucide-react';
 
 const Account = () => {
