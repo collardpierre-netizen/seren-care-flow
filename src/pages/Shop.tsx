@@ -29,7 +29,7 @@ import {
   shouldWarnUser,
   type MobilityConversionResult,
 } from "@/lib/mobilityConversionValidator";
-import { isMobilityTag } from "@/hooks/useProductFilters";
+
 
 const incontinenceLevelOptions = [
   { id: "all", label: "Tous" },
@@ -63,6 +63,22 @@ const Shop = () => {
     { from: string; to: { id: string; label: string } } | null
   >(null);
   const [showMobilityExplanation, setShowMobilityExplanation] = useState(false);
+  // Tracks whether the user has explicitly interacted with the mobility
+  // filter (including picking "Tous"). Used to suppress the conversion
+  // warning when the user voluntarily clears the filter — without this
+  // flag, validator + auto-apply states are indistinguishable from a
+  // deliberate "no filter" choice.
+  const [userOverrodeMobility, setUserOverrodeMobility] = useState(false);
+
+  // Wrapper for every UI surface that lets the user pick a mobility
+  // option. Marks the choice as user-driven so the warning banner can
+  // step out of the way. Auto-apply paths must keep calling
+  // `setSelectedMobility` directly to preserve the "auto-apply failed"
+  // detection.
+  const handleSelectMobility = (next: string) => {
+    setUserOverrodeMobility(true);
+    setSelectedMobility(next);
+  };
 
   // Load all products without category/brand filter - we filter client-side
   const { data: products, isLoading: productsLoading } = useProducts();
@@ -132,14 +148,32 @@ const Shop = () => {
   // warning whenever the conversion silently failed (unknown profile value,
   // mapping bug, etc.) — the user would otherwise see an unexplained empty
   // product list. Result is `null` when there is nothing to compare yet.
+  //
+  // We pass `selectedMobility` *raw* (rather than pre-filtering it through
+  // `isMobilityTag`) so the validator can distinguish three cases that
+  // require different UX:
+  //   - real tag           → "ok" / "auto_corrected"
+  //   - UI sentinel ("all")→ "unknown_filter_tag" (silent, safe fallback)
+  //   - null/undefined     → "mapping_failed" (genuine pipeline bug)
+  // This is what gives us the "voluntary Tous → no warning" guarantee.
   const mobilityConversion = useMemo<MobilityConversionResult | null>(() => {
     if (!preferencesApplied || !userPreferences) return null;
-    const tag = isMobilityTag(selectedMobility) ? selectedMobility : null;
-    return validateMobilityConversion(userPreferences.mobility_level, tag);
+    return validateMobilityConversion(userPreferences.mobility_level, selectedMobility);
   }, [preferencesApplied, userPreferences, selectedMobility]);
 
+  // Extra UX safeguard: suppress the banner whenever the user has
+  // explicitly set the filter to "Tous". Their intent is clear — they
+  // don't want a mobility filter right now — and a banner pushing them
+  // to "fix" their profile would be intrusive. We require *both* the
+  // explicit override flag AND the current value being "all" so an
+  // initial render (where the auto-apply silently failed and the filter
+  // is still at the default "all") still triggers the warning.
+  const userClearedMobility =
+    userOverrodeMobility && selectedMobility === 'all';
   const showMobilityConversionWarning =
-    !!mobilityConversion && shouldWarnUser(mobilityConversion.status);
+    !!mobilityConversion &&
+    shouldWarnUser(mobilityConversion.status) &&
+    !userClearedMobility;
 
   // Initialize price range once products load
   useEffect(() => {
@@ -178,7 +212,7 @@ const Shop = () => {
     setSelectedCategory("all");
     setSelectedBrand("all");
     setSelectedIncontinence("all");
-    setSelectedMobility("all");
+    handleSelectMobility("all");
     setSelectedUsageTime("all");
     setSelectedGender("all");
     setSearchQuery("");
@@ -210,7 +244,7 @@ const Shop = () => {
   useEffect(() => {
     if (!showIncontinenceFilters) {
       setSelectedIncontinence('all');
-      setSelectedMobility('all');
+      handleSelectMobility('all');
       setSelectedUsageTime('all');
     }
   }, [showIncontinenceFilters]);
@@ -222,7 +256,7 @@ const Shop = () => {
     incontinenceLevel?: string;
   }) => {
     if (filters.usageTime) setSelectedUsageTime(filters.usageTime);
-    if (filters.mobility) setSelectedMobility(filters.mobility);
+    if (filters.mobility) handleSelectMobility(filters.mobility);
     if (filters.incontinenceLevel) setSelectedIncontinence(filters.incontinenceLevel);
     if (filters.gender) setSelectedGender(filters.gender);
     setShowProductSelector(false);
@@ -464,7 +498,7 @@ const Shop = () => {
               {showIncontinenceFilters && (
                 <>
                   <FilterButton options={incontinenceLevelOptions} value={selectedIncontinence} onChange={setSelectedIncontinence} label="Absorption" showDroplets counts={filterCounts.incontinence} />
-                  <FilterButton options={mobilityFilterOptions} value={selectedMobility} onChange={setSelectedMobility} label="Mobilité" counts={filterCounts.mobility} />
+                  <FilterButton options={mobilityFilterOptions} value={selectedMobility} onChange={handleSelectMobility} label="Mobilité" counts={filterCounts.mobility} />
                   <FilterButton options={usageTimeFilterOptions} value={selectedUsageTime} onChange={setSelectedUsageTime} label="Moment" counts={filterCounts.usageTime} />
                 </>
               )}
@@ -580,7 +614,7 @@ const Shop = () => {
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setSelectedMobility('all')}
+                    onClick={() => handleSelectMobility('all')}
                     className="px-3 py-1.5 rounded-lg text-sm font-medium bg-card border border-border text-foreground hover:bg-muted transition-colors"
                   >
                     Réinitialiser
@@ -808,7 +842,7 @@ const Shop = () => {
                           {mobilityFilterOptions.map((opt) => (
                             <button
                               key={opt.id}
-                              onClick={() => setSelectedMobility(opt.id)}
+                              onClick={() => handleSelectMobility(opt.id)}
                               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                                 selectedMobility === opt.id
                                   ? "bg-primary text-primary-foreground"

@@ -299,4 +299,80 @@ describe('Shop — mobility conversion warning banner (e2e)', () => {
     // "empty" status must stay silent — no banner, no false positive.
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
+
+  it('hides the warning when the user explicitly chooses the "Tous" mobility filter', async () => {
+    // Reproduce the failing pipeline so the banner is initially shown.
+    mockedUseUserPreferences.mockReturnValue({
+      data: {
+        gender: null,
+        mobility_level: 'mobile',
+        incontinence_level: null,
+        usage_time: null,
+      },
+      isLoading: false,
+    } as ReturnType<typeof useUserPreferences>);
+    mockedMapProfileToFilters.mockReturnValue({
+      gender: undefined,
+      mobility: undefined,
+      incontinenceLevel: undefined,
+      usageTime: undefined,
+    });
+
+    renderShop();
+
+    // Banner is on screen — auto-apply silently failed, the user still
+    // hasn't expressed any intent.
+    await screen.findByRole('status');
+
+    // The user voluntarily picks "Toutes" in the mobility filter. The
+    // FilterButton dropdown renders every option as a real <button>.
+    // Scope to the mobility filter via its trigger label
+    // ("Mobilité: Tous" when inactive) → walk up to the dropdown
+    // container → grab the option button labelled "Toutes". This stays
+    // robust even though the page renders multiple "Toutes" options
+    // (one per filter — categories, brands, mobility, …).
+    const mobilityTrigger = screen.getByText('Mobilité: Tous');
+    const mobilityDropdown = mobilityTrigger.closest('.relative');
+    expect(mobilityDropdown).not.toBeNull();
+    const toutesButton = Array.from(
+      mobilityDropdown!.querySelectorAll('button'),
+    ).find((btn) => btn.textContent?.trim() === 'Toutes');
+    expect(toutesButton).toBeDefined();
+    fireEvent.click(toutesButton!);
+
+    // Banner must now disappear: the user's intent overrides the
+    // auto-apply failure signal.
+    await waitFor(() => {
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    });
+  });
+
+  it('keeps the warning visible on initial render even though selectedMobility is "all"', async () => {
+    // Regression guard: the suppression rule MUST require an explicit
+    // user override, not just `selectedMobility === 'all'`. Otherwise
+    // an auto-apply that silently fails (which leaves the filter at
+    // its default "all") would never warn the user.
+    mockedUseUserPreferences.mockReturnValue({
+      data: {
+        gender: null,
+        mobility_level: 'mobile',
+        incontinence_level: null,
+        usage_time: null,
+      },
+      isLoading: false,
+    } as ReturnType<typeof useUserPreferences>);
+    mockedMapProfileToFilters.mockReturnValue({
+      gender: undefined,
+      mobility: undefined,
+      incontinenceLevel: undefined,
+      usageTime: undefined,
+    });
+
+    renderShop();
+
+    // No user click happened — the banner must surface despite the
+    // current filter value being "all" (initial state).
+    const banner = await screen.findByRole('status');
+    expect(banner).toBeInTheDocument();
+  });
 });

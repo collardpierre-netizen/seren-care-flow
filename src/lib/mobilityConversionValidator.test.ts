@@ -49,12 +49,33 @@ describe('validateMobilityConversion', () => {
     expect(result.warningMessage).toContain('incohérence');
   });
 
-  it('ignores filter values that are not real mobility tags', () => {
-    // "all" is the sentinel for the filter being inactive — must NOT count
-    // as a resolved tag.
+  it('returns "mapping_failed" when the filter is the "all" UI sentinel', () => {
+    // "all" means the auto-apply attempted but ended up at the default
+    // sentinel — the validator alone can't tell whether the user
+    // intentionally cleared the filter or whether the auto-apply silently
+    // failed. We surface it as `mapping_failed` here; the Shop layer
+    // suppresses the warning if the user explicitly chose "Tous".
     const result = validateMobilityConversion('mobile', 'all');
     expect(result.status).toBe('mapping_failed');
     expect(result.resolvedFilterTag).toBeNull();
+  });
+
+  it('returns "unknown_filter_tag" (silent) for stale/legacy non-tag values', () => {
+    // Defensive: a stale value that is neither a tag nor the "all"
+    // sentinel (e.g. an enum like "reduced" leaking into filter state)
+    // must degrade gracefully — silent fallback rather than a spurious
+    // alert that the user can't act on.
+    const result = validateMobilityConversion('mobile', 'reduced');
+    expect(result.status).toBe('unknown_filter_tag');
+    expect(result.warningMessage).toBeNull();
+  });
+
+
+  it('still returns "mapping_failed" when the caller passes null for a valid enum', () => {
+    // Strict pipeline-bug case: caller has nothing to offer but the
+    // profile says we *should* have a tag. This remains a hard warning.
+    const result = validateMobilityConversion('mobile', null);
+    expect(result.status).toBe('mapping_failed');
   });
 
   it('exposes the raw value verbatim in the result', () => {
@@ -69,9 +90,11 @@ describe('shouldWarnUser', () => {
     expect(shouldWarnUser('mapping_failed')).toBe(true);
   });
 
-  it('stays silent on healthy or empty states', () => {
+  it('stays silent on healthy, empty, or unknown-tag states', () => {
     expect(shouldWarnUser('empty')).toBe(false);
     expect(shouldWarnUser('ok')).toBe(false);
     expect(shouldWarnUser('auto_corrected')).toBe(false);
+    // Critical guarantee: voluntary "Tous" / unknown tag must NOT warn.
+    expect(shouldWarnUser('unknown_filter_tag')).toBe(false);
   });
 });
