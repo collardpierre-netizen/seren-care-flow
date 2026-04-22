@@ -212,7 +212,7 @@ const Shop = () => {
     setSelectedCategory("all");
     setSelectedBrand("all");
     setSelectedIncontinence("all");
-    setSelectedMobility("all");
+    handleSelectMobility("all");
     setSelectedUsageTime("all");
     setSelectedGender("all");
     setSearchQuery("");
@@ -244,7 +244,7 @@ const Shop = () => {
   useEffect(() => {
     if (!showIncontinenceFilters) {
       setSelectedIncontinence('all');
-      setSelectedMobility('all');
+      handleSelectMobility('all');
       setSelectedUsageTime('all');
     }
   }, [showIncontinenceFilters]);
@@ -256,7 +256,7 @@ const Shop = () => {
     incontinenceLevel?: string;
   }) => {
     if (filters.usageTime) setSelectedUsageTime(filters.usageTime);
-    if (filters.mobility) setSelectedMobility(filters.mobility);
+    if (filters.mobility) handleSelectMobility(filters.mobility);
     if (filters.incontinenceLevel) setSelectedIncontinence(filters.incontinenceLevel);
     if (filters.gender) setSelectedGender(filters.gender);
     setShowProductSelector(false);
@@ -498,7 +498,7 @@ const Shop = () => {
               {showIncontinenceFilters && (
                 <>
                   <FilterButton options={incontinenceLevelOptions} value={selectedIncontinence} onChange={setSelectedIncontinence} label="Absorption" showDroplets counts={filterCounts.incontinence} />
-                  <FilterButton options={mobilityFilterOptions} value={selectedMobility} onChange={setSelectedMobility} label="Mobilité" counts={filterCounts.mobility} />
+                  <FilterButton options={mobilityFilterOptions} value={selectedMobility} onChange={handleSelectMobility} label="Mobilité" counts={filterCounts.mobility} />
                   <FilterButton options={usageTimeFilterOptions} value={selectedUsageTime} onChange={setSelectedUsageTime} label="Moment" counts={filterCounts.usageTime} />
                 </>
               )}
@@ -614,7 +614,7 @@ const Shop = () => {
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setSelectedMobility('all')}
+                    onClick={() => handleSelectMobility('all')}
                     className="px-3 py-1.5 rounded-lg text-sm font-medium bg-card border border-border text-foreground hover:bg-muted transition-colors"
                   >
                     Réinitialiser
@@ -842,7 +842,7 @@ const Shop = () => {
                           {mobilityFilterOptions.map((opt) => (
                             <button
                               key={opt.id}
-                              onClick={() => setSelectedMobility(opt.id)}
+                              onClick={() => handleSelectMobility(opt.id)}
                               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                                 selectedMobility === opt.id
                                   ? "bg-primary text-primary-foreground"
