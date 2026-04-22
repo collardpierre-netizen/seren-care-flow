@@ -1,7 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
+import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { toMobilityTag, type MobilityTag } from '@/hooks/useProductFilters';
+import {
+  toMobilityTag,
+  toMobilityEnum,
+  type MobilityTag,
+  type MobilityEnum,
+} from '@/hooks/useProductFilters';
+import {
+  toIncontinenceLevel,
+  toUsageTime,
+  toGender,
+} from '@/lib/profileNormalization';
+import { toast } from '@/hooks/use-toast';
 
 export interface UserPreferences {
   buying_for: string | null;
@@ -31,10 +43,97 @@ export interface ProfileDerivedFilters {
   usageTime: string | undefined;
 }
 
+/**
+ * Result of validating raw profile preferences.
+ *
+ * - `sanitized` is a copy of the input where every recognised enum field has
+ *   been normalised to its canonical DB value, and unknown/garbage values
+ *   have been **dropped** (set to `null`) rather than passed through.
+ * - `warnings` lists each field that was corrected or dropped, with the
+ *   original and the resolved value, so callers can surface a non-blocking
+ *   notice and so we can log the issue server-side later if needed.
+ */
+export interface PreferenceValidationResult {
+  sanitized: UserPreferences;
+  warnings: PreferenceWarning[];
+}
+
+export interface PreferenceWarning {
+  field: 'mobility_level' | 'incontinence_level' | 'usage_time' | 'gender';
+  /** The raw value that was rejected or normalised. */
+  original: string;
+  /** The corrected canonical value, or `null` if the value was dropped. */
+  corrected: string | null;
+  /** `'corrected'` when normalised to the canonical form, `'dropped'` when unknown. */
+  kind: 'corrected' | 'dropped';
+}
+
+/**
+ * Validate a raw `UserPreferences` payload coming from the DB.
+ *
+ * For each enum-like field (mobility, incontinence, usage time, gender):
+ *   - if the stored value is already the canonical DB value → keep as-is
+ *     silently (no warning, even though it passed through normalisation);
+ *   - if it is a known alias (e.g. French tag, casing variant) → silently
+ *     auto-correct to the canonical value (still no warning, the user does
+ *     not need to know we cleaned a synonym);
+ *   - if it is unknown / garbage → drop it (`null`) and emit a warning so
+ *     the UI can show a non-blocking notice and the dev console gets a
+ *     traceable record of the bad data.
+ *
+ * Mobility is stored in the DB as the **English enum**, so the canonical
+ * comparison uses `toMobilityEnum`.
+ */
+export const validateUserPreferences = (
+  preferences: UserPreferences,
+): PreferenceValidationResult => {
+  const warnings: PreferenceWarning[] = [];
+  const sanitized: UserPreferences = { ...preferences };
+
+  const validate = <T extends string>(
+    field: PreferenceWarning['field'],
+    raw: string | null,
+    normalise: (v: string | null | undefined) => T | null,
+  ): T | null => {
+    if (!raw) return null;
+    const canonical = normalise(raw);
+    if (canonical === null) {
+      warnings.push({ field, original: raw, corrected: null, kind: 'dropped' });
+      return null;
+    }
+    // Auto-correction is silent: a French tag stored where we expect an enum
+    // is a known migration scenario, not a data integrity issue worth alerting.
+    return canonical;
+  };
+
+  sanitized.mobility_level = validate<MobilityEnum>(
+    'mobility_level',
+    preferences.mobility_level,
+    toMobilityEnum,
+  );
+  sanitized.incontinence_level = validate(
+    'incontinence_level',
+    preferences.incontinence_level,
+    toIncontinenceLevel,
+  );
+  sanitized.usage_time = validate(
+    'usage_time',
+    preferences.usage_time,
+    toUsageTime,
+  );
+  sanitized.gender = validate('gender', preferences.gender, toGender);
+
+  return { sanitized, warnings };
+};
+
 export const useUserPreferences = () => {
   const { user } = useAuth();
+  // Track which `(userId, field, value)` combinations we have already warned
+  // about during this session, so we never spam the user with the same toast
+  // each time React Query refetches.
+  const warnedRef = useRef<Set<string>>(new Set());
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['user-preferences', user?.id],
     queryFn: async (): Promise<UserPreferences | null> => {
       if (!user?.id) return null;
@@ -50,11 +149,57 @@ export const useUserPreferences = () => {
         return null;
       }
 
-      return data as UserPreferences | null;
+      if (!data) return null;
+
+      const raw = data as UserPreferences;
+      const { sanitized, warnings } = validateUserPreferences(raw);
+
+      if (warnings.length > 0) {
+        console.warn('[useUserPreferences] invalid profile values detected', {
+          userId: user.id,
+          warnings,
+        });
+      }
+
+      // Attach warnings to the cached value (non-enumerable so it does not
+      // pollute object spreads / shallow comparisons elsewhere).
+      Object.defineProperty(sanitized, '__warnings', {
+        value: warnings,
+        enumerable: false,
+      });
+
+      return sanitized;
     },
     enabled: !!user?.id,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  // Surface a single non-blocking toast for *dropped* mobility values —
+  // this is the field most likely to break the shop UX (filters will
+  // silently return zero products). Other dropped fields are only logged
+  // to the console because the UI degrades gracefully without them.
+  useEffect(() => {
+    if (!user?.id || !query.data) return;
+    const warnings = (query.data as UserPreferences & { __warnings?: PreferenceWarning[] }).__warnings;
+    if (!warnings || warnings.length === 0) return;
+
+    const dropped = warnings.find(
+      w => w.field === 'mobility_level' && w.kind === 'dropped',
+    );
+    if (!dropped) return;
+
+    const dedupeKey = `${user.id}:mobility_level:${dropped.original}`;
+    if (warnedRef.current.has(dedupeKey)) return;
+    warnedRef.current.add(dedupeKey);
+
+    toast({
+      title: 'Préférence de mobilité non reconnue',
+      description:
+        "Nous n'avons pas pu interpréter votre niveau de mobilité enregistré. Vous pouvez le mettre à jour depuis votre profil.",
+    });
+  }, [user?.id, query.data]);
+
+  return query;
 };
 
 /**
