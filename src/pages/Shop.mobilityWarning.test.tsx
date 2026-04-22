@@ -324,17 +324,13 @@ describe('Shop — mobility conversion warning banner (e2e)', () => {
     // hasn't expressed any intent.
     await screen.findByRole('status');
 
-    // The user voluntarily picks "Tous" in the mobility filter. The
+    // The user voluntarily picks "Toutes" in the mobility filter. The
     // FilterButton dropdown renders every option as a real <button>;
-    // we scope by the dropdown's accessible label ("Mobilité: Tous")
-    // to find the right "Tous" option (there are several across all
-    // filter dropdowns).
-    const tousOptions = screen.getAllByRole('button', { name: /^tous$/i });
-    expect(tousOptions.length).toBeGreaterThan(0);
-    // Click each "Tous" option in turn — the mobility one will flip the
-    // intent flag; clicks on unrelated filters' "Tous" options are
-    // no-ops here. This keeps the test resilient to filter ordering.
-    tousOptions.forEach((btn) => fireEvent.click(btn));
+    // the mobility filter labels its "all" option "Toutes" (feminine
+    // plural — distinct from the masculine "Tous" used by other
+    // filters), which makes it easy to target unambiguously.
+    const toutesButton = screen.getByRole('button', { name: /^toutes$/i });
+    fireEvent.click(toutesButton);
 
     // Banner must now disappear: the user's intent overrides the
     // auto-apply failure signal.
