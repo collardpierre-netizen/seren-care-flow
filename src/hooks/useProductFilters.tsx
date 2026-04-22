@@ -142,11 +142,22 @@ export const getEffectiveGender = (product: any): string => {
 };
 
 /**
+ * Split a tag string supporting either pipe (`|`) or comma (`,`) separators.
+ * The DB stores values like `mobile,reduite` while some legacy paths use `|`.
+ */
+export const splitTags = (tagString: string | null | undefined): string[] => {
+  if (!tagString) return [];
+  return tagString
+    .split(/[|,]/)
+    .map(t => t.trim().toLowerCase())
+    .filter(Boolean);
+};
+
+/**
  * Check if a tag string contains a specific tag
  */
 export const containsTag = (tagString: string, tag: string): boolean => {
-  const tags = tagString.split('|').map(t => t.trim().toLowerCase());
-  return tags.includes(tag.toLowerCase());
+  return splitTags(tagString).includes(tag.toLowerCase());
 };
 
 interface ProductFiltersState {
@@ -283,16 +294,15 @@ export const useProductFilters = (
       }
 
       // Mobility counts (from effective tags)
-      const mobilityTags = getEffectiveMobilityLevels(product).split('|');
+      const mobilityTags = splitTags(getEffectiveMobilityLevels(product));
       mobilityTags.forEach(tag => {
-        const trimmed = tag.trim();
-        if (trimmed) {
-          counts.mobility[trimmed] = (counts.mobility[trimmed] || 0) + 1;
+        if (tag) {
+          counts.mobility[tag] = (counts.mobility[tag] || 0) + 1;
         }
       });
 
       // Usage time counts (from effective tags)
-      const usageTimeTags = getEffectiveUsageTimes(product).split('|').map(t => t.trim().toLowerCase());
+      const usageTimeTags = splitTags(getEffectiveUsageTimes(product));
       usageTimeTags.forEach(tag => {
         if (tag) {
           counts.usageTime[tag] = (counts.usageTime[tag] || 0) + 1;
@@ -304,11 +314,10 @@ export const useProductFilters = (
       }
 
       // Gender counts (from effective tags)
-      const genderTags = getEffectiveGender(product).split('|');
+      const genderTags = splitTags(getEffectiveGender(product));
       genderTags.forEach(tag => {
-        const trimmed = tag.trim();
-        if (trimmed) {
-          counts.gender[trimmed] = (counts.gender[trimmed] || 0) + 1;
+        if (tag) {
+          counts.gender[tag] = (counts.gender[tag] || 0) + 1;
         }
       });
     });
