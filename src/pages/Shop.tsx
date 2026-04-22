@@ -749,6 +749,19 @@ const Shop = () => {
                     <span className="text-xs text-muted-foreground">
                       C’est rapide, en 2 clics.
                     </span>
+                    {/* Per-session dismissal — pushed to the right on wide
+                        screens via ml-auto so it reads as a tertiary action,
+                        not a primary one. The banner is a soft nudge, so we
+                        let users snooze it without disabling the safety net
+                        (it comes back next session). */}
+                    <button
+                      type="button"
+                      onClick={dismissMobilityWarning}
+                      aria-label="Masquer cet avertissement pour cette session"
+                      className="sm:ml-auto text-xs font-medium text-muted-foreground underline underline-offset-2 rounded-sm hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                    >
+                      Ne plus afficher
+                    </button>
                   </div>
                   {showMobilityExplanation && (
                     <div
