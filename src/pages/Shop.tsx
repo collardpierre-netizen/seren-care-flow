@@ -132,14 +132,28 @@ const Shop = () => {
   // warning whenever the conversion silently failed (unknown profile value,
   // mapping bug, etc.) — the user would otherwise see an unexplained empty
   // product list. Result is `null` when there is nothing to compare yet.
+  //
+  // We pass `selectedMobility` *raw* (rather than pre-filtering it through
+  // `isMobilityTag`) so the validator can distinguish three cases that
+  // require different UX:
+  //   - real tag           → "ok" / "auto_corrected"
+  //   - UI sentinel ("all")→ "unknown_filter_tag" (silent, safe fallback)
+  //   - null/undefined     → "mapping_failed" (genuine pipeline bug)
+  // This is what gives us the "voluntary Tous → no warning" guarantee.
   const mobilityConversion = useMemo<MobilityConversionResult | null>(() => {
     if (!preferencesApplied || !userPreferences) return null;
-    const tag = isMobilityTag(selectedMobility) ? selectedMobility : null;
-    return validateMobilityConversion(userPreferences.mobility_level, tag);
+    return validateMobilityConversion(userPreferences.mobility_level, selectedMobility);
   }, [preferencesApplied, userPreferences, selectedMobility]);
 
+  // Extra UX safeguard: even when the validator *would* warn (e.g. the
+  // profile value is `invalid_profile_value`), suppress the banner if the
+  // user has explicitly set the filter to "Tous". Their intent is clear —
+  // they don't want a mobility filter right now — and a banner pushing
+  // them to "fix" their profile would be intrusive.
   const showMobilityConversionWarning =
-    !!mobilityConversion && shouldWarnUser(mobilityConversion.status);
+    !!mobilityConversion &&
+    shouldWarnUser(mobilityConversion.status) &&
+    selectedMobility !== 'all';
 
   // Initialize price range once products load
   useEffect(() => {
