@@ -776,9 +776,18 @@ const Shop = () => {
                         <strong>filtre</strong> de produits, afin de ne vous
                         montrer que ceux qui correspondent à votre situation.
                       </p>
+                      {/* Explicit, jargon-free statement of the mismatch.
+                          Phrased as "le filtre ≠ la valeur du profil" so the
+                          user immediately understands *what* is wrong without
+                          us naming any internal concept (tag, enum, mapping). */}
                       <p>
-                        Ici, ces deux informations ne correspondent pas. Tout
-                        le catalogue reste visible — vous pouvez continuer à
+                        En ce moment, le <strong>filtre actif</strong> ne
+                        correspond pas à la valeur enregistrée dans votre{" "}
+                        <strong>profil</strong>.
+                      </p>
+                      <p>
+                        Ces deux informations ne correspondent pas. Tout le
+                        catalogue reste visible — vous pouvez continuer à
                         parcourir la boutique tranquillement, ou mettre à jour
                         votre profil pour retrouver des recommandations
                         personnalisées.
