@@ -142,11 +142,22 @@ export const getEffectiveGender = (product: any): string => {
 };
 
 /**
+ * Split a tag string supporting either pipe (`|`) or comma (`,`) separators.
+ * The DB stores values like `mobile,reduite` while some legacy paths use `|`.
+ */
+export const splitTags = (tagString: string | null | undefined): string[] => {
+  if (!tagString) return [];
+  return tagString
+    .split(/[|,]/)
+    .map(t => t.trim().toLowerCase())
+    .filter(Boolean);
+};
+
+/**
  * Check if a tag string contains a specific tag
  */
 export const containsTag = (tagString: string, tag: string): boolean => {
-  const tags = tagString.split('|').map(t => t.trim().toLowerCase());
-  return tags.includes(tag.toLowerCase());
+  return splitTags(tagString).includes(tag.toLowerCase());
 };
 
 interface ProductFiltersState {
