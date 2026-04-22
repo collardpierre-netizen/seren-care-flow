@@ -161,15 +161,19 @@ const Shop = () => {
     return validateMobilityConversion(userPreferences.mobility_level, selectedMobility);
   }, [preferencesApplied, userPreferences, selectedMobility]);
 
-  // Extra UX safeguard: even when the validator *would* warn (e.g. the
-  // profile value is `invalid_profile_value`), suppress the banner if the
-  // user has explicitly set the filter to "Tous". Their intent is clear —
-  // they don't want a mobility filter right now — and a banner pushing
-  // them to "fix" their profile would be intrusive.
+  // Extra UX safeguard: suppress the banner whenever the user has
+  // explicitly set the filter to "Tous". Their intent is clear — they
+  // don't want a mobility filter right now — and a banner pushing them
+  // to "fix" their profile would be intrusive. We require *both* the
+  // explicit override flag AND the current value being "all" so an
+  // initial render (where the auto-apply silently failed and the filter
+  // is still at the default "all") still triggers the warning.
+  const userClearedMobility =
+    userOverrodeMobility && selectedMobility === 'all';
   const showMobilityConversionWarning =
     !!mobilityConversion &&
     shouldWarnUser(mobilityConversion.status) &&
-    selectedMobility !== 'all';
+    !userClearedMobility;
 
   // Initialize price range once products load
   useEffect(() => {
