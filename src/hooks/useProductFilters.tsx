@@ -28,6 +28,13 @@ export const genderFilterOptions = [
   { id: 'unisex', label: 'Unisexe', tag: 'unisex' as GenderTag },
 ];
 
+// Map English DB enum values to French UI tags
+const MOBILITY_ENUM_TO_TAG: Record<string, string> = {
+  'mobile': 'mobile',
+  'reduced': 'reduite',
+  'bedridden': 'alitee',
+};
+
 // Backfill rules for computing default tags
 const CATEGORY_MOBILITY_MAP: Record<string, string> = {
   'Alèses': 'alitee',
@@ -77,6 +84,10 @@ export const computeGenderFromName = (productName: string | null | undefined): s
 export const getEffectiveMobilityLevels = (product: any): string => {
   if (product.mobility_levels && product.mobility_levels.trim() !== '') {
     return product.mobility_levels;
+  }
+  // Fallback: map English enum to French tags
+  if (product.mobility && MOBILITY_ENUM_TO_TAG[product.mobility]) {
+    return MOBILITY_ENUM_TO_TAG[product.mobility];
   }
   return computeMobilityFromCategory(product.category?.name);
 };
