@@ -703,7 +703,7 @@ const Shop = () => {
                 >
                   Corriger ma mobilité dans mon compte
                 </Link>
-              </div>
+              </section>
             )}
 
             <div className="lg:hidden mb-6">
