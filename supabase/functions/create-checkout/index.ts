@@ -62,6 +62,13 @@ serve(async (req) => {
     const { items, shippingAddress, shippingCost, referralCode, orderId }: CheckoutRequest = await req.json();
     logStep("Request parsed", { itemsCount: items.length, orderId });
 
+    if (!Array.isArray(items) || items.length === 0 || !orderId) {
+      return new Response(JSON.stringify({ error: "items and orderId required" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      });
+    }
+
     // Check for authenticated user (optional for guest checkout)
     let userId = null;
     let userEmail = shippingAddress.email;
@@ -75,6 +82,71 @@ serve(async (req) => {
         logStep("User authenticated", { userId, email: userEmail });
       }
     }
+
+    // CRITICAL: never trust client-supplied prices. Resolve authoritative
+    // prices from the database for every line item before creating the
+    // Stripe session, otherwise a malicious client could pay $0.01 for an
+    // expensive order.
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    const productIds = Array.from(new Set(items.map(i => i.productId)));
+    const { data: dbProducts, error: dbProductsError } = await supabaseAdmin
+      .from("products")
+      .select("id, name, price, subscription_price, subscription_discount_percent, is_active, is_subscription_eligible")
+      .in("id", productIds);
+
+    if (dbProductsError || !dbProducts) {
+      logStep("Failed to load products for pricing", { error: dbProductsError?.message });
+      return new Response(JSON.stringify({ error: "Pricing lookup failed" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      });
+    }
+
+    const { data: dbSizes } = await supabaseAdmin
+      .from("product_sizes")
+      .select("product_id, size, price_adjustment, sale_price, is_active")
+      .in("product_id", productIds);
+
+    const productsById = new Map(dbProducts.map(p => [p.id, p]));
+    const sizeKey = (productId: string, size: string | undefined) => `${productId}::${size ?? ""}`;
+    const sizesByKey = new Map(
+      (dbSizes ?? []).map(s => [sizeKey(s.product_id, s.size), s])
+    );
+
+    const resolvePrice = (item: CartItem): { unitAmountCents: number; productName: string } | null => {
+      const product = productsById.get(item.productId);
+      if (!product || !product.is_active) return null;
+
+      const sizeRow = item.size ? sizesByKey.get(sizeKey(item.productId, item.size)) : undefined;
+      // Sale price (per size) takes priority, otherwise product.price plus
+      // optional size-level adjustment.
+      let basePrice: number;
+      if (sizeRow?.sale_price != null && Number(sizeRow.sale_price) > 0) {
+        basePrice = Number(sizeRow.sale_price);
+      } else {
+        basePrice = Number(product.price) + Number(sizeRow?.price_adjustment ?? 0);
+      }
+
+      let finalPrice = basePrice;
+      if (item.isSubscription) {
+        if (!product.is_subscription_eligible) return null;
+        if (product.subscription_price != null && Number(product.subscription_price) > 0) {
+          finalPrice = Number(product.subscription_price);
+        } else {
+          const discount = Number(product.subscription_discount_percent ?? 10);
+          finalPrice = basePrice * (1 - discount / 100);
+        }
+      }
+
+      const unitAmountCents = Math.round(finalPrice * 100);
+      if (!Number.isFinite(unitAmountCents) || unitAmountCents <= 0) return null;
+
+      return { unitAmountCents, productName: product.name };
+    };
 
     // Check if customer exists in Stripe
     let customerId: string | undefined;
@@ -112,20 +184,28 @@ serve(async (req) => {
       }
     };
 
-    // Add one-time items
+    // Add one-time items (server-side authoritative pricing)
     for (const item of oneTimeItems) {
+      const resolved = resolvePrice(item);
+      if (!resolved) {
+        logStep("Skipping invalid one-time item", { productId: item.productId, size: item.size });
+        return new Response(JSON.stringify({ error: `Invalid product: ${item.productId}` }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        });
+      }
       lineItems.push({
         price_data: {
           currency: "eur",
           product_data: {
-            name: item.productName + (item.size ? ` - Taille ${item.size}` : ''),
+            name: resolved.productName + (item.size ? ` - Taille ${item.size}` : ''),
             images: getValidImageUrl(item.productImage),
             metadata: {
               product_id: item.productId,
               size: item.size || '',
             },
           },
-          unit_amount: Math.round(item.unitPrice * 100),
+          unit_amount: resolved.unitAmountCents,
         },
         quantity: item.quantity,
       });
@@ -134,12 +214,19 @@ serve(async (req) => {
     // Add subscription items as one-time for now (mixed cart handling)
     // Note: For pure subscriptions, we could use mode: "subscription"
     for (const item of subscriptionItems) {
-      const price = item.subscriptionPrice || item.unitPrice;
+      const resolved = resolvePrice(item);
+      if (!resolved) {
+        logStep("Skipping invalid subscription item", { productId: item.productId, size: item.size });
+        return new Response(JSON.stringify({ error: `Invalid subscription product: ${item.productId}` }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        });
+      }
       lineItems.push({
         price_data: {
           currency: "eur",
           product_data: {
-            name: item.productName + (item.size ? ` - Taille ${item.size}` : '') + ' (Abonnement)',
+            name: resolved.productName + (item.size ? ` - Taille ${item.size}` : '') + ' (Abonnement)',
             description: 'Livraison mensuelle automatique avec -10%',
             images: getValidImageUrl(item.productImage),
             metadata: {
@@ -148,7 +235,7 @@ serve(async (req) => {
               is_subscription: 'true',
             },
           },
-          unit_amount: Math.round(price * 100),
+          unit_amount: resolved.unitAmountCents,
         },
         quantity: item.quantity,
       });
