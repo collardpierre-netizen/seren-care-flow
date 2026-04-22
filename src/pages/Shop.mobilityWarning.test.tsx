@@ -12,7 +12,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
@@ -165,6 +165,63 @@ describe('Shop — mobility conversion warning banner (e2e)', () => {
       name: /préférences de soins.*mobilité/i,
     });
     expect(cta).toHaveAttribute('href', '/compte#preferences-soins');
+  });
+
+  it('reveals a plain-language explainer when the user clicks "Pourquoi je vois ce message ?"', async () => {
+    // Same failing scenario as above — we just need the banner on screen.
+    mockedUseUserPreferences.mockReturnValue({
+      data: {
+        gender: null,
+        mobility_level: 'mobile',
+        incontinence_level: null,
+        usage_time: null,
+      },
+      isLoading: false,
+    } as ReturnType<typeof useUserPreferences>);
+    mockedMapProfileToFilters.mockReturnValue({
+      gender: undefined,
+      mobility: undefined,
+      incontinenceLevel: undefined,
+      usageTime: undefined,
+    });
+
+    renderShop();
+    await screen.findByRole('alert');
+
+    // Disclosure starts collapsed: aria-expanded must be false and the
+    // explainer text must NOT be in the DOM yet.
+    const toggle = screen.getByRole('button', {
+      name: /pourquoi je vois ce message/i,
+    });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(
+      screen.queryByText(/votre profil contient une indication/i),
+    ).not.toBeInTheDocument();
+
+    // Open the explainer.
+    fireEvent.click(toggle);
+
+    // It should now be expanded, with the toggle relabelled and the
+    // plain-language copy revealed. Crucially, the copy must NOT leak any
+    // technical jargon (no "tag", no "enum", no status code).
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(
+      screen.getByRole('button', { name: /masquer l['’]explication/i }),
+    ).toBeInTheDocument();
+
+    const panel = document.getElementById('mobility-warning-explanation');
+    expect(panel).not.toBeNull();
+    expect(panel).toHaveTextContent(/votre profil contient une indication/i);
+    expect(panel).toHaveTextContent(/filtre/i);
+    // Guardrail: the explainer must stay free of jargon.
+    expect(panel?.textContent ?? '').not.toMatch(/tag|enum|mapping_failed|invalid_profile_value/i);
+
+    // Toggle again — the panel must collapse cleanly.
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(
+      screen.queryByText(/votre profil contient une indication/i),
+    ).not.toBeInTheDocument();
   });
 
   it('does NOT show the warning banner when the mapper resolves to a valid tag', async () => {
