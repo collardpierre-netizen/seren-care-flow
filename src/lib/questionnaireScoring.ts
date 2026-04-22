@@ -1,5 +1,11 @@
 import { Product } from "@/hooks/useProducts";
 import { toMobilityEnum, type MobilityValue } from "@/hooks/useProductFilters";
+import {
+  matchesIncontinenceLevel,
+  matchesUsageTime,
+  matchesGender,
+  toGender,
+} from "@/lib/profileNormalization";
 
 export interface QuestionnaireAnswers {
   /**
@@ -26,13 +32,32 @@ export const scoreProductAgainstAnswers = (
   answers: QuestionnaireAnswers
 ): number => {
   let score = 0;
+  // Mobility: normalise FR tag → EN enum before strict comparison.
   const answerMobilityEnum = toMobilityEnum(answers.mobility);
   if (answerMobilityEnum && product.mobility === answerMobilityEnum) score += 2;
-  if (answers.incontinenceLevel && product.incontinence_level === answers.incontinenceLevel) score += 2;
-  if (answers.usageTime && product.usage_time === answers.usageTime) score += 1;
-  if (answers.gender && answers.gender !== 'any') {
-    const productGender = product.gender || 'unisex';
-    if (productGender === answers.gender || productGender === 'unisex') score += 1;
+
+  // Incontinence: use the normalised matcher (handles aliases + null safety).
+  if (
+    answers.incontinenceLevel &&
+    product.incontinence_level &&
+    matchesIncontinenceLevel(product.incontinence_level, answers.incontinenceLevel)
+  ) {
+    score += 2;
+  }
+
+  // Usage time: normalised matcher also handles `day_night` wildcard.
+  if (
+    answers.usageTime &&
+    product.usage_time &&
+    matchesUsageTime(product.usage_time, answers.usageTime)
+  ) {
+    score += 1;
+  }
+
+  // Gender: normalised matcher treats `any`/`unisex` as wildcard on both sides.
+  const requestedGender = toGender(answers.gender);
+  if (requestedGender && requestedGender !== 'unisex') {
+    if (matchesGender(product.gender, answers.gender)) score += 1;
   }
   return score;
 };
