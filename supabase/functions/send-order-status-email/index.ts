@@ -1,8 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { authorize, unauthorizedResponse } from "../_shared/auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-internal-secret',
 };
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
@@ -243,6 +244,14 @@ serve(async (req) => {
   }
 
   try {
+    // Only internal callers (shared secret / service role) or staff may trigger
+    // order status emails — these carry order numbers and tracking links.
+    const auth = await authorize(req, { allowInternal: true, requireAdmin: true });
+    if (!auth.ok) {
+      console.warn(`[send-order-status-email] Rejected unauthorized request (${auth.status})`);
+      return unauthorizedResponse(auth, corsHeaders);
+    }
+
     const data: StatusEmailRequest = await req.json();
     console.log('Sending status email for order:', data.orderNumber, 'Status:', data.newStatus);
     console.log('Tracking info:', { carrier: data.carrier, trackingNumber: data.trackingNumber, trackingUrl: data.trackingUrl });

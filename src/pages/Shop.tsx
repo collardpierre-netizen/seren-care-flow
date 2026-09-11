@@ -7,13 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Filter, X, ChevronDown, Loader2, Package, Droplet, Moon, Sun, Footprints, Sparkles, User, Euro } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useProducts, useBrands, useCategories, Product } from "@/hooks/useProducts";
-import {
-  useProductFilters,
-  mobilityFilterOptions,
-  usageTimeFilterOptions,
-  genderFilterOptions,
-  toMobilityTag,
-  type MobilityFilterId,
+import { 
+  useProductFilters, 
+  mobilityFilterOptions, 
+  usageTimeFilterOptions, 
+  genderFilterOptions 
 } from "@/hooks/useProductFilters";
 import { useUserPreferences, mapProfileToFilters } from "@/hooks/useUserPreferences";
 import ProductCard from "@/components/shop/ProductCard";
@@ -23,13 +21,6 @@ import ProductSelector from "@/components/shop/ProductSelector";
 import { Slider } from "@/components/ui/slider";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { logMobilityDebug } from "@/lib/shopDebug";
-import {
-  validateMobilityConversion,
-  shouldWarnUser,
-  type MobilityConversionResult,
-} from "@/lib/mobilityConversionValidator";
-
 
 const incontinenceLevelOptions = [
   { id: "all", label: "Tous" },
@@ -44,9 +35,7 @@ const Shop = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
   const [selectedIncontinence, setSelectedIncontinence] = useState<string>("all");
-  // `selectedMobility` should always be a French UI tag (or "all"). The
-  // mismatch banner below catches any external code that breaks this invariant.
-  const [selectedMobility, setSelectedMobility] = useState<MobilityFilterId | string>("all");
+  const [selectedMobility, setSelectedMobility] = useState<string>("all");
   const [selectedUsageTime, setSelectedUsageTime] = useState<string>("all");
   const [selectedGender, setSelectedGender] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -57,56 +46,6 @@ const Shop = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [preferencesApplied, setPreferencesApplied] = useState(false);
-  // Soft, non-blocking notice shown when the mobility value coming from the
-  // profile had to be auto-translated (e.g. DB enum "reduced" → UI tag "reduite").
-  const [mobilityAutoTranslation, setMobilityAutoTranslation] = useState<
-    { from: string; to: { id: string; label: string } } | null
-  >(null);
-  const [showMobilityExplanation, setShowMobilityExplanation] = useState(false);
-  // Tracks whether the user has explicitly interacted with the mobility
-  // filter (including picking "Tous"). Used to suppress the conversion
-  // warning when the user voluntarily clears the filter — without this
-  // flag, validator + auto-apply states are indistinguishable from a
-  // deliberate "no filter" choice.
-  const [userOverrodeMobility, setUserOverrodeMobility] = useState(false);
-  // Per-session dismissal of the mobility-conversion warning. We use
-  // sessionStorage (not localStorage) so the safety net comes back the
-  // next time the user opens the site — dismissing here is "snooze, not
-  // disable". The feature itself stays fully active. Lazy initializer
-  // keeps SSR-safe (window guard) and avoids a flash of the banner on
-  // first paint when it was already dismissed.
-  const MOBILITY_WARNING_DISMISSED_KEY = 'shop:mobilityWarningDismissed';
-  const [mobilityWarningDismissed, setMobilityWarningDismissed] = useState(
-    () => {
-      if (typeof window === 'undefined') return false;
-      try {
-        return (
-          window.sessionStorage.getItem(MOBILITY_WARNING_DISMISSED_KEY) === '1'
-        );
-      } catch {
-        // Private mode / disabled storage → fall back to in-memory only.
-        return false;
-      }
-    },
-  );
-  const dismissMobilityWarning = () => {
-    setMobilityWarningDismissed(true);
-    try {
-      window.sessionStorage.setItem(MOBILITY_WARNING_DISMISSED_KEY, '1');
-    } catch {
-      // Best-effort persistence; in-memory state still hides the banner.
-    }
-  };
-
-  // Wrapper for every UI surface that lets the user pick a mobility
-  // option. Marks the choice as user-driven so the warning banner can
-  // step out of the way. Auto-apply paths must keep calling
-  // `setSelectedMobility` directly to preserve the "auto-apply failed"
-  // detection.
-  const handleSelectMobility = (next: string) => {
-    setUserOverrodeMobility(true);
-    setSelectedMobility(next);
-  };
 
   // Load all products without category/brand filter - we filter client-side
   const { data: products, isLoading: productsLoading } = useProducts();
@@ -119,17 +58,6 @@ const Shop = () => {
     if (userPreferences && !preferencesApplied) {
       const profileFilters = mapProfileToFilters(userPreferences);
       if (profileFilters) {
-        // DEV-only debug log. The literal `import.meta.env.DEV` guard lets
-        // Vite/esbuild fold the condition to `false` in production builds and
-        // strip the entire block (logger import, message string, lazy
-        // provider) via dead-code elimination. The provider is also lazy so
-        // the field values themselves are never even read in prod.
-        if (import.meta.env.DEV) {
-          logMobilityDebug(() => ({
-            profileMobilityLevel: userPreferences.mobility_level,
-            appliedFilterTag: profileFilters.mobility,
-          }));
-        }
         if (profileFilters.gender) setSelectedGender(profileFilters.gender);
         if (profileFilters.mobility) setSelectedMobility(profileFilters.mobility);
         if (profileFilters.incontinenceLevel) setSelectedIncontinence(profileFilters.incontinenceLevel);
@@ -145,64 +73,6 @@ const Shop = () => {
     const prices = products.map(p => p.price);
     return { min: Math.floor(Math.min(...prices)), max: Math.ceil(Math.max(...prices)) };
   }, [products]);
-
-  // Detect when the active mobility filter doesn't match any known UI option
-  // and suggest the auto-translated value (e.g. profile sent "reduced" → "reduite")
-  const mobilityHint = useMemo(() => {
-    if (selectedMobility === 'all') return null;
-    const matchesOption = mobilityFilterOptions.some(opt => opt.id === selectedMobility);
-    if (matchesOption) return null;
-    // Try to translate (English DB enum → French UI tag)
-    const translated = toMobilityTag(selectedMobility);
-    const suggestion = translated && mobilityFilterOptions.find(opt => opt.id === translated);
-    return {
-      currentValue: selectedMobility,
-      suggestion: suggestion ? { id: suggestion.id, label: suggestion.label } : null,
-    };
-  }, [selectedMobility]);
-
-  // Auto-apply the translated value when we have a confident suggestion, and
-  // surface a non-blocking info banner explaining what just happened.
-  useEffect(() => {
-    if (mobilityHint?.suggestion) {
-      const { currentValue, suggestion } = mobilityHint;
-      setMobilityAutoTranslation({ from: currentValue, to: suggestion });
-      setSelectedMobility(suggestion.id);
-    }
-  }, [mobilityHint]);
-
-  // End-to-end validation: compare the raw profile value with the tag that
-  // actually landed in the shop filter state. Surfaces a clear, non-blocking
-  // warning whenever the conversion silently failed (unknown profile value,
-  // mapping bug, etc.) — the user would otherwise see an unexplained empty
-  // product list. Result is `null` when there is nothing to compare yet.
-  //
-  // We pass `selectedMobility` *raw* (rather than pre-filtering it through
-  // `isMobilityTag`) so the validator can distinguish three cases that
-  // require different UX:
-  //   - real tag           → "ok" / "auto_corrected"
-  //   - UI sentinel ("all")→ "unknown_filter_tag" (silent, safe fallback)
-  //   - null/undefined     → "mapping_failed" (genuine pipeline bug)
-  // This is what gives us the "voluntary Tous → no warning" guarantee.
-  const mobilityConversion = useMemo<MobilityConversionResult | null>(() => {
-    if (!preferencesApplied || !userPreferences) return null;
-    return validateMobilityConversion(userPreferences.mobility_level, selectedMobility);
-  }, [preferencesApplied, userPreferences, selectedMobility]);
-
-  // Extra UX safeguard: suppress the banner whenever the user has
-  // explicitly set the filter to "Tous". Their intent is clear — they
-  // don't want a mobility filter right now — and a banner pushing them
-  // to "fix" their profile would be intrusive. We require *both* the
-  // explicit override flag AND the current value being "all" so an
-  // initial render (where the auto-apply silently failed and the filter
-  // is still at the default "all") still triggers the warning.
-  const userClearedMobility =
-    userOverrodeMobility && selectedMobility === 'all';
-  const showMobilityConversionWarning =
-    !!mobilityConversion &&
-    shouldWarnUser(mobilityConversion.status) &&
-    !userClearedMobility &&
-    !mobilityWarningDismissed;
 
   // Initialize price range once products load
   useEffect(() => {
@@ -241,7 +111,7 @@ const Shop = () => {
     setSelectedCategory("all");
     setSelectedBrand("all");
     setSelectedIncontinence("all");
-    handleSelectMobility("all");
+    setSelectedMobility("all");
     setSelectedUsageTime("all");
     setSelectedGender("all");
     setSearchQuery("");
@@ -273,7 +143,7 @@ const Shop = () => {
   useEffect(() => {
     if (!showIncontinenceFilters) {
       setSelectedIncontinence('all');
-      handleSelectMobility('all');
+      setSelectedMobility('all');
       setSelectedUsageTime('all');
     }
   }, [showIncontinenceFilters]);
@@ -285,7 +155,7 @@ const Shop = () => {
     incontinenceLevel?: string;
   }) => {
     if (filters.usageTime) setSelectedUsageTime(filters.usageTime);
-    if (filters.mobility) handleSelectMobility(filters.mobility);
+    if (filters.mobility) setSelectedMobility(filters.mobility);
     if (filters.incontinenceLevel) setSelectedIncontinence(filters.incontinenceLevel);
     if (filters.gender) setSelectedGender(filters.gender);
     setShowProductSelector(false);
@@ -301,7 +171,7 @@ const Shop = () => {
     showDroplets = false,
     counts
   }: { 
-    options: ReadonlyArray<{ id: string; label: string; icon?: number }>; 
+    options: { id: string; label: string; icon?: number }[]; 
     value: string; 
     onChange: (v: string) => void; 
     label: string;
@@ -527,7 +397,7 @@ const Shop = () => {
               {showIncontinenceFilters && (
                 <>
                   <FilterButton options={incontinenceLevelOptions} value={selectedIncontinence} onChange={setSelectedIncontinence} label="Absorption" showDroplets counts={filterCounts.incontinence} />
-                  <FilterButton options={mobilityFilterOptions} value={selectedMobility} onChange={handleSelectMobility} label="Mobilité" counts={filterCounts.mobility} />
+                  <FilterButton options={mobilityFilterOptions} value={selectedMobility} onChange={setSelectedMobility} label="Mobilité" counts={filterCounts.mobility} />
                   <FilterButton options={usageTimeFilterOptions} value={selectedUsageTime} onChange={setSelectedUsageTime} label="Moment" counts={filterCounts.usageTime} />
                 </>
               )}
@@ -584,230 +454,7 @@ const Shop = () => {
               )}
             </div>
 
-            {/* Non-blocking info: mobility value was auto-translated */}
-            {mobilityAutoTranslation && (
-              <div
-                role="status"
-                aria-live="polite"
-                className="mb-6 flex flex-col sm:flex-row sm:items-start gap-3 p-4 rounded-xl border border-primary/30 bg-primary/5 text-foreground"
-              >
-                <div className="flex-1 text-sm space-y-2">
-                  <p>
-                    <strong>Filtre mobilité ajusté :</strong>{" "}
-                    la valeur <span className="font-mono">"{mobilityAutoTranslation.from}"</span>{" "}
-                    a été automatiquement traduite en{" "}
-                    <strong>{mobilityAutoTranslation.to.label}</strong>.
-                    {" "}
-                    <button
-                      type="button"
-                      onClick={() => setShowMobilityExplanation(v => !v)}
-                      className="underline text-primary hover:text-primary/80 transition-colors"
-                      aria-expanded={showMobilityExplanation}
-                    >
-                      {showMobilityExplanation ? "Masquer l'explication" : "Pourquoi ?"}
-                    </button>
-                  </p>
-                  {showMobilityExplanation && (
-                    <p className="text-xs text-muted-foreground">
-                      Votre profil enregistre le niveau de mobilité avec un code interne
-                      (par ex. <span className="font-mono">reduced</span>), tandis que la
-                      boutique utilise des libellés en français
-                      (par ex. <span className="font-mono">reduite</span>).
-                      Nous avons appliqué la correspondance automatiquement pour vous
-                      afficher les bons produits.{" "}
-                      <Link
-                        to="/compte"
-                        className="underline text-primary hover:text-primary/80"
-                      >
-                        Mettre à jour mes préférences
-                      </Link>
-                    </p>
-                  )}
-                </div>
-                <button
-                  onClick={() => setMobilityAutoTranslation(null)}
-                  className="self-start sm:self-auto p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                  aria-label="Masquer ce message"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-
-            {/* Mobility filter mismatch hint (no auto-translation possible) */}
-            {mobilityHint && !mobilityHint.suggestion && (
-              <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-xl border border-destructive/30 bg-destructive/10 text-foreground">
-                <div className="flex-1 text-sm">
-                  <strong>Filtre mobilité non reconnu :</strong>{" "}
-                  <span className="font-mono">"{mobilityHint.currentValue}"</span> ne correspond à aucune option disponible.
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleSelectMobility('all')}
-                    className="px-3 py-1.5 rounded-lg text-sm font-medium bg-card border border-border text-foreground hover:bg-muted transition-colors"
-                  >
-                    Réinitialiser
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* End-to-end conversion warning: profile value → filter tag failed.
-                a11y: this is informational, not an emergency. We use
-                role="status" with aria-live="polite" so screen readers
-                announce it on the next pause instead of interrupting the
-                user mid-sentence (which role="alert" / aria-live="assertive"
-                would do). aria-atomic ensures the full message is re-read
-                if it changes (e.g. when the explainer is toggled). */}
-            {showMobilityConversionWarning && mobilityConversion && (
-              <section
-                role="status"
-                aria-live="polite"
-                aria-atomic="true"
-                aria-labelledby="mobility-warning-heading"
-                className="mb-6 p-4 rounded-xl border border-destructive/30 bg-destructive/10 text-foreground"
-              >
-                <div className="flex-1 text-sm space-y-2">
-                  {/* h2 keeps the banner consistent with the page's section
-                      hierarchy (h1 "Nos produits" → h2 for siblings like
-                      "Catégories populaires"). Visually styled as inline
-                      body copy to preserve the compact banner layout.
-                      Copy is intentionally short, calm, and reassurance-first:
-                      the very first thing the user reads is that nothing is
-                      hidden — the filter mismatch is a soft signal, not an
-                      error. */}
-                  <h2
-                    id="mobility-warning-heading"
-                    className="text-sm font-bold inline"
-                  >
-                    Aucun produit n’est masqué.
-                  </h2>{" "}
-                  <p className="inline">
-                    Vous voyez tout le catalogue.
-                  </p>
-                  {/* Secondary line — explains *why* the banner is here, in
-                      one short sentence, without alarming vocabulary. */}
-                  <p className="text-sm">
-                    Nous n’avons pas pu appliquer votre filtre mobilité
-                    automatiquement.
-                  </p>
-                  {/* Status-specific, actionable guidance — kept to two short
-                      sentences max. Avoids "À corriger" framing (too directive)
-                      in favour of a calm suggestion. */}
-                  <p className="text-sm">
-                    {mobilityConversion.status === 'invalid_profile_value' ? (
-                      <>
-                        La valeur enregistrée dans votre profil n’est plus
-                        reconnue. Choisissez à nouveau votre niveau de
-                        mobilité dans <em>Préférences de soins</em>.
-                      </>
-                    ) : (
-                      <>
-                        Resélectionnez votre niveau de mobilité dans{" "}
-                        <em>Préférences de soins</em>. Le filtre se
-                        réappliquera tout seul.
-                      </>
-                    )}
-                  </p>
-
-                  {/* Plain-language explainer disclosure. Kept collapsed by
-                      default so it doesn't compete with the actionable
-                      guidance above; useful for users who don't grasp the
-                      "profil vs filtre" distinction at first glance. The
-                      copy here intentionally avoids any tag/enum jargon —
-                      the technical breadcrumbs live in the next paragraph. */}
-                  {/* Inline action row: "Corriger dans mon compte" CTA sits
-                      right next to the plain-language explainer toggle so the
-                      user sees the fix and the why side-by-side. The CTA copy
-                      is intentionally short and reassuring (no jargon, no
-                      "mobilité" technicality) to lower the friction of
-                      clicking through to /compte#preferences-soins. */}
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">
-                    <Link
-                      to="/compte#preferences-soins"
-                      aria-label="Corriger mes préférences de soins dans mon compte"
-                      className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                    >
-                      Corriger dans mon compte
-                    </Link>
-                    {/* Native <button> → focusable & operable via Enter/Space
-                        out of the box. We add an explicit focus-visible ring
-                        (semantic `--ring` token) so keyboard users get a
-                        clear focus indicator that survives theme changes,
-                        and rounded edges so the ring hugs the underline. */}
-                    <button
-                      type="button"
-                      onClick={() => setShowMobilityExplanation((v) => !v)}
-                      aria-expanded={showMobilityExplanation}
-                      aria-controls="mobility-warning-explanation"
-                      className="text-sm font-medium text-primary underline underline-offset-2 rounded-sm hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                    >
-                      {showMobilityExplanation
-                        ? 'Masquer l\u2019explication'
-                        : 'Pourquoi je vois ce message\u00a0?'}
-                    </button>
-                    <span className="text-xs text-muted-foreground">
-                      C’est rapide, en 2 clics.
-                    </span>
-                    {/* Per-session dismissal — pushed to the right on wide
-                        screens via ml-auto so it reads as a tertiary action,
-                        not a primary one. The banner is a soft nudge, so we
-                        let users snooze it without disabling the safety net
-                        (it comes back next session). */}
-                    <button
-                      type="button"
-                      onClick={dismissMobilityWarning}
-                      aria-label="Masquer cet avertissement pour cette session"
-                      className="sm:ml-auto text-xs font-medium text-muted-foreground underline underline-offset-2 rounded-sm hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                    >
-                      Ne plus afficher
-                    </button>
-                  </div>
-                  {showMobilityExplanation && (
-                    <div
-                      id="mobility-warning-explanation"
-                      className="rounded-lg border border-border bg-background/60 p-3 text-sm text-muted-foreground space-y-2"
-                    >
-                      <p>
-                        Votre <strong>profil</strong> contient une indication
-                        sur votre mobilité (par exemple « Mobile » ou
-                        « Mobilité réduite »). La boutique s’en sert pour
-                        activer automatiquement le bon{" "}
-                        <strong>filtre</strong> de produits, afin de ne vous
-                        montrer que ceux qui correspondent à votre situation.
-                      </p>
-                      {/* Explicit, jargon-free statement of the mismatch.
-                          Phrased as "le filtre ≠ la valeur du profil" so the
-                          user immediately understands *what* is wrong without
-                          us naming any internal concept (tag, enum, mapping). */}
-                      <p>
-                        En ce moment, le <strong>filtre actif</strong> ne
-                        correspond pas à la valeur enregistrée dans votre{" "}
-                        <strong>profil</strong>.
-                      </p>
-                      <p>
-                        Ces deux informations ne correspondent pas. Tout le
-                        catalogue reste visible — vous pouvez continuer à
-                        parcourir la boutique tranquillement, ou mettre à jour
-                        votre profil pour retrouver des recommandations
-                        personnalisées.
-                      </p>
-                    </div>
-                  )}
-
-                  <p className="text-xs text-muted-foreground">
-                    Détails techniques :{" "}
-                    <span className="font-mono">
-                      profil = "{mobilityConversion.rawProfileValue ?? '∅'}"
-                      {" → "}
-                      filtre = "{mobilityConversion.resolvedFilterTag ?? '∅'}"
-                    </span>
-                    {" "}(<span className="font-mono">{mobilityConversion.status}</span>)
-                  </p>
-                </div>
-              </section>
-            )}
-
+            {/* Mobile Filter Toggle */}
             <div className="lg:hidden mb-6">
               <Button
                 variant="outline"
@@ -910,7 +557,7 @@ const Shop = () => {
                           {mobilityFilterOptions.map((opt) => (
                             <button
                               key={opt.id}
-                              onClick={() => handleSelectMobility(opt.id)}
+                              onClick={() => setSelectedMobility(opt.id)}
                               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                                 selectedMobility === opt.id
                                   ? "bg-primary text-primary-foreground"

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { z } from "https://esm.sh/zod@3.23.8";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -42,6 +43,37 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-ORDER] ${step}${detailsStr}`);
 };
 
+const CartItemSchema = z.object({
+  productId: z.string().uuid(),
+  productName: z.string().min(1).max(300),
+  productImage: z.string().max(2000).optional().nullable(),
+  quantity: z.number().int().positive().max(999),
+  unitPrice: z.number().nonnegative().max(100000),
+  subscriptionPrice: z.number().nonnegative().max(100000).optional().nullable(),
+  size: z.string().max(100).optional().nullable(),
+  isSubscription: z.boolean(),
+});
+
+const ShippingAddressSchema = z.object({
+  firstName: z.string().min(1).max(100),
+  lastName: z.string().min(1).max(100),
+  email: z.string().email().max(255),
+  phone: z.string().min(1).max(40),
+  address: z.string().min(1).max(300),
+  postalCode: z.string().min(1).max(20),
+  city: z.string().min(1).max(120),
+  country: z.string().min(1).max(100),
+});
+
+const CreateOrderSchema = z.object({
+  items: z.array(CartItemSchema).min(1).max(100),
+  shippingAddress: ShippingAddressSchema,
+  shippingCost: z.number().nonnegative().max(10000),
+  subtotal: z.number().nonnegative().max(1000000),
+  total: z.number().nonnegative().max(1000000),
+  referralCode: z.string().max(50).optional().nullable(),
+});
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -55,18 +87,18 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Parse request body
-    const { items, shippingAddress, shippingCost, subtotal, total, referralCode }: CreateOrderRequest = await req.json();
+    // Parse and validate request body
+    const parsed = CreateOrderSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      logStep("Validation failed", parsed.error.flatten().fieldErrors);
+      return new Response(
+        JSON.stringify({ success: false, error: "Données de commande invalides", details: parsed.error.flatten().fieldErrors }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const { items, shippingAddress, shippingCost, subtotal, total, referralCode } =
+      parsed.data as unknown as CreateOrderRequest;
     logStep("Request parsed", { itemsCount: items.length });
-
-    // Validate input
-    if (!items || items.length === 0) {
-      throw new Error("Le panier est vide");
-    }
-
-    if (!shippingAddress || !shippingAddress.email || !shippingAddress.firstName) {
-      throw new Error("Adresse de livraison incomplète");
-    }
 
     // Get user from auth header (optional - supports guest checkout)
     let userId: string | null = null;

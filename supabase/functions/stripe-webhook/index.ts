@@ -21,6 +21,7 @@ async function sendEmail(
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${serviceRoleKey}`,
+        'x-internal-secret': Deno.env.get('INTERNAL_FUNCTION_SECRET') ?? '',
       },
       body: JSON.stringify({ to, template, data }),
     });

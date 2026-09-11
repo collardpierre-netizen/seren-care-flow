@@ -32,15 +32,18 @@ const RegisterPage: React.FC = () => {
       return;
     }
 
-    // Send welcome email via edge function
+    // Send welcome email via edge function (requires an active session)
     try {
-      await supabase.functions.invoke('send-email', {
-        body: {
-          to: email,
-          template: 'welcome',
-          data: { firstName: firstName || 'Cher client' }
-        }
-      });
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await supabase.functions.invoke('send-email', {
+          body: {
+            to: email,
+            template: 'welcome',
+            data: { firstName: firstName || 'Cher client' }
+          }
+        });
+      }
     } catch (emailError) {
       console.error('Welcome email failed:', emailError);
       // Don't block registration for email failure

@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { authorize, unauthorizedResponse } from "../_shared/auth.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
@@ -36,7 +37,7 @@ async function sendWithResend(emailData: {
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-internal-secret",
 };
 
 // ============================================
@@ -1727,6 +1728,20 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const request: EmailRequest = await req.json();
     const { to, template, data = {}, subject, html, text, replyTo, preview = false } = request;
+
+    // --- Authorization -------------------------------------------------
+    // Allowed callers: internal server-to-server (shared secret / service role)
+    // or a signed-in user. Arbitrary HTML (direct content mode) is admin-only.
+    const usesDirectContent = !(template && templates[template]) && !!(subject && html);
+    const auth = await authorize(req, {
+      allowInternal: true,
+      requireAdmin: usesDirectContent,
+    });
+    if (!auth.ok) {
+      console.warn(`[SerenCare Email] Rejected unauthorized request (${auth.status})`);
+      return unauthorizedResponse(auth, corsHeaders);
+    }
+    // -------------------------------------------------------------------
 
     console.log(`[SerenCare Email] ${preview ? 'Previewing' : 'Sending'} ${template || 'custom'} email${!preview ? ` to ${Array.isArray(to) ? to.join(', ') : to}` : ''}`);
 
