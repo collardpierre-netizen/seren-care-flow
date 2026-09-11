@@ -1729,6 +1729,20 @@ const handler = async (req: Request): Promise<Response> => {
     const request: EmailRequest = await req.json();
     const { to, template, data = {}, subject, html, text, replyTo, preview = false } = request;
 
+    // --- Authorization -------------------------------------------------
+    // Allowed callers: internal server-to-server (shared secret / service role)
+    // or a signed-in user. Arbitrary HTML (direct content mode) is admin-only.
+    const usesDirectContent = !(template && templates[template]) && !!(subject && html);
+    const auth = await authorize(req, {
+      allowInternal: true,
+      requireAdmin: usesDirectContent,
+    });
+    if (!auth.ok) {
+      console.warn(`[SerenCare Email] Rejected unauthorized request (${auth.status})`);
+      return unauthorizedResponse(auth, corsHeaders);
+    }
+    // -------------------------------------------------------------------
+
     console.log(`[SerenCare Email] ${preview ? 'Previewing' : 'Sending'} ${template || 'custom'} email${!preview ? ` to ${Array.isArray(to) ? to.join(', ') : to}` : ''}`);
 
     let emailSubject: string;
