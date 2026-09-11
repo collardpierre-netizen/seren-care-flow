@@ -1,10 +1,19 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://esm.sh/zod@3.23.8";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const PreparerMessageSchema = z.object({
+  orderId: z.string().uuid(),
+  token: z.string().min(10).max(200),
+  message: z.string().max(2000).optional().nullable(),
+  senderName: z.string().max(120).optional().nullable(),
+  action: z.string().max(60).optional().nullable(),
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -17,7 +26,14 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { orderId, token, message, senderName, action } = await req.json();
+    const parsed = PreparerMessageSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Données invalides', details: parsed.error.flatten().fieldErrors }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+    const { orderId, token, message, senderName, action } = parsed.data;
 
     // Verify token
     const { data: tokenData, error: tokenError } = await supabase
