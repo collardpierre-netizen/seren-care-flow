@@ -244,6 +244,14 @@ serve(async (req) => {
   }
 
   try {
+    // Only internal callers (shared secret / service role) or staff may trigger
+    // order status emails — these carry order numbers and tracking links.
+    const auth = await authorize(req, { allowInternal: true, requireAdmin: true });
+    if (!auth.ok) {
+      console.warn(`[send-order-status-email] Rejected unauthorized request (${auth.status})`);
+      return unauthorizedResponse(auth, corsHeaders);
+    }
+
     const data: StatusEmailRequest = await req.json();
     console.log('Sending status email for order:', data.orderNumber, 'Status:', data.newStatus);
     console.log('Tracking info:', { carrier: data.carrier, trackingNumber: data.trackingNumber, trackingUrl: data.trackingUrl });
