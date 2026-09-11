@@ -163,7 +163,78 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const requestData: EmailRequest = await req.json();
     const { type, to, data, subject: directSubject, html: directHtml } = requestData;
-    
+
+    const isInternal = hasInternalSecret(req) || hasServiceRoleKey(req);
+    const usesDirectContent = !!(directSubject && directHtml);
+
+    // --- Authorization -------------------------------------------------
+    // Arbitrary HTML and order emails require staff / internal callers.
+    // The public forms (callback, appointment) stay open but must reference a
+    // request row that was genuinely created moments ago, which stops this
+    // endpoint being used as an open relay.
+    if (usesDirectContent || type === "order") {
+      const auth = await authorize(req, { allowInternal: true, requireAdmin: true });
+      if (!auth.ok) {
+        console.warn(`[SEND-EMAIL] Rejected unauthorized request (${auth.status})`);
+        return unauthorizedResponse(auth, corsHeaders);
+      }
+    } else if (!isInternal) {
+      if (type !== "callback" && type !== "appointment") {
+        return new Response(
+          JSON.stringify({ success: false, error: "Unsupported email type" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const phone = (data?.phone ?? "").trim();
+      if (!phone) {
+        return new Response(
+          JSON.stringify({ success: false, error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const admin = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+        { auth: { autoRefreshToken: false, persistSession: false } }
+      );
+
+      const since = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+      let query = admin
+        .from("callback_requests")
+        .select("id, email")
+        .eq("phone", phone)
+        .gte("created_at", since)
+        .limit(1);
+
+      if (to) query = query.eq("email", to);
+
+      const { data: matching, error: matchError } = await query;
+      if (matchError || !matching || matching.length === 0) {
+        console.warn("[SEND-EMAIL] No matching recent request found, rejecting");
+        return new Response(
+          JSON.stringify({ success: false, error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+    // -------------------------------------------------------------------
+
+    // Basic input validation to reject oversized / malformed payloads.
+    if (to && (typeof to !== "string" || to.length > 255 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to))) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Adresse email invalide" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    if (directSubject && directSubject.length > 300) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Sujet trop long" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     if (!RESEND_API_KEY) {
       console.log("RESEND_API_KEY not configured, skipping email");
       return new Response(
@@ -176,10 +247,10 @@ const handler = async (req: Request): Promise<Response> => {
     let subject: string;
     let html: string;
 
-    if (directSubject && directHtml) {
-      // Direct mode - use provided subject and HTML
-      subject = directSubject;
-      html = directHtml;
+    if (usesDirectContent) {
+      // Direct mode - use provided subject and HTML (admin only, checked above)
+      subject = directSubject!;
+      html = directHtml!;
       console.log(`[SEND-EMAIL] Direct mode - to: ${to}, subject: ${subject.substring(0, 50)}...`);
     } else if (type && data) {
       // Template mode - generate from type
