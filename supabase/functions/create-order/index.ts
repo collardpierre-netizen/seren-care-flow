@@ -87,18 +87,18 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Parse request body
-    const { items, shippingAddress, shippingCost, subtotal, total, referralCode }: CreateOrderRequest = await req.json();
+    // Parse and validate request body
+    const parsed = CreateOrderSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      logStep("Validation failed", parsed.error.flatten().fieldErrors);
+      return new Response(
+        JSON.stringify({ success: false, error: "Données de commande invalides", details: parsed.error.flatten().fieldErrors }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const { items, shippingAddress, shippingCost, subtotal, total, referralCode } =
+      parsed.data as unknown as CreateOrderRequest;
     logStep("Request parsed", { itemsCount: items.length });
-
-    // Validate input
-    if (!items || items.length === 0) {
-      throw new Error("Le panier est vide");
-    }
-
-    if (!shippingAddress || !shippingAddress.email || !shippingAddress.firstName) {
-      throw new Error("Adresse de livraison incomplète");
-    }
 
     // Get user from auth header (optional - supports guest checkout)
     let userId: string | null = null;
