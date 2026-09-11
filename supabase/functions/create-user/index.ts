@@ -1,4 +1,13 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { z } from 'https://esm.sh/zod@3.23.8';
+
+const CreateUserSchema = z.object({
+  email: z.string().email().max(255),
+  password: z.string().min(8).max(128),
+  first_name: z.string().max(100).optional().nullable(),
+  last_name: z.string().max(100).optional().nullable(),
+  role: z.enum(['user', 'admin', 'manager', 'preparer']).optional().nullable(),
+});
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -52,15 +61,15 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get request body
-    const { email, password, first_name, last_name, role } = await req.json();
-
-    if (!email || !password) {
-      return new Response(JSON.stringify({ error: 'Email et mot de passe requis' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    // Get and validate request body
+    const parsed = CreateUserSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return new Response(
+        JSON.stringify({ error: 'Données invalides', details: parsed.error.flatten().fieldErrors }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
+    const { email, password, first_name, last_name, role } = parsed.data;
 
     // Create user with admin API
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
