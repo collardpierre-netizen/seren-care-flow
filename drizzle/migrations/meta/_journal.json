@@ -8,6 +8,13 @@
       "when": 1789138058942,
       "tag": "0000_harden_storage_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789138160905,
+      "tag": "0001_harden_stock_alert_and_preparer_log_policies",
+      "breakpoints": true
     }
   ]
 }
