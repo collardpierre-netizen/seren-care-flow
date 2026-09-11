@@ -43,6 +43,37 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-ORDER] ${step}${detailsStr}`);
 };
 
+const CartItemSchema = z.object({
+  productId: z.string().uuid(),
+  productName: z.string().min(1).max(300),
+  productImage: z.string().max(2000).optional().nullable(),
+  quantity: z.number().int().positive().max(999),
+  unitPrice: z.number().nonnegative().max(100000),
+  subscriptionPrice: z.number().nonnegative().max(100000).optional().nullable(),
+  size: z.string().max(100).optional().nullable(),
+  isSubscription: z.boolean(),
+});
+
+const ShippingAddressSchema = z.object({
+  firstName: z.string().min(1).max(100),
+  lastName: z.string().min(1).max(100),
+  email: z.string().email().max(255),
+  phone: z.string().min(1).max(40),
+  address: z.string().min(1).max(300),
+  postalCode: z.string().min(1).max(20),
+  city: z.string().min(1).max(120),
+  country: z.string().min(1).max(100),
+});
+
+const CreateOrderSchema = z.object({
+  items: z.array(CartItemSchema).min(1).max(100),
+  shippingAddress: ShippingAddressSchema,
+  shippingCost: z.number().nonnegative().max(10000),
+  subtotal: z.number().nonnegative().max(1000000),
+  total: z.number().nonnegative().max(1000000),
+  referralCode: z.string().max(50).optional().nullable(),
+});
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
