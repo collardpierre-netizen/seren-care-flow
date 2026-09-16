@@ -38,7 +38,7 @@ const AdminSettings: React.FC = () => {
 
   React.useEffect(() => {
     if (settings) {
-      setShippingThreshold(settings.shipping?.free_shipping_threshold?.toString() || '49');
+      setShippingThreshold(settings.shipping?.free_shipping_threshold?.toString() || '69');
       setShippingFee(settings.shipping?.standard_shipping_fee?.toString() || '4.90');
       setSubscriptionDiscount(settings.subscription?.discount_percent?.toString() || '10');
       setMinimumSubscriptionAmount(settings.subscription?.minimum_amount?.toString() || '69');

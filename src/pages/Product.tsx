@@ -39,6 +39,7 @@ import MobileCartFooter from '@/components/shop/MobileCartFooter';
 import AddToSubscriptionButton from '@/components/shop/AddToSubscriptionButton';
 import { getEffectiveMobilityLevels, getEffectiveUsageTimes } from '@/hooks/useProductFilters';
 import { StockAlertDialog } from '@/components/shop/StockAlertDialog';
+import { isAbsorptionRelevant } from '@/lib/shopTaxonomy';
 
 const ProductPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -137,9 +138,13 @@ const ProductPage = () => {
     ? variantSubscriptionPrice 
     : variantBasePrice;
   
-  const freeShippingThreshold = 69;
+  const freeShippingThreshold = settings?.shipping?.free_shipping_threshold ?? 69;
   const subtotal = finalPrice * quantity;
   const remainingForFreeShipping = Math.max(0, freeShippingThreshold - subtotal);
+
+  // Attributs affichés uniquement quand ils ont un sens pour la catégorie
+  // (pas d'absorption, de mobilité, de moment ni de taille sur un soin de la peau).
+  const attributesRelevant = isAbsorptionRelevant(product.category_id);
 
   const incontinenceLevelLabels: Record<string, string> = {
     light: 'Légère',
@@ -376,44 +381,48 @@ const ProductPage = () => {
                   </div>
                 )}
 
-                {/* Reimbursement badge */}
-                <Link 
-                  to="/guides/remboursement-protections-incontinence-belgique"
-                  className="inline-flex items-center gap-2 mt-2 px-3 py-2 rounded-lg bg-accent/50 border border-accent text-sm text-foreground hover:bg-accent transition-colors"
-                >
-                  <span>💳</span>
-                  <span>Remboursable partiellement par votre mutuelle — jusqu'à 205€/an</span>
-                  <span className="text-primary font-medium whitespace-nowrap">En savoir plus →</span>
-                </Link>
+                {/* Remboursement mutuelle : uniquement sur les protections concernées */}
+                {attributesRelevant && (
+                  <Link 
+                    to="/guides/remboursement-protections-incontinence-belgique"
+                    className="inline-flex items-center gap-2 mt-2 px-3 py-2 rounded-lg bg-accent/50 border border-accent text-sm text-foreground hover:bg-accent transition-colors"
+                  >
+                    <span>💳</span>
+                    <span>Une intervention de votre mutuelle est possible selon votre situation</span>
+                    <span className="text-primary font-medium whitespace-nowrap">Conditions →</span>
+                  </Link>
+                )}
               </div>
 
-              {/* Product attributes */}
-              <div className="flex flex-wrap gap-2">
-                {product.incontinence_level && (
-                  <Badge variant="outline">
-                    {incontinenceLevelLabels[product.incontinence_level]}
-                  </Badge>
-                )}
-                {formatMobilityTags().map((label, idx) => (
-                  <Badge key={`mobility-${idx}`} variant="outline">
-                    {label}
-                  </Badge>
-                ))}
-                {formatUsageTimeTags().map((item, idx) => (
-                  <Badge key={`usage-${idx}`} variant="outline" className="flex items-center gap-1">
-                    {item.icon}
-                    {item.label}
-                  </Badge>
-                ))}
-              </div>
+              {/* Attributs produit, seulement s'ils ont un sens pour la catégorie */}
+              {attributesRelevant && (
+                <div className="flex flex-wrap gap-2">
+                  {product.incontinence_level && (
+                    <Badge variant="outline">
+                      {incontinenceLevelLabels[product.incontinence_level]}
+                    </Badge>
+                  )}
+                  {formatMobilityTags().map((label, idx) => (
+                    <Badge key={`mobility-${idx}`} variant="outline">
+                      {label}
+                    </Badge>
+                  ))}
+                  {formatUsageTimeTags().map((item, idx) => (
+                    <Badge key={`usage-${idx}`} variant="outline" className="flex items-center gap-1">
+                      {item.icon}
+                      {item.label}
+                    </Badge>
+                  ))}
+                </div>
+              )}
 
               {/* Description */}
               {product.description && (
                 <p className="text-muted-foreground leading-relaxed">{product.description}</p>
               )}
 
-              {/* Size Guide Modal - only if show_size_guide is true */}
-              {product.show_size_guide !== false && (
+              {/* Guide des tailles : seulement pour les produits à tailles */}
+              {attributesRelevant && product.show_size_guide !== false && (
                 <SizeGuideModal
                   open={sizeGuideOpen}
                   onOpenChange={setSizeGuideOpen}
@@ -424,41 +433,43 @@ const ProductPage = () => {
                 />
               )}
 
-              {/* Size selection */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">Taille</Label>
-                  {product.show_size_guide !== false && (
-                    <SizeGuideButton onClick={() => setSizeGuideOpen(true)} />
-                  )}
-                </div>
-                {sizes.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {sizes.map((size) => (
-                      <button
-                        key={size.id}
-                        onClick={() => setSelectedSize(size.size)}
-                        className={cn(
-                          "px-4 py-2 border rounded-lg text-sm font-medium transition-colors",
-                          selectedSize === size.size
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : "border-border hover:border-primary"
-                        )}
-                      >
-                        {size.size}
-                      </button>
-                    ))}
+              {/* Choix de la taille */}
+              {(sizes.length > 0 || attributesRelevant) && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium">Taille</Label>
+                    {attributesRelevant && product.show_size_guide !== false && (
+                      <SizeGuideButton onClick={() => setSizeGuideOpen(true)} />
+                    )}
                   </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">Taille unique</p>
-                )}
-                <p className="text-sm text-muted-foreground">
-                  Vérifiez toujours le guide du fabricant. En cas de doute, contactez-nous avant de commander.
-                </p>
-              </div>
+                  {sizes.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {sizes.map((size) => (
+                        <button
+                          key={size.id}
+                          onClick={() => setSelectedSize(size.size)}
+                          className={cn(
+                            "px-4 py-2 border rounded-lg text-sm font-medium transition-colors",
+                            selectedSize === size.size
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border hover:border-primary"
+                          )}
+                        >
+                          {size.size}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Taille unique</p>
+                  )}
+                  <p className="text-sm text-muted-foreground">
+                    Vérifiez toujours le guide du fabricant. En cas de doute, contactez-nous avant de commander.
+                  </p>
+                </div>
+              )}
 
-              {/* Purchase mode */}
-              <div className="space-y-3">
+              {/* Mode d'achat : la livraison régulière n'apparaît que si le produit y est éligible */}
+              <div className={cn("space-y-3", !hasSubscription && "hidden")}>
                 <Label className="text-sm font-medium">Mode d'achat</Label>
                 <RadioGroup 
                   value={purchaseMode} 
@@ -568,10 +579,10 @@ const ProductPage = () => {
                   <Truck className="h-4 w-4" />
                   {remainingForFreeShipping > 0 ? (
                     <span>
-                      Plus que <strong>{remainingForFreeShipping.toFixed(2)} €</strong> pour la livraison gratuite dès 69 € TTC
+                      Plus que <strong>{remainingForFreeShipping.toFixed(2)} €</strong> pour la livraison gratuite dès {freeShippingThreshold} € TTC
                     </span>
                   ) : (
-                    <span className="text-secondary font-medium">Livraison gratuite dès 69 € TTC</span>
+                    <span className="text-secondary font-medium">Livraison gratuite dès {freeShippingThreshold} € TTC</span>
                   )}
                 </div>
                 <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
@@ -615,14 +626,16 @@ const ProductPage = () => {
                     <ShoppingCart className="h-5 w-5 mr-2" />
                     Ajouter au panier — {(finalPrice * quantity).toFixed(2)} €
                   </Button>
-                  <AddToSubscriptionButton
-                    productId={product.id}
-                    productSize={selectedSize || undefined}
-                    quantity={quantity}
-                    variant="outline"
-                    className="w-full h-12"
-                    disabled={sizes.length > 0 && !selectedSize}
-                  />
+                  {hasSubscription && (
+                    <AddToSubscriptionButton
+                      productId={product.id}
+                      productSize={selectedSize || undefined}
+                      quantity={quantity}
+                      variant="outline"
+                      className="w-full h-12"
+                      disabled={sizes.length > 0 && !selectedSize}
+                    />
+                  )}
                 </div>
               )}
 
@@ -649,10 +662,12 @@ const ProductPage = () => {
             </motion.div>
           </div>
 
-          {/* Subscription Benefits Section */}
-          <div className="mt-16 pb-24 lg:pb-0">
-            <SubscriptionBenefits variant="card" showCTA={false} />
-          </div>
+          {/* Avantages de la livraison régulière : uniquement si le produit y est éligible */}
+          {hasSubscription && (
+            <div className="mt-16 pb-24 lg:pb-0">
+              <SubscriptionBenefits variant="card" showCTA={false} />
+            </div>
+          )}
         </div>
 
         {/* Mobile fixed cart footer with swipe */}

@@ -340,9 +340,28 @@ const Shop = () => {
     );
   };
 
+  // Catégories hiérarchisées : les catégories mères servent de point d'entrée,
+  // leurs sous-catégories sont affichées en dessous et décalées.
+  const hierarchicalCategories = (() => {
+    const list = categories || [];
+    const result: { id: string; label: string }[] = [];
+    const visit = (parentId: string | null, depth: number) => {
+      list
+        .filter((c) => (c.parent_id ?? null) === parentId)
+        .forEach((c) => {
+          result.push({ id: c.id, label: depth > 0 ? `${"\u00a0\u00a0".repeat(depth)}› ${c.name}` : c.name });
+          visit(c.id, depth + 1);
+        });
+    };
+    visit(null, 0);
+    const seen = new Set(result.map((c) => c.id));
+    list.filter((c) => !seen.has(c.id)).forEach((c) => result.push({ id: c.id, label: c.name }));
+    return result;
+  })();
+
   const categoryOptions = [
     { id: "all", label: "Toutes" },
-    ...(categories?.map(c => ({ id: c.id, label: c.name })) || [])
+    ...hierarchicalCategories,
   ];
 
   const brandOptions = [

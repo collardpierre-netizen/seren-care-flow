@@ -123,6 +123,21 @@ serve(async (req) => {
         cart = newCart;
       }
 
+      // Le produit doit être marqué éligible à l'abonnement dans le CMS
+      const { data: eligibility, error: eligibilityError } = await supabase
+        .from("products")
+        .select("is_subscription_eligible")
+        .eq("id", product_id)
+        .maybeSingle();
+
+      if (eligibilityError) throw eligibilityError;
+      if (!eligibility || eligibility.is_subscription_eligible !== true) {
+        return new Response(
+          JSON.stringify({ error: "Ce produit n'est pas disponible en livraison régulière." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       // Get stripe price for this product
       const { data: priceMap, error: priceError } = await supabase
         .from("stripe_price_map")

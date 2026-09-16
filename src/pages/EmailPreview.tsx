@@ -175,7 +175,7 @@ const EmailPreview = () => {
                           </td>
                           <td>
                             <h4 style="color: #c2410c; font-size: 16px; margin: 0 0 8px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif;">Abonnement activé !</h4>
-                            <p style="color: #9a3412; font-size: 14px; margin: 0; line-height: 1.5;">Recevez vos produits automatiquement chaque mois avec <strong>10% de réduction</strong>. Modifiable ou annulable à tout moment.</p>
+                            <p style="color: #9a3412; font-size: 14px; margin: 0; line-height: 1.5;">Recevez vos produits automatiquement chaque mois avec <strong>10% de réduction</strong>. Aucune durée minimale : modifiez la fréquence ou mettez en pause depuis votre compte. Pour arrêter, contactez SerenCare.</p>
                           </td>
                         </tr>
                       </table>
