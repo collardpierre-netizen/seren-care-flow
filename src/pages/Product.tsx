@@ -50,7 +50,7 @@ const ProductPage = () => {
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string>('');
-  const [purchaseMode, setPurchaseMode] = useState<'one-time' | 'subscription'>('subscription');
+  const [purchaseMode, setPurchaseMode] = useState<'one-time' | 'subscription'>('one-time');
   const [quantity, setQuantity] = useState(1);
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
   const [stockAlertOpen, setStockAlertOpen] = useState(false);
@@ -101,8 +101,9 @@ const ProductPage = () => {
   const sizes = product.sizes?.filter(s => s.is_active) || [];
   
   const basePrice = product.price;
-  const subscriptionPrice = product.subscription_price || basePrice * 0.9;
-  const discountPercent = product.subscription_discount_percent || 10;
+  const hasSubscription = product.is_subscription_eligible === true && product.subscription_price != null;
+  const subscriptionPrice = product.subscription_price ?? basePrice;
+  const discountPercent = product.subscription_discount_percent ?? 0;
   const recommendedPrice = product.recommended_price;
   
   // Calculate savings from recommended price
@@ -136,7 +137,7 @@ const ProductPage = () => {
     ? variantSubscriptionPrice 
     : variantBasePrice;
   
-  const freeShippingThreshold = settings?.shipping?.free_shipping_threshold || 49;
+  const freeShippingThreshold = 69;
   const subtotal = finalPrice * quantity;
   const remainingForFreeShipping = Math.max(0, freeShippingThreshold - subtotal);
 
@@ -451,6 +452,9 @@ const ProductPage = () => {
                 ) : (
                   <p className="text-sm text-muted-foreground">Taille unique</p>
                 )}
+                <p className="text-sm text-muted-foreground">
+                  Vérifiez toujours le guide du fabricant. En cas de doute, contactez-nous avant de commander.
+                </p>
               </div>
 
               {/* Purchase mode */}
@@ -461,7 +465,7 @@ const ProductPage = () => {
                   onValueChange={(v) => setPurchaseMode(v as 'one-time' | 'subscription')}
                   className="space-y-3"
                 >
-                  <div
+                  {hasSubscription && <div
                     className={cn(
                       "relative flex items-start gap-4 p-4 border rounded-xl cursor-pointer transition-all",
                       purchaseMode === 'subscription' 
@@ -473,22 +477,22 @@ const ProductPage = () => {
                     <RadioGroupItem value="subscription" id="subscription" className="mt-1" />
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <Label htmlFor="subscription" className="font-medium cursor-pointer">
-                          Abonnement mensuel
+                         <Label htmlFor="subscription" className="font-medium cursor-pointer">
+                           Livraison régulière
                         </Label>
-                        <Badge className="bg-secondary text-secondary-foreground">
+                         {discountPercent > 0 && <Badge className="bg-secondary text-secondary-foreground">
                           -{discountPercent}%
-                        </Badge>
+                         </Badge>}
                       </div>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Livraison automatique chaque mois
+                         Tous les 30 jours · prochaine livraison estimée : {estimatedDeliveryDate}
                       </p>
                       <p className="text-xl font-bold text-secondary mt-2">
                         {variantSubscriptionPrice.toFixed(2)} €
                       </p>
                     </div>
                     <RefreshCw className="h-5 w-5 text-secondary" />
-                  </div>
+                  </div>}
 
                   <div
                     className={cn(
@@ -513,7 +517,7 @@ const ProductPage = () => {
                 {purchaseMode === 'subscription' && (
                   <p className="text-xs text-muted-foreground flex items-center gap-1">
                     <RefreshCw className="h-3 w-3" />
-                    Sans engagement. Modifiez ou annulez à tout moment.
+                     Prix par livraison : {variantSubscriptionPrice.toFixed(2)} €. Aucune durée minimale. Modifiez la fréquence ou mettez en pause depuis « Mon compte ». Pour arrêter, contactez SerenCare.
                   </p>
                 )}
               </div>
@@ -564,10 +568,10 @@ const ProductPage = () => {
                   <Truck className="h-4 w-4" />
                   {remainingForFreeShipping > 0 ? (
                     <span>
-                      Plus que <strong>{remainingForFreeShipping.toFixed(2)} €</strong> pour la livraison gratuite
+                      Plus que <strong>{remainingForFreeShipping.toFixed(2)} €</strong> pour la livraison gratuite dès 69 € TTC
                     </span>
                   ) : (
-                    <span className="text-secondary font-medium">Livraison gratuite !</span>
+                    <span className="text-secondary font-medium">Livraison gratuite dès 69 € TTC</span>
                   )}
                 </div>
                 <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
@@ -581,6 +585,7 @@ const ProductPage = () => {
               {/* Add to cart - hidden on mobile (shown in footer) */}
               {product.is_coming_soon || product.stock_status === 'out_of_stock' ? (
                 <div className="space-y-3 hidden lg:block">
+                  <p className="text-sm text-muted-foreground">Vous commandez pour un proche ? Vous pourrez utiliser une adresse de livraison différente lors de la commande.</p>
                   <Button 
                     className="w-full h-14 text-base" 
                     size="lg"
@@ -625,7 +630,7 @@ const ProductPage = () => {
               <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border">
                 <div className="text-center">
                   <Truck className="h-5 w-5 mx-auto text-muted-foreground mb-1" />
-                  <p className="text-xs text-muted-foreground">Livraison express</p>
+                   <p className="text-xs text-muted-foreground">Délai estimé affiché</p>
                 </div>
                 <div className="text-center">
                   <Shield className="h-5 w-5 mx-auto text-muted-foreground mb-1" />
@@ -633,12 +638,12 @@ const ProductPage = () => {
                 </div>
                 <div className="text-center">
                   <Clock className="h-5 w-5 mx-auto text-muted-foreground mb-1" />
-                  <p className="text-xs text-muted-foreground">SAV réactif</p>
+                   <p className="text-xs text-muted-foreground">Aide par téléphone</p>
                 </div>
               </div>
 
               {/* Subscription promo badge */}
-              {product.subscription_price && (
+              {hasSubscription && discountPercent > 0 && (
                 <SubscriptionBadge discountPercent={discountPercent} variant="prominent" />
               )}
             </motion.div>

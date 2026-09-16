@@ -33,7 +33,7 @@ interface ProductQuickViewProps {
 const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, onClose }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string>('');
-  const [purchaseMode, setPurchaseMode] = useState<'one-time' | 'subscription'>('subscription');
+  const [purchaseMode, setPurchaseMode] = useState<'one-time' | 'subscription'>('one-time');
   const [quantity, setQuantity] = useState(1);
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
   
@@ -46,8 +46,9 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
   const sizes = product.sizes?.filter(s => s.is_active) || [];
   
   const basePrice = product.price;
-  const subscriptionPrice = product.subscription_price || basePrice * 0.9;
-  const discountPercent = product.subscription_discount_percent || 10;
+  const hasSubscription = product.is_subscription_eligible === true && product.subscription_price != null;
+  const subscriptionPrice = product.subscription_price ?? basePrice;
+  const discountPercent = product.subscription_discount_percent ?? 0;
   const recommendedPrice = product.recommended_price;
   
   // Calculate savings from recommended price
@@ -67,8 +68,7 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
     ? variantSubscriptionPrice 
     : variantBasePrice;
   
-  const freeShippingThreshold = settings?.shipping?.free_shipping_threshold || 49;
-  const shippingFee = settings?.shipping?.standard_shipping_fee || 4.90;
+  const freeShippingThreshold = 69;
   const subtotal = finalPrice * quantity;
   const remainingForFreeShipping = Math.max(0, freeShippingThreshold - subtotal);
 
@@ -281,6 +281,7 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
                     </button>
                   ))}
                 </div>
+                <p className="text-sm text-muted-foreground">Vérifiez toujours le guide du fabricant. En cas de doute, contactez-nous avant de commander.</p>
               </div>
             )}
 
@@ -292,7 +293,7 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
                 onValueChange={(v) => setPurchaseMode(v as 'one-time' | 'subscription')}
                 className="space-y-3"
               >
-                <div
+                {hasSubscription && <div
                   className={cn(
                     "relative flex items-start gap-4 p-4 border rounded-xl cursor-pointer transition-all",
                     purchaseMode === 'subscription' 
@@ -305,21 +306,21 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <Label htmlFor="subscription" className="font-medium cursor-pointer">
-                        Abonnement mensuel
+                        Livraison régulière
                       </Label>
-                      <Badge className="bg-secondary text-secondary-foreground">
+                      {discountPercent > 0 && <Badge className="bg-secondary text-secondary-foreground">
                         -{discountPercent}%
-                      </Badge>
+                      </Badge>}
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Livraison automatique chaque mois
+                      Tous les 30 jours
                     </p>
                     <p className="text-lg font-bold text-secondary mt-2">
                       {variantSubscriptionPrice.toFixed(2)} €
                     </p>
                   </div>
                   <RefreshCw className="h-5 w-5 text-secondary" />
-                </div>
+                </div>}
 
                 <div
                   className={cn(
@@ -344,7 +345,7 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
               {purchaseMode === 'subscription' && (
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                   <RefreshCw className="h-3 w-3" />
-                  Sans engagement. Modifiez ou annulez à tout moment.
+                  Prix par livraison : {variantSubscriptionPrice.toFixed(2)} €. Aucune durée minimale. Modifiez ou mettez en pause depuis votre compte. Pour arrêter, contactez SerenCare.
                 </p>
               )}
             </div>
@@ -377,10 +378,10 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
                 <Truck className="h-4 w-4" />
                 {remainingForFreeShipping > 0 ? (
                   <span>
-                    Plus que <strong>{remainingForFreeShipping.toFixed(2)} €</strong> pour la livraison gratuite
+                    Plus que <strong>{remainingForFreeShipping.toFixed(2)} €</strong> pour la livraison gratuite dès 69 € TTC
                   </span>
                 ) : (
-                  <span className="text-secondary font-medium">Livraison gratuite !</span>
+                  <span className="text-secondary font-medium">Livraison gratuite dès 69 € TTC</span>
                 )}
               </div>
               <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
@@ -393,6 +394,7 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
 
             {/* Add to cart */}
             <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">Vous commandez pour un proche ? Vous pourrez utiliser une adresse de livraison différente lors de la commande.</p>
               <Button 
                 className="w-full h-12 text-base" 
                 size="lg"

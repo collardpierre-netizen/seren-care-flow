@@ -33,8 +33,8 @@ const CartDrawer: React.FC = () => {
   const subscriptionSavings = getSubscriptionSavings();
   const publicPriceSavings = getPublicPriceSavings();
   const totalSavings = subscriptionSavings + publicPriceSavings;
-  const freeShippingThreshold = settings?.shipping?.free_shipping_threshold || 49;
-  const shippingFee = settings?.shipping?.standard_shipping_fee || 4.90;
+  const freeShippingThreshold = 69;
+  const shippingFee = settings?.shipping?.standard_shipping_fee || 8.75;
   const minimumOrderAmount = settings?.checkout?.minimum_order_amount || 25;
   const remainingForFreeShipping = Math.max(0, freeShippingThreshold - subtotal);
   const isFreeShipping = subtotal >= freeShippingThreshold;
@@ -70,10 +70,10 @@ const CartDrawer: React.FC = () => {
                 <Truck className="h-4 w-4" />
                 {remainingForFreeShipping > 0 ? (
                   <span>
-                    Plus que <strong>{remainingForFreeShipping.toFixed(2)} €</strong> pour la livraison gratuite
+                    Plus que <strong>{remainingForFreeShipping.toFixed(2)} €</strong> pour la livraison gratuite dès 69 € TTC
                   </span>
                 ) : (
-                  <span className="text-secondary font-medium">✓ Livraison gratuite !</span>
+                  <span className="text-secondary font-medium">Livraison gratuite dès 69 € TTC</span>
                 )}
               </div>
               <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
@@ -123,7 +123,7 @@ const CartDrawer: React.FC = () => {
                         {item.isSubscription && (
                           <div className="flex items-center gap-1 text-sm text-secondary mt-1">
                             <RefreshCw className="h-3 w-3" />
-                            Abonnement
+                            Livraison régulière · tous les 30 jours
                           </div>
                         )}
                       </div>
@@ -210,7 +210,7 @@ const CartDrawer: React.FC = () => {
               <div className="flex justify-between text-sm">
                 <span>Livraison</span>
                 <span className={cn(isFreeShipping && "text-secondary")}>
-                  {isFreeShipping ? 'Gratuite' : `${shippingCost.toFixed(2)} €`}
+                   {isFreeShipping ? 'Gratuite dès 69 € TTC' : `${shippingCost.toFixed(2)} €`}
                 </span>
               </div>
               
@@ -245,6 +245,9 @@ const CartDrawer: React.FC = () => {
               )}
               
               <ReassuranceMessages variant="inline" className="pt-2" />
+               {items.some(item => item.isSubscription) && (
+                 <p className="text-xs text-muted-foreground">Livraison régulière : le prix de chaque livraison est indiqué ci-dessus. Modifiez ou mettez en pause depuis votre compte. Pour arrêter, contactez SerenCare. Aucune durée minimale.</p>
+               )}
               <div className="space-y-2">
                 <Button 
                   className="w-full h-12" 

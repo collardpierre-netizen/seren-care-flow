@@ -112,7 +112,7 @@ const Shop = () => {
     selectedIncontinence, 
     selectedMobility, 
     selectedUsageTime,
-    selectedGender
+    selectedGender,
     selectedSizeFilter,
     selectedPurchaseMode
   ].filter(f => f !== "all").length + (isPriceFilterActive ? 1 : 0);
