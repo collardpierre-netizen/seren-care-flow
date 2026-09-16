@@ -39,6 +39,7 @@ import MobileCartFooter from '@/components/shop/MobileCartFooter';
 import AddToSubscriptionButton from '@/components/shop/AddToSubscriptionButton';
 import { getEffectiveMobilityLevels, getEffectiveUsageTimes } from '@/hooks/useProductFilters';
 import { StockAlertDialog } from '@/components/shop/StockAlertDialog';
+import { isAbsorptionRelevant } from '@/lib/shopTaxonomy';
 
 const ProductPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -137,9 +138,13 @@ const ProductPage = () => {
     ? variantSubscriptionPrice 
     : variantBasePrice;
   
-  const freeShippingThreshold = 69;
+  const freeShippingThreshold = settings?.shipping?.free_shipping_threshold ?? 69;
   const subtotal = finalPrice * quantity;
   const remainingForFreeShipping = Math.max(0, freeShippingThreshold - subtotal);
+
+  // Attributs affichés uniquement quand ils ont un sens pour la catégorie
+  // (pas d'absorption, de mobilité, de moment ni de taille sur un soin de la peau).
+  const attributesRelevant = isAbsorptionRelevant(product.category_id);
 
   const incontinenceLevelLabels: Record<string, string> = {
     light: 'Légère',
