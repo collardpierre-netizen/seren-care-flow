@@ -128,13 +128,12 @@ const Footer = () => {
               <Link to="/cgv" className="hover:text-background/70 transition-colors">CGV</Link>
               <Link to="/cgu" className="hover:text-background/70 transition-colors">CGU</Link>
               <Link to="/confidentialite" className="hover:text-background/70 transition-colors">Confidentialité</Link>
-               <button
-                 type="button"
-                 onClick={() => window.dispatchEvent(new Event("serencare:open-cookie-settings"))}
-                 className="min-h-11 hover:text-background/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background"
+               <Link
+                 to="/cookies"
+                 className="inline-flex items-center min-h-11 hover:text-background/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background"
                >
                  Gérer mes cookies
-               </button>
+               </Link>
             </div>
           </div>
         </div>

@@ -64,6 +64,7 @@ import AdminStockAlerts from "./pages/admin/StockAlerts";
 import AdminStripePriceMap from "./pages/admin/StripePriceMap";
 import AdminUsers from "./pages/admin/Users";
 import UnsubscribeStockAlert from "./pages/UnsubscribeStockAlert";
+import CookieSettings from "./pages/CookieSettings";
 import Subscription from "./pages/Subscription";
 const queryClient = new QueryClient();
 
@@ -111,6 +112,7 @@ const App = () => (
               <Route path="/compte" element={<Account />} />
               <Route path="/abonnement" element={<Subscription />} />
               <Route path="/desinscription-alerte" element={<UnsubscribeStockAlert />} />
+              <Route path="/cookies" element={<CookieSettings />} />
 
               {/* Admin routes */}
               <Route path="/admin" element={
