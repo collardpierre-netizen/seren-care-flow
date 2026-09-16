@@ -579,10 +579,10 @@ const ProductPage = () => {
                   <Truck className="h-4 w-4" />
                   {remainingForFreeShipping > 0 ? (
                     <span>
-                      Plus que <strong>{remainingForFreeShipping.toFixed(2)} €</strong> pour la livraison gratuite dès 69 € TTC
+                      Plus que <strong>{remainingForFreeShipping.toFixed(2)} €</strong> pour la livraison gratuite dès {freeShippingThreshold} € TTC
                     </span>
                   ) : (
-                    <span className="text-secondary font-medium">Livraison gratuite dès 69 € TTC</span>
+                    <span className="text-secondary font-medium">Livraison gratuite dès {freeShippingThreshold} € TTC</span>
                   )}
                 </div>
                 <div className="w-full h-2 bg-muted rounded-full overflow-hidden">

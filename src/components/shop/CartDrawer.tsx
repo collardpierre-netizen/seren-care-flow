@@ -70,10 +70,10 @@ const CartDrawer: React.FC = () => {
                 <Truck className="h-4 w-4" />
                 {remainingForFreeShipping > 0 ? (
                   <span>
-                    Plus que <strong>{remainingForFreeShipping.toFixed(2)} €</strong> pour la livraison gratuite dès 69 € TTC
+                    Plus que <strong>{remainingForFreeShipping.toFixed(2)} €</strong> pour la livraison gratuite dès {freeShippingThreshold} € TTC
                   </span>
                 ) : (
-                  <span className="text-secondary font-medium">Livraison gratuite dès 69 € TTC</span>
+                  <span className="text-secondary font-medium">Livraison gratuite dès {freeShippingThreshold} € TTC</span>
                 )}
               </div>
               <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
@@ -210,7 +210,7 @@ const CartDrawer: React.FC = () => {
               <div className="flex justify-between text-sm">
                 <span>Livraison</span>
                 <span className={cn(isFreeShipping && "text-secondary")}>
-                   {isFreeShipping ? 'Gratuite dès 69 € TTC' : `${shippingCost.toFixed(2)} €`}
+                   {isFreeShipping ? `Gratuite dès ${freeShippingThreshold} € TTC` : `${shippingCost.toFixed(2)} €`}
                 </span>
               </div>
               

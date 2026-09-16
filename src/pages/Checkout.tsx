@@ -452,7 +452,7 @@ const Checkout = () => {
                       Livraison
                     </span>
                     <span className={cn(isFreeShipping && "text-secondary font-medium")}>
-                       {isFreeShipping ? 'Gratuite dès 69 € TTC' : `${shippingCost.toFixed(2)} €`}
+                       {isFreeShipping ? `Gratuite dès ${freeShippingThreshold} € TTC` : `${shippingCost.toFixed(2)} €`}
                     </span>
                   </div>
                   
