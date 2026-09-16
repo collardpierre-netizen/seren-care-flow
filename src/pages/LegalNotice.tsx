@@ -39,7 +39,7 @@ const LegalNotice = () => {
                     <p className="font-medium mt-4">Adresse du siège social</p>
                     <p>Avenue Georges Lecointe 50<br />1180 Uccle, Belgique</p>
                     <p className="font-medium mt-4">Téléphone</p>
-                    <p><a href="tel:+3202216492" className="text-primary hover:underline">+32 02 216 49 23</a></p>
+                    <p><a href="tel:+32498644130" className="text-primary hover:underline">+32 498 64 41 30</a></p>
                     <p className="font-medium mt-4">Email</p>
                     <p><a href="mailto:ohall@noralphar.com" className="text-primary hover:underline">ohall@noralphar.com</a></p>
                   </div>

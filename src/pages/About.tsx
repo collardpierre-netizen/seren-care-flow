@@ -371,7 +371,7 @@ const About = () => {
                       <Phone className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <p className="font-display font-bold text-foreground mb-1">+32 02 648 42 22</p>
+                      <p className="font-display font-bold text-foreground mb-1">+32 498 64 41 30</p>
                       <p className="text-sm text-muted-foreground">Réponse sous 2h</p>
                     </div>
                   </div>
