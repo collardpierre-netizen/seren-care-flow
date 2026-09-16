@@ -186,7 +186,8 @@ const VideoTutorials = ({ showTitle = true }: VideoTutorialsProps) => {
         </CardContent>
       </Card>
     </motion.a>
-  );
+    );
+  };
 
   return (
     <section className="py-12 md:py-16">
