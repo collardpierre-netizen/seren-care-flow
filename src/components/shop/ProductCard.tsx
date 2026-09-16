@@ -22,11 +22,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, compact = false }) =
   // Calculate savings from recommended price
   const hasRecommendedPrice = product.recommended_price && product.recommended_price > product.price;
   const savingsPercent = hasRecommendedPrice && product.recommended_price ? Math.round(((product.recommended_price - product.price) / product.recommended_price) * 100) : 0;
-  const availableSizes = activeSizes.map((size) => size.size).filter(Boolean);
-  const units = activeSizes.find((size) => size.units_per_size)?.units_per_size || product.units_per_product;
-
   // Check if product has multiple sizes with different prices
   const activeSizes = product.sizes?.filter(s => s.is_active !== false) || [];
+  const availableSizes = activeSizes.map((size) => size.size).filter(Boolean);
+  const units = activeSizes.find((size) => size.units_per_size)?.units_per_size || product.units_per_product;
   const sizePrices = activeSizes.map(size => {
     if (size.sale_price && size.sale_price > 0) return size.sale_price;
     return product.price + (size.price_adjustment || 0);
