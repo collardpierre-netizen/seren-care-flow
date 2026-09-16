@@ -131,6 +131,34 @@ interface ProductImage {
   sort_order: number;
 }
 
+interface ImportProductRow {
+  line: number;
+  name: string;
+  slug: string;
+  action: 'create' | 'update' | 'error';
+  existingId?: string;
+  data?: any;
+  supplierName?: string;
+  warnings?: string[];
+  error?: string;
+}
+
+interface ImportSimpleRow {
+  line: number;
+  label: string;
+  action: 'apply' | 'error';
+  slug?: string;
+  data?: any;
+  error?: string;
+}
+
+interface ImportPreview {
+  fileName: string;
+  products: ImportProductRow[];
+  sizes: ImportSimpleRow[];
+  images: ImportSimpleRow[];
+}
+
 const AdminProducts: React.FC = () => {
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
@@ -146,6 +174,8 @@ const AdminProducts: React.FC = () => {
   const [imageUrl, setImageUrl] = useState('');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [importPreview, setImportPreview] = useState<ImportPreview | null>(null);
+  const [minPrice, setMinPrice] = useState('');
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -623,6 +653,16 @@ const AdminProducts: React.FC = () => {
     setProductImages(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleMoveImage = (index: number, direction: -1 | 1) => {
+    setProductImages(prev => {
+      const target = index + direction;
+      if (target < 0 || target >= prev.length) return prev;
+      const next = [...prev];
+      [next[index], next[target]] = [next[target], next[index]];
+      return next.map((img, i) => ({ ...img, sort_order: i }));
+    });
+  };
+
   const handleSetPrimaryImage = (index: number) => {
     setProductImages(prev => 
       prev.map((img, i) => ({ ...img, is_primary: i === index }))
@@ -690,6 +730,26 @@ const AdminProducts: React.FC = () => {
     });
   };
 
+  // Catégories hiérarchisées (mère › sous-catégorie)
+  const orderedCategories = React.useMemo(() => {
+    if (!categories) return [] as { id: string; label: string; depth: number }[];
+    const roots = categories.filter((c: any) => !c.parent_id);
+    const result: { id: string; label: string; depth: number }[] = [];
+    const pushChildren = (parent: any, depth: number, prefix: string) => {
+      const label = prefix ? `${prefix} › ${parent.name}` : parent.name;
+      result.push({ id: parent.id, label, depth });
+      categories
+        .filter((c: any) => c.parent_id === parent.id)
+        .forEach((child: any) => pushChildren(child, depth + 1, label));
+    };
+    roots.forEach((r: any) => pushChildren(r, 0, ''));
+    // Catégories orphelines (parent absent) ajoutées à la fin
+    categories
+      .filter((c: any) => c.parent_id && !categories.some((p: any) => p.id === c.parent_id))
+      .forEach((c: any) => result.push({ id: c.id, label: c.name, depth: 0 }));
+    return result;
+  }, [categories]);
+
   const productMarginPercent = (p: any) =>
     p.price && p.purchase_price ? ((p.price - p.purchase_price) / p.price) * 100 : null;
 
@@ -710,6 +770,9 @@ const AdminProducts: React.FC = () => {
     // Abo
     if (filterAbo === 'yes' && p.is_subscription_eligible === false) return false;
     if (filterAbo === 'no' && p.is_subscription_eligible !== false) return false;
+    // Prix supérieur à
+    const minPriceValue = parseFloat(minPrice);
+    if (!isNaN(minPriceValue) && (p.price || 0) < minPriceValue) return false;
     return true;
   });
 
@@ -1427,8 +1490,10 @@ const AdminProducts: React.FC = () => {
                   <Select value={formData.category_id} onValueChange={(v) => setFormData({ ...formData, category_id: v })}>
                     <SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger>
                     <SelectContent>
-                      {categories?.map(c => (
-                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                      {orderedCategories.map(c => (
+                        <SelectItem key={c.id} value={c.id}>
+                          <span style={{ paddingLeft: c.depth * 12 }}>{c.label}</span>
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -2108,8 +2173,10 @@ const AdminProducts: React.FC = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Toutes catégories</SelectItem>
-                {categories?.map(c => (
-                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                {orderedCategories.map(c => (
+                  <SelectItem key={c.id} value={c.id}>
+                    <span style={{ paddingLeft: c.depth * 12 }}>{c.label}</span>
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
