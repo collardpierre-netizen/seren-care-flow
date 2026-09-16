@@ -70,7 +70,7 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
     ? variantSubscriptionPrice 
     : variantBasePrice;
   
-  const freeShippingThreshold = 69;
+  const freeShippingThreshold = settings?.shipping?.free_shipping_threshold ?? 69;
   const subtotal = finalPrice * quantity;
   const remainingForFreeShipping = Math.max(0, freeShippingThreshold - subtotal);
 

@@ -54,7 +54,7 @@ const Checkout = () => {
   
   const subtotal = getSubtotal();
   const savings = getSubscriptionSavings();
-  const freeShippingThreshold = 69;
+  const freeShippingThreshold = settings?.shipping?.free_shipping_threshold ?? 69;
   const shippingFee = settings?.shipping?.standard_shipping_fee || 8.75;
   const minimumOrderAmount = settings?.checkout?.minimum_order_amount || 25;
   const isFreeShipping = subtotal >= freeShippingThreshold;
