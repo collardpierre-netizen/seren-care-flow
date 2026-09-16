@@ -781,10 +781,12 @@ const Shop = () => {
                       <span>{priceRange[1]}€</span>
                     </div>
                   </div>
+                  </>
+                  )}
 
                   {activeFiltersCount > 0 && (
-                    <Button variant="ghost" onClick={clearFilters} className="w-full">
-                      Effacer les filtres ({activeFiltersCount})
+                    <Button variant="ghost" onClick={clearFilters} className="w-full min-h-11">
+                      Tout effacer ({activeFiltersCount})
                     </Button>
                   )}
                 </motion.div>
