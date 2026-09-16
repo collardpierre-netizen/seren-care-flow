@@ -138,6 +138,7 @@ const AdminProducts: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState('all'); // all, active, inactive
   const [filterStock, setFilterStock] = useState('all'); // all, in_stock, low, out_of_stock
   const [filterAbo, setFilterAbo] = useState('all'); // all, yes, no
+  const [sortBy, setSortBy] = useState('default'); // default, price_desc, price_asc, margin_desc, margin_asc
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [formData, setFormData] = useState<ProductFormData>(initialFormData);
