@@ -97,27 +97,28 @@ const CookieConsent = () => {
             className="fixed bottom-2 left-2 right-2 z-50 md:left-6 md:right-6 md:bottom-6"
           >
             <div className="max-w-3xl mx-auto bg-card border border-border rounded-lg shadow-2xl p-3 md:p-6">
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-3 md:gap-4">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <Cookie className="w-5 h-5 text-primary" />
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-display font-semibold text-foreground mb-2">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-display font-semibold text-foreground mb-1 md:mb-2">
                     Nous utilisons des cookies
                   </h3>
-                  <p className="text-sm text-muted-foreground mb-4">
+                  <p className="hidden md:block text-sm text-muted-foreground mb-4">
                     SerenCare utilise des cookies pour garantir le bon fonctionnement du site, 
                     mémoriser vos préférences et analyser notre trafic de manière anonyme. 
                     Vous pouvez personnaliser vos choix à tout moment.
                   </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <Button variant="outline" size="sm" onClick={acceptAll} className="min-h-11">
+                  <p className="md:hidden text-xs text-muted-foreground mb-2">Choisissez les cookies que vous acceptez.</p>
+                  <div className="grid grid-cols-3 gap-1.5 md:gap-2">
+                    <Button variant="outline" size="sm" onClick={acceptAll} className="min-h-11 h-auto px-1 text-xs whitespace-normal leading-tight md:px-3 md:text-sm">
                       Tout accepter
                     </Button>
-                    <Button variant="outline" size="sm" onClick={rejectAll} className="min-h-11">
+                    <Button variant="outline" size="sm" onClick={rejectAll} className="min-h-11 h-auto px-1 text-xs whitespace-normal leading-tight md:px-3 md:text-sm">
                       Tout refuser
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => setShowSettings(true)} className="min-h-11">
+                    <Button variant="outline" size="sm" onClick={() => setShowSettings(true)} className="min-h-11 h-auto px-1 text-xs whitespace-normal leading-tight md:px-3 md:text-sm">
                       Personnaliser
                     </Button>
                   </div>
