@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Play, ExternalLink, Lock, FileText } from "lucide-react";
+import { Play, ExternalLink, Lock, FileText, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface VideoTutorial {
@@ -10,7 +11,8 @@ interface VideoTutorial {
   description: string;
   /** Durée affichée uniquement si vérifiée à la source */
   duration?: string;
-  thumbnail: string;
+  /** Miniature externe, uniquement si elle charge de façon fiable */
+  thumbnail?: string;
   brand: "TENA" | "Hartmann";
   externalUrl: string;
   category: string;
