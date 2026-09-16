@@ -112,6 +112,7 @@ const App = () => (
               <Route path="/compte" element={<Account />} />
               <Route path="/abonnement" element={<Subscription />} />
               <Route path="/desinscription-alerte" element={<UnsubscribeStockAlert />} />
+              <Route path="/cookies" element={<CookieSettings />} />
 
               {/* Admin routes */}
               <Route path="/admin" element={
