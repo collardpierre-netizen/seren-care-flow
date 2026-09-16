@@ -2074,13 +2074,26 @@ const AdminProducts: React.FC = () => {
                 <SelectItem value="no">Abo désactivé</SelectItem>
               </SelectContent>
             </Select>
-            {(filterCategory !== 'all' || filterBrand !== 'all' || filterStatus !== 'all' || filterStock !== 'all' || filterAbo !== 'all') && (
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-[190px]">
+                <SelectValue placeholder="Trier" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="default">Tri par défaut</SelectItem>
+                <SelectItem value="price_desc">Prix décroissant</SelectItem>
+                <SelectItem value="price_asc">Prix croissant</SelectItem>
+                <SelectItem value="margin_desc">Marge décroissante</SelectItem>
+                <SelectItem value="margin_asc">Marge croissante</SelectItem>
+              </SelectContent>
+            </Select>
+            {(filterCategory !== 'all' || filterBrand !== 'all' || filterStatus !== 'all' || filterStock !== 'all' || filterAbo !== 'all' || sortBy !== 'default') && (
               <Button variant="ghost" size="sm" onClick={() => {
                 setFilterCategory('all');
                 setFilterBrand('all');
                 setFilterStatus('all');
                 setFilterStock('all');
                 setFilterAbo('all');
+                setSortBy('default');
               }}>
                 <X className="h-4 w-4 mr-1" />
                 Effacer
