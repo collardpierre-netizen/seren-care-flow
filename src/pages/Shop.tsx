@@ -189,6 +189,17 @@ const Shop = () => {
     setSelectedPurchaseMode("all");
     setSearchQuery("");
     setPriceRange([priceBounds.min, priceBounds.max]);
+    setSelectedGroup(null);
+  };
+
+  const focusSearch = () => {
+    searchSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    const input = searchSectionRef.current?.querySelector("input");
+    (input as HTMLInputElement | null)?.focus();
+  };
+
+  const startRelativeJourney = () => {
+    setShowProductSelector(true);
   };
 
   const handleProductClick = (product: Product) => {
