@@ -361,7 +361,7 @@ const About = () => {
                 Une question ?
               </h2>
               <p className="text-muted-foreground text-center mb-8">
-                Pharmacie Allard — Notre équipe est disponible 7j/7.
+                SerenCare by Medikong — Notre équipe est disponible 7j/7.
               </p>
 
               <div className="bg-card rounded-2xl p-8 border border-border">

@@ -34,10 +34,10 @@ const LegalNotice = () => {
                     Éditeur de la plateforme
                   </h2>
                   <div className="bg-muted/50 rounded-xl p-6 space-y-2 text-sm">
-                    <p className="font-semibold">Pharmacie Allard – Noralphar</p>
-                    <p>Titulaire : Sonia Bourahli</p>
+                    <p className="font-semibold">SerenCare by Medikong</p>
+                    <p>MEDIKONG (société à responsabilité limitée)</p>
                     <p className="font-medium mt-4">Adresse du siège social</p>
-                    <p>Avenue Georges Lecointe 50<br />1180 Uccle, Belgique</p>
+                    <p>Rue de la Procession 23<br />7822 Ath, Belgique</p>
                     <p className="font-medium mt-4">Téléphone</p>
                     <p><a href="tel:+32498644130" className="text-primary hover:underline">+32 498 64 41 30</a></p>
                     <p className="font-medium mt-4">Email</p>
@@ -52,12 +52,15 @@ const LegalNotice = () => {
                   </h2>
                   <div className="bg-muted/50 rounded-xl p-6 space-y-3 text-sm">
                     <div>
-                      <p className="font-medium">Numéro APB</p>
-                      <p className="text-muted-foreground">212033 – Association Pharmaceutique Belge</p>
+                      <p className="font-medium">Numéro d'entreprise</p>
+                      <p className="text-muted-foreground">
+                        1005.771.323 –{' '}
+                        <a href="https://kbopub.economie.fgov.be/kbopub/toonondernemingps.html?ondernemingsnummer=1005771323" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Banque-Carrefour des Entreprises</a>
+                      </p>
                     </div>
                     <div>
                       <p className="font-medium">Numéro de TVA</p>
-                      <p className="text-muted-foreground">BE 0684.671.728 – TVA intracommunautaire</p>
+                      <p className="text-muted-foreground">BE 1005.771.323 – TVA intracommunautaire</p>
                     </div>
                   </div>
                 </section>
@@ -97,8 +100,8 @@ const LegalNotice = () => {
                     Directeur de publication
                   </h2>
                   <p className="text-muted-foreground">
-                    Sonia Bourahli<br />
-                    Pharmacien titulaire – APB 212033
+                    SerenCare by Medikong<br />
+                    MEDIKONG
                   </p>
                 </section>
 

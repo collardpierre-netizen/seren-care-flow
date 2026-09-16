@@ -119,7 +119,7 @@ const Contact = () => {
                   Nos coordonnées
                 </h2>
                 <p className="text-muted-foreground mb-8">
-                  Pharmacie Allard — Notre équipe est disponible pour vous accompagner 
+                  SerenCare by Medikong — Notre équipe est disponible pour vous accompagner 
                   dans vos démarches.
                 </p>
 
