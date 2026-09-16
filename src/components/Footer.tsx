@@ -42,10 +42,10 @@ const Footer = () => {
             
             {/* Contact Info */}
             <div className="space-y-3 mb-6">
-              <p className="text-sm font-medium text-background">Pharmacie Allard</p>
-              <a href="tel:+3202648422" className="flex items-center gap-3 text-sm text-background/80 hover:text-background transition-colors group">
+              <p className="text-sm font-medium text-background">SerenCare by Medikong</p>
+              <a href="tel:+32498644130" className="flex items-center gap-3 text-sm text-background/80 hover:text-background transition-colors group">
                 <Phone className="w-4 h-4" />
-               +32 2 648 42 22
+               +32 498 64 41 30
                 <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
               </a>
               <a href="mailto:info@serencare.be" className="flex items-center gap-3 text-sm text-background/80 hover:text-background transition-colors group">

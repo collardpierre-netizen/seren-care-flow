@@ -119,7 +119,7 @@ const Contact = () => {
                   Nos coordonnées
                 </h2>
                 <p className="text-muted-foreground mb-8">
-                  Pharmacie Allard — Notre équipe est disponible pour vous accompagner 
+                  SerenCare by Medikong — Notre équipe est disponible pour vous accompagner 
                   dans vos démarches.
                 </p>
 
@@ -131,10 +131,10 @@ const Contact = () => {
                     <div>
                       <p className="font-display font-semibold text-foreground mb-1">Téléphone</p>
                       <a 
-                        href="tel:+3202648422" 
+                        href="tel:+32498644130" 
                         className="text-muted-foreground hover:text-primary transition-colors"
                       >
-                        +32 02 648 42 22
+                        +32 498 64 41 30
                       </a>
                     </div>
                   </div>

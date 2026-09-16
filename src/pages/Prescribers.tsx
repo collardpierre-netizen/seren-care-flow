@@ -398,8 +398,8 @@ const Prescribers = () => {
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Téléphone</p>
-                      <a href="tel:+3202648422" className="font-medium text-foreground hover:text-primary transition-colors">
-                        +32 02 648 42 22
+                      <a href="tel:+32498644130" className="font-medium text-foreground hover:text-primary transition-colors">
+                        +32 498 64 41 30
                       </a>
                     </div>
                   </div>

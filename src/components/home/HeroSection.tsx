@@ -238,7 +238,7 @@ const HeroSection = () => {
               ))}
             </motion.div>
             <p className="mt-6 text-sm text-primary-foreground/90">
-              Une question avant de commander ? <a href="tel:+3226484222" className="font-semibold underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground">Appelez-nous au +32 2 648 42 22.</a>
+              Une question avant de commander ? <a href="tel:+32498644130" className="font-semibold underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground">Appelez-nous au +32 498 64 41 30.</a>
             </p>
           </div>
         </div>

@@ -215,7 +215,7 @@ const EmailPreview = () => {
                     <p style="margin: 0; font-family: 'Inter', sans-serif;">
                       <a href="mailto:orders@serencare.be" style="color: ${brand.primary}; text-decoration: none; font-weight: 600;">orders@serencare.be</a>
                       <span style="color: #d1d5db; margin: 0 12px;">|</span>
-                      <a href="tel:+3202648422" style="color: ${brand.primary}; text-decoration: none; font-weight: 600;">+32 02 648 42 22</a>
+                      <a href="tel:+32498644130" style="color: ${brand.primary}; text-decoration: none; font-weight: 600;">+32 498 64 41 30</a>
                     </p>
                     <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid ${brand.border};">
                       <p style="color: #9CA3AF; font-size: 12px; margin: 0; font-family: 'Inter', sans-serif;">

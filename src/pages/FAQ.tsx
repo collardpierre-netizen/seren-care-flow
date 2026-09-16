@@ -81,9 +81,9 @@ const FAQ = () => {
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="lg">
-                  <a href="tel:+3202648422" className="gap-2">
+                  <a href="tel:+32498644130" className="gap-2">
                     <Phone className="w-5 h-5" />
-                    +32 02 648 42 22
+                    +32 498 64 41 30
                   </a>
                 </Button>
               </div>

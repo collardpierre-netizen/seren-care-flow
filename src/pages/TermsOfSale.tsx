@@ -8,7 +8,7 @@ const TermsOfSale = () => {
     <>
       <Helmet>
         <title>Conditions Générales de Vente | SerenCare</title>
-        <meta name="description" content="Conditions Générales de Vente de SerenCare - Vente de protections pour l'incontinence par Pharmacie Allard." />
+        <meta name="description" content="Conditions Générales de Vente de SerenCare - Vente de protections pour l'incontinence par SerenCare by Medikong." />
       </Helmet>
       <Layout>
         <section className="section-padding bg-background">
@@ -24,7 +24,7 @@ const TermsOfSale = () => {
               </h1>
 
               <p className="text-muted-foreground mb-2">Version 2025 – SerenCare</p>
-              <p className="text-muted-foreground mb-8">Pharmacie Allard – Noralphar – APB 212033</p>
+              <p className="text-muted-foreground mb-8">SerenCare by Medikong</p>
 
               <div className="space-y-10 text-foreground">
                 {/* 1. Objet */}
@@ -36,12 +36,12 @@ const TermsOfSale = () => {
                     Les présentes Conditions Générales de Vente (CGV) régissent les ventes effectuées sur la plateforme SerenCare, opérée par :
                   </p>
                   <div className="bg-muted/50 rounded-xl p-6 space-y-2 text-sm mb-4">
-                    <p className="font-semibold">Pharmacie Allard – Noralphar</p>
-                    <p>Titulaire : Sonia Bourahli</p>
-                    <p>APB : 212033</p>
-                    <p>Adresse : Avenue Georges Lecointe 50, 1180 Uccle – Belgique</p>
-                    <p>TVA : BE 0684.671.728</p>
-                    <p>Téléphone : <a href="tel:+3202216492" className="text-primary hover:underline">+32 02 216 49 23</a></p>
+                    <p className="font-semibold">SerenCare by Medikong</p>
+                    <p>MEDIKONG (société à responsabilité limitée)</p>
+                    <p>Adresse : Rue de la Procession 23, 7822 Ath – Belgique</p>
+                    <p>Numéro d'entreprise : 1005.771.323</p>
+                    <p>TVA : BE 1005.771.323</p>
+                    <p>Téléphone : <a href="tel:+32498644130" className="text-primary hover:underline">+32 498 64 41 30</a></p>
                     <p>Email : <a href="mailto:ohall@noralphar.com" className="text-primary hover:underline">ohall@noralphar.com</a></p>
                   </div>
                   <p className="text-muted-foreground">
@@ -192,7 +192,7 @@ const TermsOfSale = () => {
                   </p>
                   <ul className="list-disc list-inside space-y-2 text-muted-foreground mt-2">
                     <li>Par email : <a href="mailto:ohall@noralphar.com" className="text-primary hover:underline">ohall@noralphar.com</a></li>
-                    <li>Par téléphone : <a href="tel:+3202216492" className="text-primary hover:underline">+32 02 216 49 23</a> (Du lundi au vendredi de 09h à 15h)</li>
+                    <li>Par téléphone : <a href="tel:+32498644130" className="text-primary hover:underline">+32 498 64 41 30</a> (Du lundi au vendredi de 09h à 15h)</li>
                   </ul>
                 </section>
 
