@@ -101,7 +101,8 @@ const LegalNotice = () => {
                   </h2>
                   <p className="text-muted-foreground">
                     SerenCare by Medikong<br />
-                    MEDIKONG
+                    MEDIKONG<br />
+                    Pierre Collard
                   </p>
                 </section>
 
