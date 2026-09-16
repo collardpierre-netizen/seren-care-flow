@@ -12,6 +12,7 @@ import tenaLogo from "@/assets/tena-logo.png";
 const brands = [
   {
     name: "Lille Healthcare",
+    slug: "lille",
     logo: lilleLogo,
     tagline: "Protections absorbantes",
     description: "Retrouvez les références Lille Healthcare proposées par SerenCare et comparez leurs formats et caractéristiques fabricant.",
@@ -30,6 +31,7 @@ const brands = [
   },
   {
     name: "Hartmann",
+    slug: "hartmann",
     logo: hartmannLogo,
     tagline: "Aide. Prend soin. Protège.",
     description: "Retrouvez les références Hartmann proposées par SerenCare et comparez leurs formats et caractéristiques fabricant.",
@@ -48,6 +50,7 @@ const brands = [
   },
   {
     name: "TENA",
+    slug: "tena",
     logo: tenaLogo,
     tagline: "De meilleurs soins pour tous",
     description: "Retrouvez les références TENA proposées par SerenCare et comparez leurs formats et caractéristiques fabricant.",
@@ -129,12 +132,19 @@ const Brands = () => {
                       <p className="text-primary font-medium text-sm mb-4">
                         {brand.tagline}
                       </p>
-                      <Button asChild variant="outline" size="sm" className="gap-2">
-                        <a href={brand.website} target="_blank" rel="noopener noreferrer">
-                          Visiter le site
-                          <ExternalLink className="w-4 h-4" />
-                        </a>
-                      </Button>
+                      <div className="flex flex-wrap gap-3">
+                        <Button asChild size="sm" className="min-h-[44px]">
+                          <Link to={`/marque/${brand.slug}`}>
+                            Voir les produits {brand.name}
+                          </Link>
+                        </Button>
+                        <Button asChild variant="outline" size="sm" className="gap-2 min-h-[44px]">
+                          <a href={brand.website} target="_blank" rel="noopener noreferrer">
+                            Visiter le site
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                        </Button>
+                      </div>
                     </div>
 
                     {/* Description & Values */}
