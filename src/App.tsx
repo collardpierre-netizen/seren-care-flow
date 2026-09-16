@@ -64,6 +64,7 @@ import AdminStockAlerts from "./pages/admin/StockAlerts";
 import AdminStripePriceMap from "./pages/admin/StripePriceMap";
 import AdminUsers from "./pages/admin/Users";
 import UnsubscribeStockAlert from "./pages/UnsubscribeStockAlert";
+import CookieSettings from "./pages/CookieSettings";
 import Subscription from "./pages/Subscription";
 const queryClient = new QueryClient();
 
