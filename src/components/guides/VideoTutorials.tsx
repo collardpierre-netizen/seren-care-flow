@@ -64,8 +64,6 @@ const hartmannVideos: VideoTutorial[] = [
     title: "MoliCare Premium Form - Application",
     description:
       "Formation vidéo sur l'application des protections anatomiques MoliCare® Premium Form.",
-    thumbnail:
-      "https://www.hartmann.info/-/media/country/website/academy/default/webinar-teaser-background-default-hartmann-cyan-1600x900px.png?h=182&iar=0&mw=324&w=324",
     brand: "Hartmann",
     externalUrl:
       "https://www.hartmann.info/fr-be/apprendre-et-savoir/gestion-de-lincontinence/2024/formation-video-comment-appliquer-les-protections-anatomiques-molicare-premium-form",
