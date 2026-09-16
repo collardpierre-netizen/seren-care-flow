@@ -123,12 +123,49 @@ const Shop = () => {
     priceMax: priceRange[1],
     categories: categories as { id: string; parent_id: string | null }[],
   });
+  // Catégories couvertes par le chemin choisi (familles en langage courant)
+  const groupCategoryIds = useMemo(() => {
+    if (!selectedGroup) return null;
+    if (selectedGroup === "nutrition") return [CATEGORY_IDS.nutritionClinique, CATEGORY_IDS.nutritionParent];
+    return SHOP_GROUPS.find((g) => g.id === selectedGroup)?.categoryIds ?? null;
+  }, [selectedGroup]);
+
+  const productSize = (product: Product) => {
+    const fromVariants = product.sizes?.filter((s) => s.is_active !== false).map((s) => s.size).filter(Boolean) || [];
+    if (fromVariants.length > 0) return fromVariants;
+    const fromName = getSizeFromName(product.name);
+    return fromName ? [fromName] : [];
+  };
+
   const visibleProducts = useMemo(() => filteredProducts.filter((product) => {
-    const matchesSize = selectedSizeFilter === "all" || product.sizes?.some((size) => size.is_active !== false && size.size === selectedSizeFilter);
+    const matchesSize = selectedSizeFilter === "all" || productSize(product).includes(selectedSizeFilter);
     const matchesMode = selectedPurchaseMode === "all" || selectedPurchaseMode === "one-time" || (product.is_subscription_eligible === true && !!product.subscription_price);
-    return matchesSize && matchesMode;
-  }), [filteredProducts, selectedSizeFilter, selectedPurchaseMode]);
-  const sizeOptions = useMemo(() => [...new Set(products?.flatMap((product) => product.sizes?.filter((size) => size.is_active !== false).map((size) => size.size) || []) || [])].sort(), [products]);
+    const matchesGroup = !groupCategoryIds || (!!product.category_id && groupCategoryIds.includes(product.category_id));
+    return matchesSize && matchesMode && matchesGroup;
+  }), [filteredProducts, selectedSizeFilter, selectedPurchaseMode, groupCategoryIds]);
+
+  const sizeOptions = useMemo(() => {
+    const source = groupCategoryIds
+      ? (products || []).filter((p) => p.category_id && groupCategoryIds.includes(p.category_id))
+      : (products || []);
+    return [...new Set(source.flatMap(productSize))].sort();
+  }, [products, groupCategoryIds]);
+
+  const sortedProducts = useMemo(() => {
+    const list = [...visibleProducts];
+    if (sortBy === "price-asc") return list.sort((a, b) => a.price - b.price);
+    if (sortBy === "price-desc") return list.sort((a, b) => b.price - a.price);
+    if (sortBy === "name-asc") return list.sort((a, b) => a.name.localeCompare(b.name, "fr"));
+    return list.sort((a, b) => {
+      const aIsIncontinence = !!a.incontinence_level;
+      const bIsIncontinence = !!b.incontinence_level;
+      if (aIsIncontinence && !bIsIncontinence) return -1;
+      if (!aIsIncontinence && bIsIncontinence) return 1;
+      if (a.is_featured && !b.is_featured) return -1;
+      if (!a.is_featured && b.is_featured) return 1;
+      return 0;
+    });
+  }, [visibleProducts, sortBy]);
 
   const activeFiltersCount = [
     selectedCategory, 
@@ -139,7 +176,7 @@ const Shop = () => {
     selectedGender,
     selectedSizeFilter,
     selectedPurchaseMode
-  ].filter(f => f !== "all").length + (isPriceFilterActive ? 1 : 0);
+  ].filter(f => f !== "all").length + (isPriceFilterActive ? 1 : 0) + (selectedGroup ? 1 : 0);
 
   const clearFilters = () => {
     setSelectedCategory("all");
