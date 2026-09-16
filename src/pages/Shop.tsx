@@ -221,7 +221,10 @@ const Shop = () => {
     return new Set([incontinenceParentId, ...childIds, ...relatedTopLevel]);
   }, [categories]);
 
-  const showIncontinenceFilters = selectedCategory === 'all' || INCONTINENCE_CATEGORY_IDS.has(selectedCategory);
+  const showIncontinenceFilters =
+    selectedGroup !== 'nutrition' &&
+    selectedGroup !== 'soins-peau' &&
+    (selectedCategory === 'all' || INCONTINENCE_CATEGORY_IDS.has(selectedCategory));
 
   // Reset incontinence filters when switching to a non-incontinence category
   useEffect(() => {
