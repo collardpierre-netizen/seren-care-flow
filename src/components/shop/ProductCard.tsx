@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Product } from '@/hooks/useProducts';
 import { Badge } from '@/components/ui/badge';
 import { Package } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import AbsorptionDroplets from './AbsorptionDroplets';
 import SubscriptionBadge from './SubscriptionBadge';
 import { CompareButton } from './ProductComparator';
@@ -15,12 +16,14 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, compact = false }) => {
   const primaryImage = product.images?.find(img => img.is_primary) || product.images?.[0];
-  const hasSubscription = product.subscription_price && product.subscription_price < product.price;
-  const discountPercent = product.subscription_discount_percent || 10;
+  const hasSubscription = product.is_subscription_eligible === true && !!product.subscription_price && product.subscription_price < product.price;
+  const discountPercent = product.subscription_discount_percent;
   
   // Calculate savings from recommended price
   const hasRecommendedPrice = product.recommended_price && product.recommended_price > product.price;
-  const savingsPercent = hasRecommendedPrice ? Math.round(((product.recommended_price! - product.price) / product.recommended_price!) * 100) : 0;
+  const savingsPercent = hasRecommendedPrice && product.recommended_price ? Math.round(((product.recommended_price - product.price) / product.recommended_price) * 100) : 0;
+  const availableSizes = activeSizes.map((size) => size.size).filter(Boolean);
+  const units = activeSizes.find((size) => size.units_per_size)?.units_per_size || product.units_per_product;
 
   // Check if product has multiple sizes with different prices
   const activeSizes = product.sizes?.filter(s => s.is_active !== false) || [];
@@ -72,7 +75,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, compact = false }) =
               -{savingsPercent}%
             </Badge>
           )}
-          {!product.is_coming_soon && hasSubscription && !hasRecommendedPrice && (
+          {!product.is_coming_soon && hasSubscription && discountPercent && !hasRecommendedPrice && (
             <Badge className={`absolute ${compact ? 'top-1.5 right-1.5 text-[10px] px-1.5 py-0.5' : 'top-3 right-3'} bg-secondary text-secondary-foreground`}>
               -{discountPercent}% abo
             </Badge>
@@ -91,17 +94,21 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, compact = false }) =
         </div>
       </Link>
       <div className={`flex-1 flex flex-col ${compact ? 'p-2' : 'p-4'}`}>
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center justify-between mb-1 gap-2">
           {product.brand && (
-            <p className={`text-muted-foreground ${compact ? 'text-[10px]' : 'text-xs'}`}>{product.brand.name}</p>
+            <p className="text-sm text-muted-foreground">{product.brand.name}</p>
           )}
           {product.incontinence_level && !compact && (
             <AbsorptionDroplets level={product.incontinence_level} />
           )}
         </div>
-        <h3 className={`font-medium group-hover:text-primary transition-colors ${compact ? 'text-xs line-clamp-1 mb-1' : 'line-clamp-2 mb-2 min-h-[2.5rem]'}`}>
+        <h3 className="font-medium text-base leading-snug group-hover:text-primary transition-colors mb-2">
           {product.name}
         </h3>
+        {product.category?.name && <p className="text-sm text-muted-foreground mb-1">{product.category.name}</p>}
+        {availableSizes.length > 0 && <p className="text-sm text-muted-foreground">Taille : {availableSizes.join(', ')}</p>}
+        {units && units > 1 && <p className="text-sm text-muted-foreground">{units} unités par paquet</p>}
+        <p className="text-sm mt-2">{product.stock_status === 'out_of_stock' ? 'Indisponible' : 'Disponible'}</p>
         <div className="space-y-1 mt-auto">
           {product.is_coming_soon ? (
             <div className={`text-amber-600 font-medium ${compact ? 'text-xs' : ''}`}>
@@ -120,12 +127,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, compact = false }) =
                 </span>
               </div>
               {/* Price per unit */}
-              {product.units_per_product && product.units_per_product > 1 && !compact && (
+               {units && units > 1 && (
                 <div className="text-xs text-muted-foreground">
-                  {(minPrice / product.units_per_product).toFixed(2)} €/unité
+                   {(minPrice / units).toFixed(2)} €/unité
                 </div>
               )}
-              {hasSubscription && !compact && (
+               {hasSubscription && discountPercent && !compact && (
                 <div className="mt-1">
                   <SubscriptionBadge discountPercent={discountPercent} variant="small" />
                 </div>
@@ -133,6 +140,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, compact = false }) =
             </>
           )}
         </div>
+        <Button asChild variant="outline" className="mt-4 min-h-11 w-full">
+          <Link to={`/produit/${product.slug}`}>Voir le produit</Link>
+        </Button>
       </div>
     </article>
   );

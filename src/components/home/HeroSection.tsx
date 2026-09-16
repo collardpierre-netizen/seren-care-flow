@@ -2,8 +2,8 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { useHeroMedia, type HeroMedia } from "@/hooks/useHeroMedia";
+import { useState, useRef, useCallback, useMemo } from "react";
+import { useHeroMedia } from "@/hooks/useHeroMedia";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Fallback static media for initial render or if DB is empty
@@ -79,50 +79,6 @@ const HeroSection = () => {
     setLoadedMedia(prev => new Set([...prev, index]));
   }, []);
 
-  // Preload next media when current changes
-  useEffect(() => {
-    if (heroMedia.length <= 1) return;
-    
-    const nextIndex = (currentMediaIndex + 1) % heroMedia.length;
-    
-    // Preload next image
-    const nextItem = heroMedia[nextIndex];
-    if (nextItem?.type === 'image') {
-      const img = new Image();
-      img.src = nextItem.src;
-      img.onload = () => handleMediaLoad(nextIndex);
-    }
-  }, [currentMediaIndex, heroMedia, handleMediaLoad]);
-
-  const handleVideoEnd = () => {
-    setCurrentMediaIndex((prev) => (prev + 1) % heroMedia.length);
-  };
-
-  useEffect(() => {
-    if (heroMedia.length <= 1) return;
-    
-    const currentItem = heroMedia[currentMediaIndex];
-    if (!currentItem) return;
-    
-    // Only auto-advance for images, videos advance on end
-    if (currentItem.type === "image") {
-      const duration = currentItem.duration || 6000;
-      console.log(`[HeroSection] Image ${currentMediaIndex}, will advance in ${duration}ms`);
-      const timer = setTimeout(() => {
-        console.log(`[HeroSection] Advancing from ${currentMediaIndex} to ${(currentMediaIndex + 1) % heroMedia.length}`);
-        setCurrentMediaIndex((prev) => (prev + 1) % heroMedia.length);
-      }, duration);
-      return () => clearTimeout(timer);
-    }
-  }, [currentMediaIndex, heroMedia]);
-
-  // Reset index if media list changes
-  useEffect(() => {
-    if (currentMediaIndex >= heroMedia.length) {
-      setCurrentMediaIndex(0);
-    }
-  }, [heroMedia.length, currentMediaIndex]);
-
   if (heroMedia.length === 0 && !isLoading) {
     return null;
   }
@@ -132,7 +88,7 @@ const HeroSection = () => {
   const isCurrentLoaded = loadedMedia.has(currentMediaIndex);
 
   return (
-    <section className="relative overflow-hidden min-h-[90vh] flex items-center">
+    <section className="relative overflow-hidden min-h-[calc(100svh-72px)] flex items-center">
       {/* Media Background Gallery */}
       <div className="absolute inset-0 z-0">
         {/* Loading skeleton - only show during initial load, not with partial content */}
@@ -155,7 +111,7 @@ const HeroSection = () => {
                 playsInline
                 preload="auto"
                 onLoadedData={() => handleMediaLoad(currentMediaIndex)}
-                onEnded={handleVideoEnd}
+                loop
                 initial={variants.initial}
                 animate={variants.animate}
                 exit={variants.exit}
@@ -168,7 +124,6 @@ const HeroSection = () => {
                 src={currentItem.src}
                 alt={currentItem.alt || "SerenCare"}
                 loading="eager"
-                fetchPriority={currentMediaIndex === 0 ? "high" : "auto"}
                 onLoad={() => handleMediaLoad(currentMediaIndex)}
                 initial={variants.initial}
                 animate={isCurrentLoaded ? variants.animate : { opacity: 0 }}
@@ -195,21 +150,25 @@ const HeroSection = () => {
       {/* Media indicators */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
         {heroMedia.map((_, index) => (
-          <button
+          <Button
             key={index}
+            type="button"
+            variant="ghost"
+            size="icon"
             onClick={() => setCurrentMediaIndex(index)}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+            className={`h-11 min-w-11 rounded-full transition-all duration-300 ${
               index === currentMediaIndex 
-                ? "bg-white w-8" 
-                : "bg-white/50 hover:bg-white/70"
+                ? "bg-primary-foreground/30" 
+                : "bg-primary-foreground/10 hover:bg-primary-foreground/20"
             }`}
-            aria-label={`Media ${index + 1}`}
-          />
+            aria-label={`Afficher le média ${index + 1}`}
+            aria-current={index === currentMediaIndex ? "true" : undefined}
+          ><span className="block h-2 w-2 rounded-full bg-primary-foreground" /></Button>
         ))}
       </div>
 
       <div className="container-main relative z-10">
-        <div className="py-20 md:py-28 lg:py-36">
+        <div className="py-10 md:py-20 lg:py-24">
           <div className="max-w-4xl">
             {/* Badge */}
             <motion.div
@@ -219,7 +178,7 @@ const HeroSection = () => {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm text-sm font-medium text-white mb-8"
             >
               <div className="w-2 h-2 rounded-full bg-white animate-pulse-soft" />
-              Livraison automatique • Sans engagement
+              Commande ponctuelle ou livraison régulière
             </motion.div>
 
             {/* Headline */}
@@ -229,8 +188,7 @@ const HeroSection = () => {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="font-display text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-[1.1] tracking-tight mb-6"
             >
-              Votre confort intime,{" "}
-              <span className="text-white/90">livré chez vous, sans stress.</span>
+              Les bonnes protections, livrées simplement et discrètement.
             </motion.h1>
 
             {/* Subheadline */}
@@ -240,8 +198,7 @@ const HeroSection = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-lg md:text-xl text-white/80 max-w-2xl mb-10 leading-relaxed"
             >
-              Choisissez les protections adaptées à votre proche. 
-              Recevez-les automatiquement chaque mois. Plus de stress, plus de courses.
+              Retrouvez une référence que vous connaissez déjà ou laissez-vous guider pour comparer les produits. Commandez pour vous-même ou faites livrer directement chez un proche.
             </motion.p>
 
             {/* CTA Buttons */}
@@ -251,15 +208,15 @@ const HeroSection = () => {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="flex flex-col sm:flex-row items-start gap-4 mb-12"
             >
-              <Button asChild variant="hero" size="lg">
-                <Link to="/boutique" className="gap-2">
-                  Je choisis mes produits
+               <Button asChild variant="hero" size="lg" className="min-h-12 w-full sm:w-auto">
+                 <Link to="/aide-au-choix" className="gap-2">
+                   Trouver mes protections
                   <ArrowRight className="w-5 h-5" />
                 </Link>
               </Button>
-              <Button asChild variant="heroSecondary" size="lg">
-                <Link to="/aide-au-choix">
-                  Aidez-moi à choisir
+               <Button asChild variant="heroSecondary" size="lg" className="min-h-12 w-full sm:w-auto">
+                 <Link to="/boutique">
+                   Je connais déjà mon produit
                 </Link>
               </Button>
             </motion.div>
@@ -271,7 +228,7 @@ const HeroSection = () => {
               transition={{ duration: 0.5, delay: 0.5 }}
               className="flex flex-wrap items-center gap-6 text-sm text-white/70"
             >
-              {["Emballage discret", "Livraison gratuite dès 69€ TTC", "Modifiable à tout moment", "Accompagnement humain"].map((item) => (
+               {["Emballage discret", "Modification possible depuis votre compte", "Aide par téléphone"].map((item) => (
                 <div key={item} className="flex items-center gap-2">
                   <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
                     <Check className="w-3 h-3 text-white" />
@@ -280,6 +237,9 @@ const HeroSection = () => {
                 </div>
               ))}
             </motion.div>
+            <p className="mt-6 text-sm text-primary-foreground/90">
+              Une question avant de commander ? <a href="tel:+3226484222" className="font-semibold underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground">Appelez-nous au +32 2 648 42 22.</a>
+            </p>
           </div>
         </div>
       </div>
