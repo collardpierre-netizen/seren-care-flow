@@ -468,8 +468,8 @@ const ProductPage = () => {
                 </div>
               )}
 
-              {/* Purchase mode */}
-              <div className="space-y-3">
+              {/* Mode d'achat : la livraison régulière n'apparaît que si le produit y est éligible */}
+              <div className={cn("space-y-3", !hasSubscription && "hidden")}>
                 <Label className="text-sm font-medium">Mode d'achat</Label>
                 <RadioGroup 
                   value={purchaseMode} 
@@ -626,14 +626,16 @@ const ProductPage = () => {
                     <ShoppingCart className="h-5 w-5 mr-2" />
                     Ajouter au panier — {(finalPrice * quantity).toFixed(2)} €
                   </Button>
-                  <AddToSubscriptionButton
-                    productId={product.id}
-                    productSize={selectedSize || undefined}
-                    quantity={quantity}
-                    variant="outline"
-                    className="w-full h-12"
-                    disabled={sizes.length > 0 && !selectedSize}
-                  />
+                  {hasSubscription && (
+                    <AddToSubscriptionButton
+                      productId={product.id}
+                      productSize={selectedSize || undefined}
+                      quantity={quantity}
+                      variant="outline"
+                      className="w-full h-12"
+                      disabled={sizes.length > 0 && !selectedSize}
+                    />
+                  )}
                 </div>
               )}
 
