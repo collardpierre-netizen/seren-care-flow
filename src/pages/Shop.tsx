@@ -793,39 +793,51 @@ const Shop = () => {
               )}
             </div>
 
-            {/* Results count */}
-            <p className="text-sm text-muted-foreground mb-6">
-               {visibleProducts.length} produit{visibleProducts.length > 1 ? "s" : ""}
-            </p>
+            {/* Résultats et tri */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+              <p className="text-sm text-muted-foreground">
+                {visibleProducts.length} produit{visibleProducts.length > 1 ? "s" : ""}
+              </p>
+              <div className="flex items-center gap-2">
+                <ArrowUpDown className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                <label htmlFor="shop-sort" className="text-sm text-muted-foreground">Trier par</label>
+                <select
+                  id="shop-sort"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortId)}
+                  className="min-h-11 rounded-xl border border-border bg-card px-3 text-sm text-foreground"
+                >
+                  {sortOptions.map((opt) => (
+                    <option key={opt.id} value={opt.id}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
             {/* Products Grid */}
             {productsLoading ? (
               <div className="flex justify-center py-20">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
-             ) : visibleProducts.length === 0 ? (
-              <div className="text-center py-20 bg-card rounded-2xl border border-border">
-                <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground mb-4">Aucun produit ne correspond à vos critères.</p>
-                <Button variant="outline" onClick={clearFilters}>
-                  Voir tous les produits
-                </Button>
+             ) : sortedProducts.length === 0 ? (
+              <div className="text-center py-16 px-4 bg-card rounded-2xl border border-border">
+                <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" aria-hidden="true" />
+                <p className="text-foreground font-medium mb-2">Aucun produit ne correspond.</p>
+                <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
+                  Essayez avec moins de critères, ou laissez-vous guider par quelques questions simples.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Button variant="outline" className="min-h-11" onClick={clearFilters}>
+                    Voir tous les produits
+                  </Button>
+                  <Button asChild className="min-h-11">
+                    <Link to="/aide-au-choix">Être guidé pas à pas</Link>
+                  </Button>
+                </div>
               </div>
             ) : (
                <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-5">
-                 {[...visibleProducts]
-                  .sort((a, b) => {
-                    // Priority: incontinence products first, then by category
-                    const aIsIncontinence = !!a.incontinence_level;
-                    const bIsIncontinence = !!b.incontinence_level;
-                    if (aIsIncontinence && !bIsIncontinence) return -1;
-                    if (!aIsIncontinence && bIsIncontinence) return 1;
-                    // Then featured products
-                    if (a.is_featured && !b.is_featured) return -1;
-                    if (!a.is_featured && b.is_featured) return 1;
-                    return 0;
-                  })
-                  .map((product, index) => (
+                 {sortedProducts.map((product, index) => (
                   <motion.div
                     key={product.id}
                     initial={{ opacity: 0, y: 16 }}
