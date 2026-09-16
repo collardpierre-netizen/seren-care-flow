@@ -45,7 +45,7 @@ Vous pouvez faire ces modifications à tout moment depuis votre espace client.`,
       {
         id: "cancel-subscription",
         question: "Comment annuler ou suspendre mon abonnement ?",
-La livraison régulière ne prévoit aucune durée minimale.
+        answer: `La livraison régulière ne prévoit aucune durée minimale.
 
 Vous pouvez :
 - **Mettre en pause** temporairement (vacances, hospitalisation...)
@@ -70,7 +70,7 @@ Si vous devez changer de carte bancaire, vous pouvez le faire depuis votre espac
       {
         id: "delivery-time",
         question: "Quels sont les délais de livraison ?",
-Le délai estimé est affiché avant la confirmation de votre commande.
+        answer: `Le délai estimé est affiché avant la confirmation de votre commande.
 
 Modes de livraison disponibles :
 - **Point relais** : Gratuit dès 69€ TTC (sinon 4,90€)
