@@ -30,15 +30,15 @@ const ReassuranceMessages: React.FC<ReassuranceMessagesProps> = ({
     {
       key: 'flexibility',
       icon: XCircle,
-      title: 'Sans engagement',
-      description: 'Modifiez ou annulez à tout moment',
+      title: 'Gestion depuis votre compte',
+      description: 'Options disponibles selon votre commande',
       show: showFlexibility,
     },
     {
       key: 'shipping',
       icon: Truck,
-      title: 'Livraison offerte',
-      description: 'Dès 49€ d\'achats',
+      title: 'Livraison gratuite dès 69 € TTC',
+      description: 'Sous réserve d’atteindre le seuil',
       show: showShipping,
     },
     {

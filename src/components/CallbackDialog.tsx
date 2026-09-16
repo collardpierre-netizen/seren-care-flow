@@ -32,7 +32,7 @@ export function CallbackDialog({ trigger }: CallbackDialogProps) {
         </DialogHeader>
         <div className="py-2">
           <p className="text-muted-foreground text-sm mb-4">
-            Laissez-nous vos coordonnées, un expert vous rappellera dans les 2 heures.
+            Laissez-nous vos coordonnées. Nous vous recontacterons pour répondre à votre demande.
           </p>
           <CallbackFormCompact />
         </div>

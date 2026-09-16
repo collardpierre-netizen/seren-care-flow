@@ -8,10 +8,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Phone, Check } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Link } from "react-router-dom";
 
 const CallbackForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -166,7 +169,17 @@ const CallbackForm = () => {
         />
       </div>
 
-      <Button type="submit" size="lg" className="w-full gap-2" disabled={isSubmitting}>
+      <p className="text-sm text-muted-foreground">
+        Utilisez ce formulaire pour une question sur le service ou les caractéristiques d’un produit. Pour un avis médical, adressez-vous à un professionnel de santé.
+      </p>
+      <div className="flex items-start gap-3">
+        <Checkbox id="callback-privacy" checked={privacyAccepted} onCheckedChange={(checked) => setPrivacyAccepted(checked === true)} className="mt-1 h-5 w-5" />
+        <Label htmlFor="callback-privacy" className="text-sm font-normal leading-relaxed">
+          J’ai lu la <Link to="/confidentialite" className="underline underline-offset-2">politique de confidentialité</Link> et j’accepte que SerenCare utilise ces informations pour répondre à ma demande.
+        </Label>
+      </div>
+
+      <Button type="submit" size="lg" className="w-full gap-2" disabled={isSubmitting || !privacyAccepted}>
         <Phone className="w-5 h-5" />
         {isSubmitting ? "Envoi en cours..." : "Demander un rappel"}
       </Button>

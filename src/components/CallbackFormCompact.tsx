@@ -6,6 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Phone, Check } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Link } from "react-router-dom";
 
 interface CallbackFormCompactProps {
   variant?: "default" | "light";
@@ -15,6 +17,7 @@ const CallbackFormCompact = ({ variant = "default" }: CallbackFormCompactProps) 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [step, setStep] = useState(1);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -205,6 +208,15 @@ const CallbackFormCompact = ({ variant = "default" }: CallbackFormCompactProps) 
             </Select>
           </div>
 
+          <p className={`text-xs leading-relaxed ${isLight ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+            Pour un avis médical, adressez-vous à un professionnel de santé.
+          </p>
+          <div className="flex items-start gap-2">
+            <Checkbox id="callback-compact-privacy" checked={privacyAccepted} onCheckedChange={(checked) => setPrivacyAccepted(checked === true)} className="mt-0.5 h-5 w-5" />
+            <Label htmlFor="callback-compact-privacy" className={`text-xs font-normal leading-relaxed ${isLight ? "text-primary-foreground/90" : "text-muted-foreground"}`}>
+              J’ai lu la <Link to="/confidentialite" className="underline">politique de confidentialité</Link> et j’accepte l’utilisation de ces informations pour répondre à ma demande.
+            </Label>
+          </div>
           <div className="flex gap-2">
             <Button 
               type="button"
@@ -220,7 +232,7 @@ const CallbackFormCompact = ({ variant = "default" }: CallbackFormCompactProps) 
               size="lg" 
               variant={isLight ? "white" : "default"}
               className="flex-1 gap-2" 
-              disabled={isSubmitting}
+              disabled={isSubmitting || !privacyAccepted}
             >
               <Phone className="w-4 h-4" />
               {isSubmitting ? "Envoi..." : "Envoyer"}
@@ -230,7 +242,7 @@ const CallbackFormCompact = ({ variant = "default" }: CallbackFormCompactProps) 
       )}
 
       <p className={`text-xs text-center ${isLight ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
-        {step === 1 ? "Étape 1/2" : "Étape 2/2"} • Rappel sous 2h
+        {step === 1 ? "Étape 1/2" : "Étape 2/2"}
       </p>
     </form>
   );
