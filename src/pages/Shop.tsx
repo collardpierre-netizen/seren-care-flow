@@ -489,66 +489,82 @@ const Shop = () => {
           <div className="container-main">
             {/* Desktop Filters */}
             <div className="hidden lg:flex flex-wrap items-center gap-3 mb-8">
-              <FilterButton options={categoryOptions} value={selectedCategory} onChange={setSelectedCategory} label="Catégorie" />
-              <FilterButton options={brandOptions} value={selectedBrand} onChange={setSelectedBrand} label="Marque" />
               <FilterButton options={[{id:'all',label:'Toutes'}, ...sizeOptions.map((size) => ({id:size,label:size}))]} value={selectedSizeFilter} onChange={setSelectedSizeFilter} label="Taille" />
-              <FilterButton options={[{id:'all',label:'Tous'}, {id:'one-time',label:'Achat unique'}, {id:'subscription',label:'Livraison régulière'}]} value={selectedPurchaseMode} onChange={setSelectedPurchaseMode} label="Commande" />
               {showIncontinenceFilters && (
+                <FilterButton options={incontinenceLevelOptions} value={selectedIncontinence} onChange={setSelectedIncontinence} label="Absorption" showDroplets counts={filterCounts.incontinence} />
+              )}
+              <FilterButton options={brandOptions} value={selectedBrand} onChange={setSelectedBrand} label="Marque" />
+
+              <button
+                onClick={() => setShowMoreFilters(!showMoreFilters)}
+                aria-expanded={showMoreFilters}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-card border border-border text-foreground hover:border-primary transition-all"
+              >
+                <SlidersHorizontal className="w-4 h-4" aria-hidden="true" />
+                {showMoreFilters ? "Moins de filtres" : "Plus de filtres"}
+              </button>
+
+              {showMoreFilters && (
                 <>
-                  <FilterButton options={incontinenceLevelOptions} value={selectedIncontinence} onChange={setSelectedIncontinence} label="Absorption" showDroplets counts={filterCounts.incontinence} />
-                  <FilterButton options={mobilityFilterOptions} value={selectedMobility} onChange={setSelectedMobility} label="Mobilité" counts={filterCounts.mobility} />
-                  <FilterButton options={usageTimeFilterOptions} value={selectedUsageTime} onChange={setSelectedUsageTime} label="Moment" counts={filterCounts.usageTime} />
+                  <FilterButton options={categoryOptions} value={selectedCategory} onChange={setSelectedCategory} label="Catégorie" />
+                  <FilterButton options={[{id:'all',label:'Tous'}, {id:'one-time',label:'Achat unique'}, {id:'subscription',label:'Livraison régulière'}]} value={selectedPurchaseMode} onChange={setSelectedPurchaseMode} label="Commande" />
+                  {showIncontinenceFilters && (
+                    <>
+                      <FilterButton options={mobilityFilterOptions} value={selectedMobility} onChange={setSelectedMobility} label="Mobilité" counts={filterCounts.mobility} />
+                      <FilterButton options={usageTimeFilterOptions} value={selectedUsageTime} onChange={setSelectedUsageTime} label="Moment" counts={filterCounts.usageTime} />
+                    </>
+                  )}
+                  <FilterButton options={genderFilterOptions} value={selectedGender} onChange={setSelectedGender} label="Genre" counts={filterCounts.gender} />
+
+                  {/* Price Range Filter */}
+                  <div className="relative group">
+                    <button className={cn(
+                      "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all",
+                      isPriceFilterActive 
+                        ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/20" 
+                        : "bg-card border border-border text-foreground hover:border-primary"
+                    )}>
+                      <Euro className="w-4 h-4" />
+                      <span className={cn(isPriceFilterActive && "font-semibold")}>
+                        {isPriceFilterActive ? `${priceRange[0]}€ – ${priceRange[1]}€` : "Prix"}
+                      </span>
+                      {isPriceFilterActive ? (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setPriceRange([priceBounds.min, priceBounds.max]); }}
+                          className="ml-1 p-0.5 rounded-full hover:bg-primary-foreground/20 transition-colors"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                      )}
+                    </button>
+                    <div className="absolute top-full left-0 mt-2 w-72 bg-card rounded-xl border border-border shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 p-4">
+                      <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">Fourchette de prix</p>
+                      <Slider
+                        min={priceBounds.min}
+                        max={priceBounds.max}
+                        step={1}
+                        value={priceRange}
+                        onValueChange={(v) => setPriceRange(v as [number, number])}
+                        className="mb-3"
+                      />
+                      <div className="flex items-center justify-between text-sm text-foreground">
+                        <span>{priceRange[0]}€</span>
+                        <span>{priceRange[1]}€</span>
+                      </div>
+                    </div>
+                  </div>
                 </>
               )}
-              <FilterButton options={genderFilterOptions} value={selectedGender} onChange={setSelectedGender} label="Genre" counts={filterCounts.gender} />
-              
-              {/* Price Range Filter */}
-              <div className="relative group">
-                <button className={cn(
-                  "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all",
-                  isPriceFilterActive 
-                    ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/20" 
-                    : "bg-card border border-border text-foreground hover:border-primary"
-                )}>
-                  <Euro className="w-4 h-4" />
-                  <span className={cn(isPriceFilterActive && "font-semibold")}>
-                    {isPriceFilterActive ? `${priceRange[0]}€ – ${priceRange[1]}€` : "Prix"}
-                  </span>
-                  {isPriceFilterActive ? (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setPriceRange([priceBounds.min, priceBounds.max]); }}
-                      className="ml-1 p-0.5 rounded-full hover:bg-primary-foreground/20 transition-colors"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                  )}
-                </button>
-                <div className="absolute top-full left-0 mt-2 w-72 bg-card rounded-xl border border-border shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 p-4">
-                  <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">Fourchette de prix</p>
-                  <Slider
-                    min={priceBounds.min}
-                    max={priceBounds.max}
-                    step={1}
-                    value={priceRange}
-                    onValueChange={(v) => setPriceRange(v as [number, number])}
-                    className="mb-3"
-                  />
-                  <div className="flex items-center justify-between text-sm text-foreground">
-                    <span>{priceRange[0]}€</span>
-                    <span>{priceRange[1]}€</span>
-                  </div>
-                </div>
-              </div>
-              
+
               {activeFiltersCount > 0 && (
                 <button
                   onClick={clearFilters}
                   className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <X className="w-4 h-4" />
-                  Effacer ({activeFiltersCount})
+                  Tout effacer ({activeFiltersCount})
                 </button>
               )}
             </div>
