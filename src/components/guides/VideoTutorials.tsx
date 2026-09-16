@@ -53,8 +53,6 @@ const hartmannVideos: VideoTutorial[] = [
     title: "Comment mesurer le tour de hanche",
     description:
       "Formation vidéo sur la prise de mesure du tour de hanche pour choisir la bonne taille de protection.",
-    thumbnail:
-      "https://www.hartmann.info/-/media/country/website/academy/default/webinar-teaser-background-default-hartmann-cyan-1600x900px.png?h=182&iar=0&mw=324&w=324",
     brand: "Hartmann",
     externalUrl:
       "https://www.hartmann.info/fr-be/apprendre-et-savoir/gestion-de-lincontinence/2024/formation-video-comment-mesurer-correctement-le-tour-de-hanche",
