@@ -31,6 +31,7 @@ import TermsOfSale from "./pages/TermsOfSale";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfUse from "./pages/TermsOfUse";
 import Brands from "./pages/Brands";
+import BrandShop from "./pages/BrandShop";
 import Contact from "./pages/Contact";
 import Guides from "./pages/Guides";
 import GuideArticle from "./pages/GuideArticle";
@@ -101,6 +102,8 @@ const App = () => (
               <Route path="/cgu" element={<TermsOfUse />} />
               <Route path="/confidentialite" element={<PrivacyPolicy />} />
               <Route path="/marques" element={<Brands />} />
+              <Route path="/marque/:slug" element={<BrandShop />} />
+
               <Route path="/contact" element={<Contact />} />
               <Route path="/guides" element={<Guides />} />
               <Route path="/guides/:slug" element={<GuideArticle />} />
