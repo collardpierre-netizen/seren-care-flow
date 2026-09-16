@@ -386,10 +386,10 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
                 <Truck className="h-4 w-4" />
                 {remainingForFreeShipping > 0 ? (
                   <span>
-                    Plus que <strong>{remainingForFreeShipping.toFixed(2)} €</strong> pour la livraison gratuite dès 69 € TTC
+                    Plus que <strong>{remainingForFreeShipping.toFixed(2)} €</strong> pour la livraison gratuite dès {freeShippingThreshold} € TTC
                   </span>
                 ) : (
-                  <span className="text-secondary font-medium">Livraison gratuite dès 69 € TTC</span>
+                  <span className="text-secondary font-medium">Livraison gratuite dès {freeShippingThreshold} € TTC</span>
                 )}
               </div>
               <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
@@ -411,14 +411,16 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
                 <ShoppingCart className="h-5 w-5 mr-2" />
                 Ajouter au panier — {(finalPrice * quantity).toFixed(2)} €
               </Button>
-              <AddToSubscriptionButton
-                productId={product.id}
-                productSize={selectedSize || undefined}
-                quantity={quantity}
-                variant="outline"
-                className="w-full"
-                disabled={sizes.length > 0 && !selectedSize}
-              />
+              {hasSubscription && (
+                <AddToSubscriptionButton
+                  productId={product.id}
+                  productSize={selectedSize || undefined}
+                  quantity={quantity}
+                  variant="outline"
+                  className="w-full"
+                  disabled={sizes.length > 0 && !selectedSize}
+                />
+              )}
             </div>
           </div>
         </div>
