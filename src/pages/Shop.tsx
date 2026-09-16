@@ -68,6 +68,10 @@ const Shop = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [preferencesApplied, setPreferencesApplied] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState<ShopGroupId | "nutrition" | null>(null);
+  const [showMoreFilters, setShowMoreFilters] = useState(false);
+  const [sortBy, setSortBy] = useState<SortId>("relevance");
+  const searchSectionRef = useRef<HTMLDivElement | null>(null);
 
   // Load all products without category/brand filter - we filter client-side
   const { data: products, isLoading: productsLoading } = useProducts();
