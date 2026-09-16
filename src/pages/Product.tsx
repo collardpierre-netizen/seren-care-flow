@@ -662,10 +662,12 @@ const ProductPage = () => {
             </motion.div>
           </div>
 
-          {/* Subscription Benefits Section */}
-          <div className="mt-16 pb-24 lg:pb-0">
-            <SubscriptionBenefits variant="card" showCTA={false} />
-          </div>
+          {/* Avantages de la livraison régulière : uniquement si le produit y est éligible */}
+          {hasSubscription && (
+            <div className="mt-16 pb-24 lg:pb-0">
+              <SubscriptionBenefits variant="card" showCTA={false} />
+            </div>
+          )}
         </div>
 
         {/* Mobile fixed cart footer with swipe */}
