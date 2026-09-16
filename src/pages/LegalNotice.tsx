@@ -37,7 +37,7 @@ const LegalNotice = () => {
                     <p className="font-semibold">SerenCare by Medikong</p>
                     <p>MEDIKONG (société à responsabilité limitée)</p>
                     <p className="font-medium mt-4">Adresse du siège social</p>
-                    <p>Rue de la Procession 23<br />7822 Ath, Belgique</p>
+                    <p>Rue de la Procession 23<br />7822 Meslin-l’Évêque, Belgique</p>
                     <p className="font-medium mt-4">Téléphone</p>
                     <p><a href="tel:+32498644130" className="text-primary hover:underline">+32 498 64 41 30</a></p>
                     <p className="font-medium mt-4">Email</p>
