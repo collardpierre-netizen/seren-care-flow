@@ -4,7 +4,7 @@ import Layout from "@/components/Layout";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Filter, X, ChevronDown, Loader2, Package, Droplet, Moon, Sun, Footprints, Sparkles, User, Euro } from "lucide-react";
+import { Filter, X, ChevronDown, Loader2, Package, Droplet, Moon, Sun, Footprints, Sparkles, User, Euro, Shirt, StickyNote, Layers, Feather, BedDouble, Droplets, Apple, SlidersHorizontal, ArrowUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useProducts, useBrands, useCategories, Product } from "@/hooks/useProducts";
 import { 
@@ -18,9 +18,29 @@ import ProductCard from "@/components/shop/ProductCard";
 import ProductQuickView from "@/components/shop/ProductQuickView";
 import SearchBar from "@/components/shop/SearchBar";
 import ProductSelector from "@/components/shop/ProductSelector";
+import ShopEntryPaths from "@/components/shop/ShopEntryPaths";
+import { SHOP_GROUPS, CATEGORY_IDS, isNutritionCategory, type ShopGroupId } from "@/lib/shopTaxonomy";
 import { Slider } from "@/components/ui/slider";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
+
+const GROUP_ICONS = {
+  pants: Shirt,
+  tabs: StickyNote,
+  anatomic: Layers,
+  light: Feather,
+  bed: BedDouble,
+  skin: Droplets,
+} as const;
+
+const sortOptions = [
+  { id: "relevance", label: "Les plus pertinents" },
+  { id: "price-asc", label: "Prix croissant" },
+  { id: "price-desc", label: "Prix décroissant" },
+  { id: "name-asc", label: "Nom (A → Z)" },
+] as const;
+
+type SortId = typeof sortOptions[number]["id"];
 
 const incontinenceLevelOptions = [
   { id: "all", label: "Tous" },
