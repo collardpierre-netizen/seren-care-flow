@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Loader2, Search, Package, Upload, Link, X, Image as ImageIcon, Download, FileUp, Copy, CheckSquare, FileSpreadsheet } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, Search, Package, Upload, Link, X, Image as ImageIcon, Download, FileUp, Copy, CheckSquare, FileSpreadsheet, ArrowLeft, ArrowRight, AlertTriangle } from 'lucide-react';
 import { ProductSizesManager } from '@/components/admin/ProductSizesManager';
 import * as XLSX from 'xlsx';
 
@@ -1533,7 +1533,32 @@ const AdminProducts: React.FC = () => {
                             img.is_primary ? 'border-primary' : 'border-border'
                           }`}
                         />
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-2">
+                        <span className="absolute top-1 left-1 bg-background/90 text-xs rounded px-1.5 py-0.5 border">
+                          {index + 1}
+                        </span>
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex flex-wrap items-center justify-center gap-2 p-2">
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="secondary"
+                            title="Déplacer vers la gauche"
+                            aria-label="Déplacer la photo vers la gauche"
+                            onClick={() => handleMoveImage(index, -1)}
+                            disabled={index === 0}
+                          >
+                            <ArrowLeft className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="secondary"
+                            title="Déplacer vers la droite"
+                            aria-label="Déplacer la photo vers la droite"
+                            onClick={() => handleMoveImage(index, 1)}
+                            disabled={index === productImages.length - 1}
+                          >
+                            <ArrowRight className="h-4 w-4" />
+                          </Button>
                           <Button
                             type="button"
                             size="sm"
@@ -2222,6 +2247,19 @@ const AdminProducts: React.FC = () => {
                 <SelectItem value="no">Abo désactivé</SelectItem>
               </SelectContent>
             </Select>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="min-price" className="text-sm text-muted-foreground whitespace-nowrap">Prix &gt;</Label>
+              <Input
+                id="min-price"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="ex. 50"
+                value={minPrice}
+                onChange={(e) => setMinPrice(e.target.value)}
+                className="w-[110px]"
+              />
+            </div>
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-[190px]">
                 <SelectValue placeholder="Trier" />
@@ -2234,7 +2272,7 @@ const AdminProducts: React.FC = () => {
                 <SelectItem value="margin_asc">Marge croissante</SelectItem>
               </SelectContent>
             </Select>
-            {(filterCategory !== 'all' || filterBrand !== 'all' || filterStatus !== 'all' || filterStock !== 'all' || filterAbo !== 'all' || sortBy !== 'default') && (
+            {(filterCategory !== 'all' || filterBrand !== 'all' || filterStatus !== 'all' || filterStock !== 'all' || filterAbo !== 'all' || sortBy !== 'default' || minPrice !== '') && (
               <Button variant="ghost" size="sm" onClick={() => {
                 setFilterCategory('all');
                 setFilterBrand('all');
@@ -2242,6 +2280,7 @@ const AdminProducts: React.FC = () => {
                 setFilterStock('all');
                 setFilterAbo('all');
                 setSortBy('default');
+                setMinPrice('');
               }}>
                 <X className="h-4 w-4 mr-1" />
                 Effacer
