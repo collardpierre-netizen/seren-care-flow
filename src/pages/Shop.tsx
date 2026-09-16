@@ -369,26 +369,23 @@ const Shop = () => {
                 Nos produits
               </h1>
               <p className="text-lg text-muted-foreground">
-                 Recherchez une référence connue ou comparez les informations disponibles pour chaque produit.
+                Trois façons de commencer : votre référence, une aide au choix, ou un achat pour un proche.
               </p>
             </motion.div>
 
-            {/* Search & Product Selector CTA */}
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1 max-w-xl">
-                <SearchBar 
-                  value={searchQuery}
-                  onChange={setSearchQuery}
-                   placeholder="Rechercher une marque, une référence ou un produit"
-                   resultCount={searchQuery ? visibleProducts.length : undefined}
-                />
-              </div>
-               <Button asChild
-                className="gap-2 h-12"
-                variant="outline"
-              >
-                 <Link to="/aide-au-choix"><Sparkles className="w-4 h-4" />Besoin d’aide pour choisir ?</Link>
-              </Button>
+            {/* Trois chemins d'entrée */}
+            <div className="mb-8">
+              <ShopEntryPaths onKnownReference={focusSearch} onBuyingForRelative={startRelativeJourney} />
+            </div>
+
+            {/* Recherche */}
+            <div ref={searchSectionRef} className="max-w-xl">
+              <SearchBar 
+                value={searchQuery}
+                onChange={setSearchQuery}
+                 placeholder="Rechercher une marque, une référence ou un produit"
+                 resultCount={searchQuery ? visibleProducts.length : undefined}
+              />
             </div>
           </div>
         </section>
