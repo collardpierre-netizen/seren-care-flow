@@ -138,6 +138,7 @@ const AdminProducts: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState('all'); // all, active, inactive
   const [filterStock, setFilterStock] = useState('all'); // all, in_stock, low, out_of_stock
   const [filterAbo, setFilterAbo] = useState('all'); // all, yes, no
+  const [sortBy, setSortBy] = useState('default'); // default, price_desc, price_asc, margin_desc, margin_asc
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [formData, setFormData] = useState<ProductFormData>(initialFormData);
@@ -689,7 +690,10 @@ const AdminProducts: React.FC = () => {
     });
   };
 
-  const filteredProducts = products?.filter(p => {
+  const productMarginPercent = (p: any) =>
+    p.price && p.purchase_price ? ((p.price - p.purchase_price) / p.price) * 100 : null;
+
+  const unsortedProducts = products?.filter(p => {
     // Text search
     if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false;
     // Category
@@ -708,6 +712,22 @@ const AdminProducts: React.FC = () => {
     if (filterAbo === 'no' && p.is_subscription_eligible !== false) return false;
     return true;
   });
+
+  const filteredProducts = unsortedProducts ? [...unsortedProducts].sort((a, b) => {
+    switch (sortBy) {
+      case 'price_desc':
+        return (b.price || 0) - (a.price || 0);
+      case 'price_asc':
+        return (a.price || 0) - (b.price || 0);
+      case 'margin_desc':
+        return (productMarginPercent(b) ?? -Infinity) - (productMarginPercent(a) ?? -Infinity);
+      case 'margin_asc':
+        return (productMarginPercent(a) ?? Infinity) - (productMarginPercent(b) ?? Infinity);
+      default:
+        return 0;
+    }
+  }) : undefined;
+
 
   // Stats
   const totalProducts = products?.length || 0;
@@ -2054,13 +2074,26 @@ const AdminProducts: React.FC = () => {
                 <SelectItem value="no">Abo désactivé</SelectItem>
               </SelectContent>
             </Select>
-            {(filterCategory !== 'all' || filterBrand !== 'all' || filterStatus !== 'all' || filterStock !== 'all' || filterAbo !== 'all') && (
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-[190px]">
+                <SelectValue placeholder="Trier" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="default">Tri par défaut</SelectItem>
+                <SelectItem value="price_desc">Prix décroissant</SelectItem>
+                <SelectItem value="price_asc">Prix croissant</SelectItem>
+                <SelectItem value="margin_desc">Marge décroissante</SelectItem>
+                <SelectItem value="margin_asc">Marge croissante</SelectItem>
+              </SelectContent>
+            </Select>
+            {(filterCategory !== 'all' || filterBrand !== 'all' || filterStatus !== 'all' || filterStock !== 'all' || filterAbo !== 'all' || sortBy !== 'default') && (
               <Button variant="ghost" size="sm" onClick={() => {
                 setFilterCategory('all');
                 setFilterBrand('all');
                 setFilterStatus('all');
                 setFilterStock('all');
                 setFilterAbo('all');
+                setSortBy('default');
               }}>
                 <X className="h-4 w-4 mr-1" />
                 Effacer

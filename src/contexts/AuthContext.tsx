@@ -26,41 +26,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       .select('role')
       .eq('user_id', userId)
       .in('role', ['admin', 'manager']);
-    
-    setIsAdmin(data && data.length > 0);
+
+    const admin = !!(data && data.length > 0);
+    setIsAdmin(admin);
+    return admin;
   };
 
   useEffect(() => {
+    let cancelled = false;
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         // Only synchronous state updates here
         setSession(session);
         setUser(session?.user ?? null);
-        setIsLoading(false);
-        
+
         // Defer Supabase calls with setTimeout to prevent deadlock
         if (session?.user) {
           setTimeout(() => {
-            checkAdminRole(session.user.id);
+            checkAdminRole(session.user.id).finally(() => {
+              if (!cancelled) setIsLoading(false);
+            });
           }, 0);
         } else {
           setIsAdmin(false);
+          setIsLoading(false);
         }
       }
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        checkAdminRole(session.user.id);
+        // Wait for the role check so protected admin routes are not
+        // redirected before the role is known (direct URL / refresh).
+        await checkAdminRole(session.user.id);
+      } else {
+        setIsAdmin(false);
       }
-      setIsLoading(false);
+      if (!cancelled) setIsLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
