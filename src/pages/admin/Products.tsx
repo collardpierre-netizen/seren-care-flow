@@ -2460,6 +2460,118 @@ const AdminProducts: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Aperçu avant import */}
+      <Dialog open={!!importPreview} onOpenChange={(open) => { if (!open && !isImporting) setImportPreview(null); }}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Aperçu de l'import</DialogTitle>
+          </DialogHeader>
+          {importPreview && (() => {
+            const toCreate = importPreview.products.filter(r => r.action === 'create');
+            const toUpdate = importPreview.products.filter(r => r.action === 'update');
+            const inError = [
+              ...importPreview.products.filter(r => r.action === 'error').map(r => ({ line: r.line, label: `${r.name} (${r.slug || 'sans slug'})`, error: r.error, sheet: 'Produits' })),
+              ...importPreview.sizes.filter(r => r.action === 'error').map(r => ({ line: r.line, label: r.label, error: r.error, sheet: 'Variantes' })),
+              ...importPreview.images.filter(r => r.action === 'error').map(r => ({ line: r.line, label: r.label, error: r.error, sheet: 'Images' })),
+            ];
+            const warnings = importPreview.products.filter(r => r.warnings && r.warnings.length > 0);
+            const sizesOk = importPreview.sizes.filter(r => r.action === 'apply').length;
+            const imagesOk = importPreview.images.filter(r => r.action === 'apply').length;
+
+            return (
+              <div className="space-y-5">
+                <p className="text-sm text-muted-foreground">Fichier : {importPreview.fileName}</p>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="rounded-lg border p-3 text-center">
+                    <p className="text-2xl font-bold text-primary">{toCreate.length}</p>
+                    <p className="text-xs text-muted-foreground">produits créés</p>
+                  </div>
+                  <div className="rounded-lg border p-3 text-center">
+                    <p className="text-2xl font-bold">{toUpdate.length}</p>
+                    <p className="text-xs text-muted-foreground">produits modifiés</p>
+                  </div>
+                  <div className="rounded-lg border p-3 text-center">
+                    <p className={`text-2xl font-bold ${inError.length > 0 ? 'text-destructive' : ''}`}>{inError.length}</p>
+                    <p className="text-xs text-muted-foreground">lignes en erreur</p>
+                  </div>
+                </div>
+
+                {(sizesOk > 0 || imagesOk > 0) && (
+                  <p className="text-sm text-muted-foreground">
+                    Également : {sizesOk} variante(s) et {imagesOk} image(s) à enregistrer.
+                  </p>
+                )}
+
+                {inError.length > 0 && (
+                  <div className="space-y-2">
+                    <h3 className="font-medium flex items-center gap-2 text-destructive">
+                      <AlertTriangle className="h-4 w-4" /> Lignes ignorées
+                    </h3>
+                    <div className="max-h-48 overflow-y-auto rounded-lg border divide-y text-sm">
+                      {inError.map((e, i) => (
+                        <div key={i} className="p-2 flex flex-wrap gap-x-2">
+                          <span className="font-medium">{e.sheet} · ligne {e.line}</span>
+                          <span className="text-muted-foreground">{e.label}</span>
+                          <span className="text-destructive">— {e.error}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {warnings.length > 0 && (
+                  <div className="space-y-2">
+                    <h3 className="font-medium">À vérifier</h3>
+                    <div className="max-h-40 overflow-y-auto rounded-lg border divide-y text-sm">
+                      {warnings.map((w) => (
+                        <div key={w.line} className="p-2">
+                          <span className="font-medium">Ligne {w.line} · {w.name}</span>
+                          <span className="text-muted-foreground"> — {w.warnings?.join(' ; ')}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {(toCreate.length > 0 || toUpdate.length > 0) && (
+                  <div className="space-y-2">
+                    <h3 className="font-medium">Détail ligne par ligne</h3>
+                    <div className="max-h-64 overflow-y-auto rounded-lg border divide-y text-sm">
+                      {[...toCreate, ...toUpdate].map((r) => (
+                        <div key={`${r.slug}-${r.line}`} className="p-2 flex items-center justify-between gap-3">
+                          <span className="truncate">
+                            <span className="text-muted-foreground">Ligne {r.line} · </span>
+                            {r.name}
+                          </span>
+                          <Badge variant={r.action === 'create' ? 'default' : 'secondary'}>
+                            {r.action === 'create' ? 'Création' : 'Modification'}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex justify-end gap-3 pt-2">
+                  <Button variant="outline" onClick={() => setImportPreview(null)} disabled={isImporting}>
+                    Annuler
+                  </Button>
+                  <Button
+                    onClick={handleConfirmImport}
+                    disabled={isImporting || (toCreate.length === 0 && toUpdate.length === 0)}
+                  >
+                    {isImporting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    Confirmer l'import
+                  </Button>
+                </div>
+              </div>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 };
