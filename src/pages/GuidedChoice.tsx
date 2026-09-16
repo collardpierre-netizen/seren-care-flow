@@ -279,21 +279,20 @@ const GuidedChoice = () => {
                 Une chose importante
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-6">
-                Quoi que vous choisissiez, vous pourrez toujours ajuster ensuite. 
-                Changer de produit, de quantité, de fréquence. Sans frais, sans justification.
+                Le guide vous aide à comparer les informations disponibles. Vérifiez toujours le guide du fabricant avant de commander.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-6">
                 <div className="flex items-center gap-2 text-sm">
                   <Check className="w-4 h-4 text-secondary" />
-                  <span className="text-foreground">Sans engagement</span>
+                  <span className="text-foreground">Achat unique disponible</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Check className="w-4 h-4 text-secondary" />
-                  <span className="text-foreground">Livraison gratuite dès 69€ TTC</span>
+                  <span className="text-foreground">Livraison gratuite dès 69 € TTC</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Check className="w-4 h-4 text-secondary" />
-                  <span className="text-foreground">Modifiable à tout moment</span>
+                  <span className="text-foreground">Aide par téléphone</span>
                 </div>
               </div>
             </motion.div>

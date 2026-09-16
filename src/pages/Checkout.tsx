@@ -258,13 +258,8 @@ const Checkout = () => {
                         {item.isSubscription && (
                           <div className="flex items-center gap-1 text-sm text-secondary mt-1">
                             <RefreshCw className="h-3 w-3" />
-                             Livraison régulière · tous les 30 jours
+                            Livraison régulière · tous les 30 jours
                           </div>
-                  {items.some(item => item.isSubscription) && (
-                    <div className="rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
-                      Le prix de chaque livraison est indiqué pour chaque article. Prochaine livraison estimée : {estimatedDeliveryDate}. Aucune durée minimale. Modifiez la fréquence ou mettez en pause depuis votre compte. Pour arrêter, contactez SerenCare.
-                    </div>
-                  )}
                         )}
                         <p className="text-sm text-muted-foreground mt-1">Qté: {item.quantity}</p>
                       </div>
@@ -275,6 +270,11 @@ const Checkout = () => {
                       </div>
                     </div>
                   ))}
+                  {items.some(item => item.isSubscription) && (
+                    <div className="rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+                      Le prix de chaque livraison est indiqué pour chaque article. Prochaine livraison estimée : {estimatedDeliveryDate}. Aucune durée minimale. Modifiez la fréquence ou mettez en pause depuis votre compte. Pour arrêter, contactez SerenCare.
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 

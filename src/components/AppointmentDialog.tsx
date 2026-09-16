@@ -14,6 +14,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar, Check, Video } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Link } from "react-router-dom";
 
 interface AppointmentDialogProps {
   trigger?: React.ReactNode;
@@ -22,6 +24,7 @@ interface AppointmentDialogProps {
 export function AppointmentDialog({ trigger }: AppointmentDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -136,6 +139,16 @@ export function AppointmentDialog({ trigger }: AppointmentDialogProps) {
               </Select>
             </div>
 
+            <p className="text-sm text-muted-foreground">
+              Utilisez ce formulaire pour une question sur le service ou les caractéristiques d’un produit. Pour un avis médical, adressez-vous à un professionnel de santé.
+            </p>
+            <div className="flex items-start gap-3">
+              <Checkbox id="appointment-privacy" checked={privacyAccepted} onCheckedChange={(checked) => setPrivacyAccepted(checked === true)} className="mt-1 h-5 w-5" />
+              <Label htmlFor="appointment-privacy" className="text-sm font-normal leading-relaxed">
+                J’ai lu la <Link to="/confidentialite" className="underline underline-offset-2">politique de confidentialité</Link> et j’accepte que SerenCare utilise ces informations pour répondre à ma demande.
+              </Label>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">Prénom *</Label>
@@ -237,15 +250,13 @@ export function AppointmentDialog({ trigger }: AppointmentDialogProps) {
               type="submit" 
               size="lg" 
               className="w-full gap-2" 
-              disabled={isSubmitting || !formData.firstName || !formData.lastName || !formData.email || !formData.phone || !formData.appointmentType}
+              disabled={isSubmitting || !privacyAccepted || !formData.firstName || !formData.lastName || !formData.email || !formData.phone || !formData.appointmentType}
             >
               <Calendar className="w-4 h-4" />
               {isSubmitting ? "Envoi en cours..." : "Demander ce rendez-vous"}
             </Button>
 
-            <p className="text-xs text-muted-foreground text-center">
-              Nous vous recontacterons sous 24h pour confirmer votre créneau.
-            </p>
+            <p className="text-xs text-muted-foreground text-center">Nous vous recontacterons pour confirmer votre créneau.</p>
           </form>
         )}
       </DialogContent>

@@ -12,28 +12,25 @@ const faqItems = [
         question: "Comment fonctionne l'abonnement SerenCare ?",
         answer: `Notre abonnement a été pensé pour vous simplifier la vie !
 
-**Il est totalement flexible, sans frais cachés et sans engagement.**
+**Aucune durée minimale n'est prévue.**
 
 Les avantages :
 - **10% d'économie** sur chaque commande
 - **Livraison gratuite** dès 69€ TTC
-- Un espace client pour modifier ou arrêter votre abonnement quand vous le souhaitez
-- Des livraisons sur mesure : choisissez la fréquence qui vous convient (2, 3 ou 4 semaines)`,
+- Un espace client pour modifier la fréquence ou mettre la livraison en pause
+- Pour arrêter la livraison régulière, contactez SerenCare
+- Des fréquences disponibles de 2, 4, 6 ou 8 semaines`,
       },
       {
         id: "modify-subscription",
         question: "Comment modifier mon abonnement ?",
         answer: `Rendez-vous dans **votre espace client** pour effectuer vos modifications.
 
-Ce que vous pouvez changer, **à tout moment et sans frais** :
+Ce que vous pouvez changer depuis votre compte :
 - La taille et le type de protection
 - Ajouter ou retirer des produits
-- Le mode de paiement
 - La fréquence de livraison
-- La date de la prochaine expédition
-- Le lieu de livraison
-
-Nous vous envoyons un email 3 jours avant chaque livraison pour vous laisser le temps de faire vos modifications.`,
+- Les quantités et produits`,
       },
       {
         id: "too-many-products",
@@ -48,13 +45,13 @@ Vous pouvez faire ces modifications à tout moment depuis votre espace client.`,
       {
         id: "cancel-subscription",
         question: "Comment annuler ou suspendre mon abonnement ?",
-        answer: `Notre abonnement est **sans engagement** ! 
+La livraison régulière ne prévoit aucune durée minimale.
 
 Vous pouvez :
 - **Mettre en pause** temporairement (vacances, hospitalisation...)
-- **Annuler définitivement** votre abonnement
+- **Arrêter définitivement** en contactant SerenCare
 
-Tout se fait depuis votre espace client, sans frais et sans justification à donner.`,
+La mise en pause se fait depuis votre espace client.`,
       },
       {
         id: "payment-date",
@@ -73,7 +70,7 @@ Si vous devez changer de carte bancaire, vous pouvez le faire depuis votre espac
       {
         id: "delivery-time",
         question: "Quels sont les délais de livraison ?",
-        answer: `Nous livrons en **Belgique sous 2-3 jours ouvrés** à partir de l'expédition.
+Le délai estimé est affiché avant la confirmation de votre commande.
 
 Modes de livraison disponibles :
 - **Point relais** : Gratuit dès 69€ TTC (sinon 4,90€)

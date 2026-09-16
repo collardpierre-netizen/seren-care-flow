@@ -264,8 +264,8 @@ const UnifiedQuestionnaire: React.FC<UnifiedQuestionnaireProps> = ({
                   <RefreshCw className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <h4 className="font-display font-bold text-foreground">Économisez avec l'abonnement</h4>
-                  <p className="text-sm text-muted-foreground">Flexible, sans engagement</p>
+                  <h4 className="font-display font-bold text-foreground">Livraison régulière facultative</h4>
+                  <p className="text-sm text-muted-foreground">Prix et conditions affichés avant le paiement</p>
                 </div>
               </div>
               <ul className="space-y-2 mb-4">
@@ -275,11 +275,11 @@ const UnifiedQuestionnaire: React.FC<UnifiedQuestionnaireProps> = ({
                 </li>
                 <li className="flex items-center gap-2 text-sm text-foreground">
                   <Check className="w-4 h-4 text-secondary" />
-                  <span>Livraison gratuite dès 49€</span>
+                  <span>Livraison gratuite dès 69 € TTC</span>
                 </li>
                 <li className="flex items-center gap-2 text-sm text-foreground">
                   <Check className="w-4 h-4 text-secondary" />
-                  <span>Modifiable ou annulable à tout moment</span>
+                  <span>Modifiable ou suspendable depuis votre compte</span>
                 </li>
               </ul>
             </div>

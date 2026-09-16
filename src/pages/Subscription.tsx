@@ -103,18 +103,18 @@ const Subscription = () => {
     return (
       <Layout>
         <Helmet>
-          <title>Abonnement mensuel | SerenCare</title>
-          <meta name="description" content="Recevez vos protections pour incontinence automatiquement chaque mois avec notre abonnement flexible. Sans engagement, livraison gratuite, -10% sur vos produits." />
+          <title>Livraison régulière | SerenCare</title>
+          <meta name="description" content="Choisissez une livraison régulière lorsque cette option est disponible. Prix et conditions affichés avant le paiement." />
         </Helmet>
         <div className="container py-12">
           {/* Hero section for logged-out users */}
           <div className="max-w-3xl mx-auto text-center mb-12">
-            <Badge variant="secondary" className="mb-4">Sans engagement</Badge>
+            <Badge variant="secondary" className="mb-4">Option facultative</Badge>
             <h1 className="text-3xl md:text-4xl font-bold mb-4">
-              L'abonnement mensuel qui simplifie votre quotidien
+              Une livraison régulière, si vous le souhaitez
             </h1>
             <p className="text-lg text-muted-foreground mb-8">
-              Recevez vos produits automatiquement chaque mois. Plus de rupture de stock, plus de courses de dernière minute.
+              Choisissez une fréquence lorsque cette option est disponible. Les conditions, le prix de chaque livraison et les modalités de modification sont affichés avant le paiement.
             </p>
           </div>
 
@@ -131,15 +131,15 @@ const Subscription = () => {
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                 <CreditCard className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-semibold mb-2">-10% sur vos produits</h3>
-              <p className="text-sm text-muted-foreground">Prix réduits exclusifs aux abonnés</p>
+              <h3 className="font-semibold mb-2">Prix par livraison</h3>
+              <p className="text-sm text-muted-foreground">La réduction réelle est affichée pour chaque produit</p>
             </Card>
             <Card className="text-center p-6">
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-semibold mb-2">Flexible et sans risque</h3>
-              <p className="text-sm text-muted-foreground">Modifiez ou annulez à tout moment</p>
+              <h3 className="font-semibold mb-2">Gestion depuis votre compte</h3>
+              <p className="text-sm text-muted-foreground">Modifiez la fréquence ou mettez en pause. Pour arrêter, contactez SerenCare.</p>
             </Card>
           </div>
 
@@ -382,8 +382,7 @@ const Subscription = () => {
                 <CardContent className="pt-6">
                   <p className="text-xs text-muted-foreground text-center">
                     Paiement sécurisé par Stripe. 
-                    Vous serez débité automatiquement chaque mois. 
-                    Vous pouvez annuler à tout moment depuis le portail client.
+                    Vous serez débité automatiquement selon la fréquence choisie. Modifiez ou mettez en pause depuis votre compte. Pour arrêter, contactez SerenCare. Aucune durée minimale.
                   </p>
                 </CardContent>
               </Card>
