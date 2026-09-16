@@ -381,44 +381,48 @@ const ProductPage = () => {
                   </div>
                 )}
 
-                {/* Reimbursement badge */}
-                <Link 
-                  to="/guides/remboursement-protections-incontinence-belgique"
-                  className="inline-flex items-center gap-2 mt-2 px-3 py-2 rounded-lg bg-accent/50 border border-accent text-sm text-foreground hover:bg-accent transition-colors"
-                >
-                  <span>💳</span>
-                  <span>Remboursable partiellement par votre mutuelle — jusqu'à 205€/an</span>
-                  <span className="text-primary font-medium whitespace-nowrap">En savoir plus →</span>
-                </Link>
+                {/* Remboursement mutuelle : uniquement sur les protections concernées */}
+                {attributesRelevant && (
+                  <Link 
+                    to="/guides/remboursement-protections-incontinence-belgique"
+                    className="inline-flex items-center gap-2 mt-2 px-3 py-2 rounded-lg bg-accent/50 border border-accent text-sm text-foreground hover:bg-accent transition-colors"
+                  >
+                    <span>💳</span>
+                    <span>Une intervention de votre mutuelle est possible selon votre situation</span>
+                    <span className="text-primary font-medium whitespace-nowrap">Conditions →</span>
+                  </Link>
+                )}
               </div>
 
-              {/* Product attributes */}
-              <div className="flex flex-wrap gap-2">
-                {product.incontinence_level && (
-                  <Badge variant="outline">
-                    {incontinenceLevelLabels[product.incontinence_level]}
-                  </Badge>
-                )}
-                {formatMobilityTags().map((label, idx) => (
-                  <Badge key={`mobility-${idx}`} variant="outline">
-                    {label}
-                  </Badge>
-                ))}
-                {formatUsageTimeTags().map((item, idx) => (
-                  <Badge key={`usage-${idx}`} variant="outline" className="flex items-center gap-1">
-                    {item.icon}
-                    {item.label}
-                  </Badge>
-                ))}
-              </div>
+              {/* Attributs produit, seulement s'ils ont un sens pour la catégorie */}
+              {attributesRelevant && (
+                <div className="flex flex-wrap gap-2">
+                  {product.incontinence_level && (
+                    <Badge variant="outline">
+                      {incontinenceLevelLabels[product.incontinence_level]}
+                    </Badge>
+                  )}
+                  {formatMobilityTags().map((label, idx) => (
+                    <Badge key={`mobility-${idx}`} variant="outline">
+                      {label}
+                    </Badge>
+                  ))}
+                  {formatUsageTimeTags().map((item, idx) => (
+                    <Badge key={`usage-${idx}`} variant="outline" className="flex items-center gap-1">
+                      {item.icon}
+                      {item.label}
+                    </Badge>
+                  ))}
+                </div>
+              )}
 
               {/* Description */}
               {product.description && (
                 <p className="text-muted-foreground leading-relaxed">{product.description}</p>
               )}
 
-              {/* Size Guide Modal - only if show_size_guide is true */}
-              {product.show_size_guide !== false && (
+              {/* Guide des tailles : seulement pour les produits à tailles */}
+              {attributesRelevant && product.show_size_guide !== false && (
                 <SizeGuideModal
                   open={sizeGuideOpen}
                   onOpenChange={setSizeGuideOpen}
@@ -429,38 +433,40 @@ const ProductPage = () => {
                 />
               )}
 
-              {/* Size selection */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">Taille</Label>
-                  {product.show_size_guide !== false && (
-                    <SizeGuideButton onClick={() => setSizeGuideOpen(true)} />
-                  )}
-                </div>
-                {sizes.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {sizes.map((size) => (
-                      <button
-                        key={size.id}
-                        onClick={() => setSelectedSize(size.size)}
-                        className={cn(
-                          "px-4 py-2 border rounded-lg text-sm font-medium transition-colors",
-                          selectedSize === size.size
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : "border-border hover:border-primary"
-                        )}
-                      >
-                        {size.size}
-                      </button>
-                    ))}
+              {/* Choix de la taille */}
+              {(sizes.length > 0 || attributesRelevant) && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium">Taille</Label>
+                    {attributesRelevant && product.show_size_guide !== false && (
+                      <SizeGuideButton onClick={() => setSizeGuideOpen(true)} />
+                    )}
                   </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">Taille unique</p>
-                )}
-                <p className="text-sm text-muted-foreground">
-                  Vérifiez toujours le guide du fabricant. En cas de doute, contactez-nous avant de commander.
-                </p>
-              </div>
+                  {sizes.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {sizes.map((size) => (
+                        <button
+                          key={size.id}
+                          onClick={() => setSelectedSize(size.size)}
+                          className={cn(
+                            "px-4 py-2 border rounded-lg text-sm font-medium transition-colors",
+                            selectedSize === size.size
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border hover:border-primary"
+                          )}
+                        >
+                          {size.size}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Taille unique</p>
+                  )}
+                  <p className="text-sm text-muted-foreground">
+                    Vérifiez toujours le guide du fabricant. En cas de doute, contactez-nous avant de commander.
+                  </p>
+                </div>
+              )}
 
               {/* Purchase mode */}
               <div className="space-y-3">
