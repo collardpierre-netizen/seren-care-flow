@@ -690,7 +690,7 @@ const AdminProducts: React.FC = () => {
     });
   };
 
-  const marginPercent = (p: any) =>
+  const productMarginPercent = (p: any) =>
     p.price && p.purchase_price ? ((p.price - p.purchase_price) / p.price) * 100 : null;
 
   const unsortedProducts = products?.filter(p => {
@@ -720,9 +720,9 @@ const AdminProducts: React.FC = () => {
       case 'price_asc':
         return (a.price || 0) - (b.price || 0);
       case 'margin_desc':
-        return (marginPercent(b) ?? -Infinity) - (marginPercent(a) ?? -Infinity);
+        return (productMarginPercent(b) ?? -Infinity) - (productMarginPercent(a) ?? -Infinity);
       case 'margin_asc':
-        return (marginPercent(a) ?? Infinity) - (marginPercent(b) ?? Infinity);
+        return (productMarginPercent(a) ?? Infinity) - (productMarginPercent(b) ?? Infinity);
       default:
         return 0;
     }
