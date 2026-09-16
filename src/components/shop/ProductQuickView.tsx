@@ -23,6 +23,7 @@ import {
 import { cn } from '@/lib/utils';
 import { SizeGuideModal, SizeGuideButton } from './SizeGuideModal';
 import AddToSubscriptionButton from './AddToSubscriptionButton';
+import { isAbsorptionRelevant } from '@/lib/shopTaxonomy';
 
 interface ProductQuickViewProps {
   product: Product | null;
@@ -47,6 +48,7 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
   
   const basePrice = product.price;
   const hasSubscription = product.is_subscription_eligible === true && product.subscription_price != null;
+  const attributesRelevant = isAbsorptionRelevant(product.category_id);
   const subscriptionPrice = product.subscription_price ?? basePrice;
   const discountPercent = product.subscription_discount_percent ?? 0;
   const recommendedPrice = product.recommended_price;
@@ -231,39 +233,45 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
               )}
             </div>
 
-            {/* Product attributes */}
-            <div className="flex flex-wrap gap-2">
-              {product.incontinence_level && (
-                <Badge variant="outline" className="capitalize">
-                  {incontinenceLevelLabels[product.incontinence_level]}
-                </Badge>
-              )}
-              {product.mobility && (
-                <Badge variant="outline" className="capitalize">
-                  {mobilityLabels[product.mobility]}
-                </Badge>
-              )}
-              {product.usage_time && (
-                <Badge variant="outline" className="flex items-center gap-1">
-                  {usageTimeLabels[product.usage_time]?.icon}
-                  {usageTimeLabels[product.usage_time]?.label}
-                </Badge>
-              )}
-            </div>
+            {/* Attributs produit, seulement s'ils ont un sens pour la catégorie */}
+            {attributesRelevant && (
+              <div className="flex flex-wrap gap-2">
+                {product.incontinence_level && (
+                  <Badge variant="outline" className="capitalize">
+                    {incontinenceLevelLabels[product.incontinence_level]}
+                  </Badge>
+                )}
+                {product.mobility && (
+                  <Badge variant="outline" className="capitalize">
+                    {mobilityLabels[product.mobility]}
+                  </Badge>
+                )}
+                {product.usage_time && (
+                  <Badge variant="outline" className="flex items-center gap-1">
+                    {usageTimeLabels[product.usage_time]?.icon}
+                    {usageTimeLabels[product.usage_time]?.label}
+                  </Badge>
+                )}
+              </div>
+            )}
 
-            {/* Size Guide Modal */}
-            <SizeGuideModal
-              open={sizeGuideOpen}
-              onOpenChange={setSizeGuideOpen}
-              brand={product.brand?.name}
-            />
+            {/* Guide des tailles : seulement pour les produits à tailles */}
+            {attributesRelevant && (
+              <SizeGuideModal
+                open={sizeGuideOpen}
+                onOpenChange={setSizeGuideOpen}
+                brand={product.brand?.name}
+              />
+            )}
 
             {/* Size selection */}
             {sizes.length > 0 && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <Label className="text-sm font-medium">Taille</Label>
-                  <SizeGuideButton onClick={() => setSizeGuideOpen(true)} />
+                  {attributesRelevant && (
+                    <SizeGuideButton onClick={() => setSizeGuideOpen(true)} />
+                  )}
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {sizes.map((size) => (
