@@ -592,25 +592,6 @@ const Shop = () => {
                   animate={{ opacity: 1, height: "auto" }}
                   className="mt-4 p-4 bg-card rounded-xl border border-border space-y-4"
                 >
-                  {/* Catégorie */}
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Catégorie</p>
-                    <div className="flex flex-wrap gap-2">
-                      {categoryOptions.map((cat) => (
-                        <button
-                          key={cat.id}
-                          onClick={() => setSelectedCategory(cat.id)}
-                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                            selectedCategory === cat.id
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-muted text-foreground"
-                          }`}
-                        >
-                          {cat.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
 
                   {/* Marque */}
                   <div>
