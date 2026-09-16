@@ -10,7 +10,7 @@ const Footer = () => {
     services: [
       { name: "Boutique", href: "/boutique" },
       { name: "Aide au choix", href: "/aide-au-choix" },
-      { name: "Abonnement", href: "/boutique?mode=subscription" },
+      { name: "Livraison régulière", href: "/abonnement" },
       { name: "FAQ", href: "/faq" },
     ],
     prescripteurs: [
@@ -45,7 +45,7 @@ const Footer = () => {
               <p className="text-sm font-medium text-background">Pharmacie Allard</p>
               <a href="tel:+3202648422" className="flex items-center gap-3 text-sm text-background/80 hover:text-background transition-colors group">
                 <Phone className="w-4 h-4" />
-                +32 02 648 42 22
+               +32 2 648 42 22
                 <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
               </a>
               <a href="mailto:info@serencare.be" className="flex items-center gap-3 text-sm text-background/80 hover:text-background transition-colors group">
@@ -123,11 +123,18 @@ const Footer = () => {
             <p className="text-xs text-background/50">
               © {currentYear} SerenCare. Tous droits réservés.
             </p>
-            <div className="flex items-center gap-6 text-xs text-background/50">
+             <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-background/50">
               <Link to="/mentions-legales" className="hover:text-background/70 transition-colors">Mentions légales</Link>
               <Link to="/cgv" className="hover:text-background/70 transition-colors">CGV</Link>
               <Link to="/cgu" className="hover:text-background/70 transition-colors">CGU</Link>
               <Link to="/confidentialite" className="hover:text-background/70 transition-colors">Confidentialité</Link>
+               <button
+                 type="button"
+                 onClick={() => window.dispatchEvent(new Event("serencare:open-cookie-settings"))}
+                 className="min-h-11 hover:text-background/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background"
+               >
+                 Gérer mes cookies
+               </button>
             </div>
           </div>
         </div>

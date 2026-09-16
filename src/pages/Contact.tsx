@@ -9,10 +9,13 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Link } from "react-router-dom";
 
 const Contact = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -275,11 +278,21 @@ const Contact = () => {
                       />
                     </div>
 
+                    <p className="text-sm text-muted-foreground">
+                      Utilisez ce formulaire pour une question sur le service ou les caractéristiques d’un produit. Pour un avis médical, adressez-vous à un professionnel de santé.
+                    </p>
+                    <div className="flex items-start gap-3">
+                      <Checkbox id="contact-privacy" checked={privacyAccepted} onCheckedChange={(checked) => setPrivacyAccepted(checked === true)} className="mt-1 h-5 w-5" />
+                      <Label htmlFor="contact-privacy" className="text-sm font-normal leading-relaxed">
+                        J’ai lu la <Link to="/confidentialite" className="underline underline-offset-2">politique de confidentialité</Link> et j’accepte que SerenCare utilise ces informations pour répondre à ma demande.
+                      </Label>
+                    </div>
+
                     <Button 
                       type="submit" 
                       size="lg" 
                       className="w-full gap-2"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || !privacyAccepted}
                     >
                       {isSubmitting ? (
                         "Envoi en cours..."
@@ -291,12 +304,6 @@ const Contact = () => {
                       )}
                     </Button>
 
-                    <p className="text-xs text-muted-foreground text-center">
-                      En soumettant ce formulaire, vous acceptez notre{" "}
-                      <a href="/confidentialite" className="underline hover:text-foreground">
-                        politique de confidentialité
-                      </a>.
-                    </p>
                   </form>
                 </div>
               </motion.div>

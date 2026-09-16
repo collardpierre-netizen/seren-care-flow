@@ -38,6 +38,8 @@ const Shop = () => {
   const [selectedMobility, setSelectedMobility] = useState<string>("all");
   const [selectedUsageTime, setSelectedUsageTime] = useState<string>("all");
   const [selectedGender, setSelectedGender] = useState<string>("all");
+  const [selectedSizeFilter, setSelectedSizeFilter] = useState<string>("all");
+  const [selectedPurchaseMode, setSelectedPurchaseMode] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 500]);
   const [priceRangeInitialized, setPriceRangeInitialized] = useState(false);
@@ -97,6 +99,12 @@ const Shop = () => {
     priceMax: priceRange[1],
     categories: categories as { id: string; parent_id: string | null }[],
   });
+  const visibleProducts = useMemo(() => filteredProducts.filter((product) => {
+    const matchesSize = selectedSizeFilter === "all" || product.sizes?.some((size) => size.is_active !== false && size.size === selectedSizeFilter);
+    const matchesMode = selectedPurchaseMode === "all" || selectedPurchaseMode === "one-time" || (product.is_subscription_eligible === true && !!product.subscription_price);
+    return matchesSize && matchesMode;
+  }), [filteredProducts, selectedSizeFilter, selectedPurchaseMode]);
+  const sizeOptions = useMemo(() => [...new Set(products?.flatMap((product) => product.sizes?.filter((size) => size.is_active !== false).map((size) => size.size) || []) || [])].sort(), [products]);
 
   const activeFiltersCount = [
     selectedCategory, 
@@ -105,6 +113,8 @@ const Shop = () => {
     selectedMobility, 
     selectedUsageTime,
     selectedGender
+    selectedSizeFilter,
+    selectedPurchaseMode
   ].filter(f => f !== "all").length + (isPriceFilterActive ? 1 : 0);
 
   const clearFilters = () => {
@@ -114,6 +124,8 @@ const Shop = () => {
     setSelectedMobility("all");
     setSelectedUsageTime("all");
     setSelectedGender("all");
+    setSelectedSizeFilter("all");
+    setSelectedPurchaseMode("all");
     setSearchQuery("");
     setPriceRange([priceBounds.min, priceBounds.max]);
   };
@@ -282,7 +294,7 @@ const Shop = () => {
                 Nos produits
               </h1>
               <p className="text-lg text-muted-foreground">
-                Sélectionnez les protections adaptées. Filtrez par besoin, nous vous recommandons les meilleures options.
+                 Recherchez une référence connue ou comparez les informations disponibles pour chaque produit.
               </p>
             </motion.div>
 
@@ -292,17 +304,15 @@ const Shop = () => {
                 <SearchBar 
                   value={searchQuery}
                   onChange={setSearchQuery}
-                  placeholder="Rechercher un produit, une marque..."
-                  resultCount={searchQuery ? filteredProducts?.length : undefined}
+                   placeholder="Rechercher une marque, une référence ou un produit"
+                   resultCount={searchQuery ? visibleProducts.length : undefined}
                 />
               </div>
-              <Button 
-                onClick={() => setShowProductSelector(true)}
+               <Button asChild
                 className="gap-2 h-12"
                 variant="outline"
               >
-                <Sparkles className="w-4 h-4" />
-                Aide au choix guidé
+                 <Link to="/aide-au-choix"><Sparkles className="w-4 h-4" />Besoin d’aide pour choisir ?</Link>
               </Button>
             </div>
           </div>
@@ -394,6 +404,8 @@ const Shop = () => {
             <div className="hidden lg:flex flex-wrap items-center gap-3 mb-8">
               <FilterButton options={categoryOptions} value={selectedCategory} onChange={setSelectedCategory} label="Catégorie" />
               <FilterButton options={brandOptions} value={selectedBrand} onChange={setSelectedBrand} label="Marque" />
+              <FilterButton options={[{id:'all',label:'Toutes'}, ...sizeOptions.map((size) => ({id:size,label:size}))]} value={selectedSizeFilter} onChange={setSelectedSizeFilter} label="Taille" />
+              <FilterButton options={[{id:'all',label:'Tous'}, {id:'one-time',label:'Achat unique'}, {id:'subscription',label:'Livraison régulière'}]} value={selectedPurchaseMode} onChange={setSelectedPurchaseMode} label="Commande" />
               {showIncontinenceFilters && (
                 <>
                   <FilterButton options={incontinenceLevelOptions} value={selectedIncontinence} onChange={setSelectedIncontinence} label="Absorption" showDroplets counts={filterCounts.incontinence} />
@@ -514,6 +526,20 @@ const Shop = () => {
                           {brand.label}
                         </button>
                       ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Taille</p>
+                    <div className="flex flex-wrap gap-2">
+                      {["all", ...sizeOptions].map((size) => <Button key={size} type="button" variant={selectedSizeFilter === size ? "default" : "outline"} className="min-h-11" onClick={() => setSelectedSizeFilter(size)}>{size === 'all' ? 'Toutes' : size}</Button>)}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Type de commande</p>
+                    <div className="flex flex-wrap gap-2">
+                      {[{id:'all',label:'Tous'}, {id:'one-time',label:'Achat unique'}, {id:'subscription',label:'Livraison régulière'}].map((option) => <Button key={option.id} type="button" variant={selectedPurchaseMode === option.id ? "default" : "outline"} className="min-h-11" onClick={() => setSelectedPurchaseMode(option.id)}>{option.label}</Button>)}
                     </div>
                   </div>
 
@@ -646,7 +672,7 @@ const Shop = () => {
 
             {/* Results count */}
             <p className="text-sm text-muted-foreground mb-6">
-              {filteredProducts?.length || 0} produit{(filteredProducts?.length || 0) > 1 ? "s" : ""}
+               {visibleProducts.length} produit{visibleProducts.length > 1 ? "s" : ""}
             </p>
 
             {/* Products Grid */}
@@ -654,7 +680,7 @@ const Shop = () => {
               <div className="flex justify-center py-20">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
-            ) : filteredProducts?.length === 0 ? (
+             ) : visibleProducts.length === 0 ? (
               <div className="text-center py-20 bg-card rounded-2xl border border-border">
                 <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                 <p className="text-muted-foreground mb-4">Aucun produit ne correspond à vos critères.</p>
@@ -663,8 +689,8 @@ const Shop = () => {
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 lg:gap-5">
-                {[...filteredProducts]
+               <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-5">
+                 {[...visibleProducts]
                   .sort((a, b) => {
                     // Priority: incontinence products first, then by category
                     const aIsIncontinence = !!a.incontinence_level;

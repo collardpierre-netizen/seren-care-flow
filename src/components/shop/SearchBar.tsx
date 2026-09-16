@@ -42,6 +42,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder={placeholder}
+           aria-label={placeholder}
           className="pl-12 pr-12 py-3 h-12 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-base"
         />
         <AnimatePresence>
@@ -61,7 +62,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               onClick={handleClear}
-              className="absolute right-4 p-1 rounded-full hover:bg-muted transition-colors"
+              type="button"
+              aria-label="Effacer la recherche"
+              className="absolute right-1 min-h-11 min-w-11 p-1 rounded-full hover:bg-muted transition-colors"
             >
               <X className="w-4 h-4 text-muted-foreground" />
             </motion.button>

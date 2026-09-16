@@ -13,6 +13,24 @@ interface CookiePreferences {
 }
 
 const COOKIE_CONSENT_KEY = "serencare_cookie_consent";
+const OPEN_COOKIE_SETTINGS_EVENT = "serencare:open-cookie-settings";
+
+const loadAnalytics = () => {
+  if (document.querySelector('script[data-serencare-analytics="true"]')) return;
+  const script = document.createElement("script");
+  script.async = true;
+  script.src = "https://www.googletagmanager.com/gtag/js?id=G-EVZ781H036";
+  script.dataset.serencareAnalytics = "true";
+  document.head.appendChild(script);
+  window.dataLayer = window.dataLayer || [];
+  const gtag = (...args: unknown[]) => window.dataLayer?.push(args);
+  gtag("js", new Date());
+  gtag("config", "G-EVZ781H036", { anonymize_ip: true });
+};
+
+declare global {
+  interface Window { dataLayer?: unknown[][]; }
+}
 
 const CookieConsent = () => {
   const [showBanner, setShowBanner] = useState(false);
@@ -29,7 +47,20 @@ const CookieConsent = () => {
       // Delay showing the banner for a better UX
       const timer = setTimeout(() => setShowBanner(true), 1000);
       return () => clearTimeout(timer);
+    } else {
+      try {
+        const saved = JSON.parse(consent) as CookiePreferences;
+        setPreferences({ essential: true, analytics: !!saved.analytics, marketing: !!saved.marketing });
+        if (saved.analytics) loadAnalytics();
+      } catch {
+        localStorage.removeItem(COOKIE_CONSENT_KEY);
+        setShowBanner(true);
+      }
     }
+
+    const openSettings = () => setShowSettings(true);
+    window.addEventListener(OPEN_COOKIE_SETTINGS_EVENT, openSettings);
+    return () => window.removeEventListener(OPEN_COOKIE_SETTINGS_EVENT, openSettings);
   }, []);
 
   const saveConsent = (prefs: CookiePreferences) => {
@@ -37,6 +68,7 @@ const CookieConsent = () => {
       ...prefs,
       timestamp: new Date().toISOString(),
     }));
+    if (prefs.analytics) loadAnalytics();
     setShowBanner(false);
     setShowSettings(false);
   };
@@ -62,9 +94,9 @@ const CookieConsent = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
             transition={{ duration: 0.3 }}
-            className="fixed bottom-4 left-4 right-4 z-50 md:left-6 md:right-6 md:bottom-6"
+            className="fixed bottom-2 left-2 right-2 z-50 md:left-6 md:right-6 md:bottom-6"
           >
-            <div className="max-w-3xl mx-auto bg-card border border-border rounded-2xl shadow-2xl p-4 md:p-6">
+            <div className="max-w-3xl mx-auto bg-card border border-border rounded-lg shadow-2xl p-3 md:p-6">
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <Cookie className="w-5 h-5 text-primary" />
@@ -78,15 +110,15 @@ const CookieConsent = () => {
                     mémoriser vos préférences et analyser notre trafic de manière anonyme. 
                     Vous pouvez personnaliser vos choix à tout moment.
                   </p>
-                  <div className="flex flex-wrap gap-3">
-                    <Button variant="outline" size="sm" onClick={rejectAll}>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <Button variant="outline" size="sm" onClick={acceptAll} className="min-h-11">
+                      Tout accepter
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={rejectAll} className="min-h-11">
                       Tout refuser
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => setShowSettings(true)}>
+                    <Button variant="outline" size="sm" onClick={() => setShowSettings(true)} className="min-h-11">
                       Personnaliser
-                    </Button>
-                    <Button size="sm" onClick={acceptAll}>
-                      Tout accepter
                     </Button>
                   </div>
                 </div>

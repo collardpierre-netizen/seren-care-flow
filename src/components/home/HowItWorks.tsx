@@ -1,36 +1,36 @@
 import { motion } from "framer-motion";
-import { MessageCircle, Package, RefreshCw, Truck } from "lucide-react";
+import { Search, ListChecks, Truck, SlidersHorizontal } from "lucide-react";
 
 const steps = [
   {
-    icon: MessageCircle,
+    icon: Search,
     number: "01",
-    title: "Choisissez",
-    description: "Sélectionnez vos produits ou laissez-nous vous guider avec quelques questions simples.",
+    title: "Trouvez le produit",
+    description: "Recherchez une référence connue ou utilisez le guide de comparaison.",
   },
   {
-    icon: Package,
+    icon: ListChecks,
     number: "02",
-    title: "Recevez",
-    description: "Votre première livraison arrive sous 48h. Emballage discret, livraison gratuite.",
-  },
-  {
-    icon: RefreshCw,
-    number: "03",
-    title: "Ajustez",
-    description: "Modifiez produits, quantités ou fréquence à tout moment. Sans engagement.",
+    title: "Vérifiez les informations",
+    description: "Consultez la taille, la quantité par paquet, les caractéristiques du fabricant et le prix.",
   },
   {
     icon: Truck,
+    number: "03",
+    title: "Choisissez la livraison",
+    description: "Commandez ponctuellement ou sélectionnez une fréquence lorsqu’une livraison régulière est proposée.",
+  },
+  {
+    icon: SlidersHorizontal,
     number: "04",
-    title: "Vivez sereinement",
-    description: "Vos protections arrivent automatiquement. Plus besoin d'y penser.",
+    title: "Gardez le contrôle",
+    description: "Consultez vos commandes et modifiez les options disponibles depuis votre compte.",
   },
 ];
 
 const HowItWorks = () => {
   return (
-    <section className="section-padding bg-muted/50">
+    <section id="commande-proche" className="section-padding bg-muted/50 scroll-mt-24" aria-labelledby="how-title">
       <div className="container-main">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -39,11 +39,11 @@ const HowItWorks = () => {
           transition={{ duration: 0.5 }}
           className="max-w-2xl mb-16"
         >
-          <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-            Simple comme bonjour.
+          <h2 id="how-title" className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+            Une commande simple, même pour un proche
           </h2>
           <p className="text-lg text-muted-foreground">
-            En quelques minutes, mettez en place un service qui vous enlève une charge pour de bon.
+            Retrouvez un produit, vérifiez ses informations et choisissez où le faire livrer.
           </p>
         </motion.div>
 

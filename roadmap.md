@@ -1,14 +1,11 @@
-# Roadmap sécurité
+# Roadmap amélioration avant lancement
 
-- [x] Phase 1 : RLS order_messages + cart_items, verify-payment / create-checkout
-- [x] Auth des fonctions e-mail (JWT ou secret interne)
-- [x] Validation zod : create-order, create-user, preparer-message
-- [x] Protection des mots de passe compromis (HIBP)
-- [x] Politiques de stockage durcies (upload email-assets, listage)
-- [x] stock_alerts / order_preparer_logs / preparer_earned_badges
-- [x] E-mails des auteurs d'avis masqués au public
-
-## À valider par l'utilisateur (non modifié)
-- Notes internes des commandes : garde-fou base de données à ajouter ?
-- Canaux temps réel privés : politiques par sujet ?
-- Fonctions SECURITY DEFINER exécutables publiquement (avertissement générique)
+- [ ] Accueil : positionnement, parcours, fonctionnement et suppression des faux avis
+- [ ] Promesses : seuil 69 € et délais prudents sur tout le site
+- [ ] Achat unique / livraison régulière : choix, prix et conditions transparents
+- [ ] Boutique mobile, recherche, filtres et cartes produits
+- [ ] Fiches produit, panier et récapitulatif
+- [ ] Formulaires de contact et consentement confidentialité
+- [ ] Cookies : consentement préalable et gestion depuis le pied de page
+- [ ] Accessibilité, métadonnées et avertissements console
+- [ ] Vérifications fonctionnelles et multi-écrans

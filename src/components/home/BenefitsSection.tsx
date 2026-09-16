@@ -1,26 +1,26 @@
 import { motion } from "framer-motion";
-import { Heart, Clock, Shield, Sparkles } from "lucide-react";
+import { Phone, Search, ListChecks, RefreshCw } from "lucide-react";
 
 const benefits = [
   {
-    icon: Heart,
-    title: "Accompagnement humain",
-    description: "Une vraie personne au téléphone. Pas un chatbot. Nous comprenons votre situation.",
+    icon: Phone,
+    title: "Une aide accessible",
+    description: "Contactez-nous pour comprendre les informations des produits et le fonctionnement du service.",
   },
   {
-    icon: Clock,
-    title: "Zéro charge mentale",
-    description: "Plus de courses de dernière minute. Vos protections arrivent quand il faut.",
+    icon: Search,
+    title: "Une commande plus simple",
+    description: "Recherchez une référence ou utilisez le guide pour réduire le temps passé à comparer.",
   },
   {
-    icon: Shield,
-    title: "Qualité garantie",
-    description: "Marques leaders. Produits testés. Efficacité prouvée. Aucun compromis.",
+    icon: ListChecks,
+    title: "Des informations lisibles",
+    description: "Taille, quantité, prix et options de livraison sont présentés avant la commande.",
   },
   {
-    icon: Sparkles,
-    title: "Flexibilité totale",
-    description: "Changez, pausez ou arrêtez quand vous voulez. Sans frais, sans justification.",
+    icon: RefreshCw,
+    title: "Une formule flexible",
+    description: "Choisissez l’achat unique ou une livraison régulière lorsque celle-ci est disponible.",
   },
 ];
 
@@ -79,10 +79,10 @@ const BenefitsSection = () => {
           className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6"
         >
           {[
-            { value: "48h", label: "Délai de livraison" },
-            { value: "0€", label: "Frais de livraison" },
-            { value: "0", label: "Engagement" },
-            { value: "100%", label: "Flexible" },
+            { value: "Suivi", label: "À chaque livraison" },
+            { value: "Dès 69 €", label: "Livraison gratuite" },
+            { value: "Ponctuel", label: "Achat unique" },
+            { value: "Au choix", label: "Livraison régulière" },
           ].map((stat) => (
             <div key={stat.label} className="text-center">
               <div className="font-display text-3xl md:text-4xl font-bold text-primary-foreground mb-1">

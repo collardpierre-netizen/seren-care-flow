@@ -252,7 +252,12 @@ export const useStoreSettings = () => {
         settings[item.key] = item.value;
       });
       
-      return settings;
+       return {
+         shipping: { free_shipping_threshold: 69, standard_shipping_fee: 8.75, ...settings.shipping },
+         checkout: { minimum_order_amount: 0.01, ...settings.checkout },
+         delivery: { working_days_delay: 3, ...settings.delivery },
+         subscription: { discount_percent: 10, default_frequency_days: 30, ...settings.subscription },
+       };
     },
   });
 };

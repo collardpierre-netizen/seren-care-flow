@@ -13,12 +13,12 @@ const benefits = [
   {
     icon: Percent,
     title: "10% d'économie",
-    description: "Sur chaque commande, automatiquement appliqué",
+    description: "Lorsque le prix réduit est indiqué sur le produit",
   },
   {
     icon: Truck,
-    title: "Livraison gratuite",
-    description: "Dès 69€ TTC, livrée chez vous ou en point relais",
+    title: "Livraison gratuite dès 69 € TTC",
+    description: "Le seuil est affiché avant la commande",
   },
   {
     icon: Calendar,
@@ -32,8 +32,8 @@ const benefits = [
   },
   {
     icon: Heart,
-    title: "Sans engagement",
-    description: "Pause ou annulation gratuite, sans justification",
+    title: "Aucune durée minimale",
+    description: "Gérez la livraison régulière depuis votre compte",
   },
   {
     icon: Package,
@@ -55,7 +55,7 @@ const SubscriptionBenefits: React.FC<SubscriptionBenefitsProps> = ({
           </div>
           <div>
             <h4 className="font-display font-bold text-foreground">L'abonnement SerenCare</h4>
-            <p className="text-sm text-muted-foreground">Flexible, sans engagement</p>
+            <p className="text-sm text-muted-foreground">Une option lorsque disponible</p>
           </div>
         </div>
         <ul className="space-y-2">
@@ -133,11 +133,10 @@ const SubscriptionBenefits: React.FC<SubscriptionBenefitsProps> = ({
             L'abonnement SerenCare
           </div>
           <h2 className="font-display text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-4">
-            Simplifiez-vous la vie avec l'abonnement
+            Une livraison régulière, si vous le souhaitez
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Plus besoin d'y penser. Recevez vos protections automatiquement, 
-            modifiez ou annulez à tout moment, sans engagement.
+            Choisissez une fréquence lorsque cette option est disponible. Les conditions, le prix de chaque livraison et les modalités de modification sont affichés avant le paiement.
           </p>
         </motion.div>
 
@@ -181,7 +180,7 @@ const SubscriptionBenefits: React.FC<SubscriptionBenefitsProps> = ({
               </Link>
             </Button>
             <p className="text-sm text-muted-foreground mt-3">
-              Sans engagement · Annulation gratuite · Livraison offerte dès 69€ TTC
+              Aucune durée minimale · Gestion depuis votre compte · Livraison gratuite dès 69 € TTC
             </p>
           </motion.div>
         )}

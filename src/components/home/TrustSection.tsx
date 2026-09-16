@@ -7,20 +7,20 @@ import lilleLogo from "@/assets/lille-logo.png";
 const brands = [
   {
     name: "TENA",
-    tagline: "Leader mondial",
-    description: "Plus de 50 ans d'expertise dans le soin et le confort.",
+    tagline: "Protections pour adultes",
+    description: "Consultez les formats et caractéristiques disponibles pour chaque référence.",
     logo: tenaLogo,
   },
   {
     name: "Hartmann",
-    tagline: "Qualité allemande",
-    description: "Innovation et rigueur au service de votre bien-être.",
+    tagline: "Produits spécialisés",
+    description: "Comparez les tailles, formats et informations fournies pour chaque produit.",
     logo: hartmannLogo,
   },
   {
     name: "Lille Healthcare",
-    tagline: "Excellence française",
-    description: "Savoir-faire local, engagement éco-responsable.",
+    tagline: "Protections absorbantes",
+    description: "Retrouvez les références et conditionnements actuellement proposés.",
     logo: lilleLogo,
   },
 ];
@@ -43,16 +43,15 @@ const TrustSection = () => {
             </div>
 
             <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
-              Uniquement les meilleures marques.
+              Des marques spécialisées
             </h2>
 
             <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-              Nous avons sélectionné trois marques leaders pour leur qualité, leur efficacité et leur engagement. 
-              Pas de compromis sur ce qui compte.
+              Retrouvez des produits TENA, Hartmann et Lille Healthcare. Consultez les caractéristiques de chaque référence pour comparer les formats disponibles.
             </p>
 
             <div className="grid grid-cols-2 gap-4">
-              {["Qualité médicale", "Confort optimal", "Discrétion", "Absorption éprouvée"].map((item) => (
+              {["Marque", "Format", "Taille", "Caractéristiques fabricant"].map((item) => (
                 <div key={item} className="flex items-center gap-3">
                   <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <Check className="w-3.5 h-3.5 text-primary" />
