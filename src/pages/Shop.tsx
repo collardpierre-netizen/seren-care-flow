@@ -620,6 +620,70 @@ const Shop = () => {
                     </div>
                   </div>
 
+                  {showIncontinenceFilters && (
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide flex items-center gap-1">
+                        <Droplet className="w-3 h-3" /> Absorption
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {incontinenceLevelOptions.map((opt) => (
+                          <button
+                            key={opt.id}
+                            onClick={() => setSelectedIncontinence(opt.id)}
+                            className={`px-3 py-2.5 min-h-11 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                              selectedIncontinence === opt.id
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-muted text-foreground"
+                            }`}
+                          >
+                            {opt.label}
+                            {opt.icon && (
+                              <span className="flex items-center gap-0.5">
+                                {Array.from({ length: opt.icon }).map((_, i) => (
+                                  <Droplet key={i} className={`w-2.5 h-2.5 ${selectedIncontinence === opt.id ? 'fill-primary-foreground' : 'fill-primary'}`} />
+                                ))}
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-between min-h-11"
+                    aria-expanded={showMoreFilters}
+                    onClick={() => setShowMoreFilters(!showMoreFilters)}
+                  >
+                    <span className="flex items-center gap-2">
+                      <SlidersHorizontal className="w-4 h-4" aria-hidden="true" />
+                      {showMoreFilters ? "Moins de filtres" : "Plus de filtres"}
+                    </span>
+                    <ChevronDown className={cn("w-4 h-4 transition-transform", showMoreFilters && "rotate-180")} />
+                  </Button>
+
+                  {showMoreFilters && (
+                  <>
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Catégorie</p>
+                    <div className="flex flex-wrap gap-2">
+                      {categoryOptions.map((cat) => (
+                        <button
+                          key={cat.id}
+                          onClick={() => setSelectedCategory(cat.id)}
+                          className={`px-3 py-2.5 min-h-11 rounded-lg text-sm font-medium transition-colors ${
+                            selectedCategory === cat.id
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted text-foreground"
+                          }`}
+                        >
+                          {cat.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <div>
                     <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Type de commande</p>
                     <div className="flex flex-wrap gap-2">
@@ -629,34 +693,7 @@ const Shop = () => {
 
                   {showIncontinenceFilters && (
                     <>
-                      {/* Absorption */}
-                      <div>
-                        <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide flex items-center gap-1">
-                          <Droplet className="w-3 h-3" /> Absorption
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {incontinenceLevelOptions.map((opt) => (
-                            <button
-                              key={opt.id}
-                              onClick={() => setSelectedIncontinence(opt.id)}
-                              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                                selectedIncontinence === opt.id
-                                  ? "bg-primary text-primary-foreground"
-                                  : "bg-muted text-foreground"
-                              }`}
-                            >
-                              {opt.label}
-                              {opt.icon && (
-                                <span className="flex items-center gap-0.5">
-                                  {Array.from({ length: opt.icon }).map((_, i) => (
-                                    <Droplet key={i} className={`w-2.5 h-2.5 ${selectedIncontinence === opt.id ? 'fill-primary-foreground' : 'fill-primary'}`} />
-                                  ))}
-                                </span>
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
+
 
                       {/* Mobilité */}
                       <div>
