@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Play, ExternalLink, Lock, FileText } from "lucide-react";
+import { Play, ExternalLink, Lock, FileText, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface VideoTutorial {
@@ -10,7 +11,8 @@ interface VideoTutorial {
   description: string;
   /** Durée affichée uniquement si vérifiée à la source */
   duration?: string;
-  thumbnail: string;
+  /** Miniature externe, uniquement si elle charge de façon fiable */
+  thumbnail?: string;
   brand: "TENA" | "Hartmann";
   externalUrl: string;
   category: string;
@@ -51,8 +53,6 @@ const hartmannVideos: VideoTutorial[] = [
     title: "Comment mesurer le tour de hanche",
     description:
       "Formation vidéo sur la prise de mesure du tour de hanche pour choisir la bonne taille de protection.",
-    thumbnail:
-      "https://www.hartmann.info/-/media/country/website/academy/default/webinar-teaser-background-default-hartmann-cyan-1600x900px.png?h=182&iar=0&mw=324&w=324",
     brand: "Hartmann",
     externalUrl:
       "https://www.hartmann.info/fr-be/apprendre-et-savoir/gestion-de-lincontinence/2024/formation-video-comment-mesurer-correctement-le-tour-de-hanche",
@@ -64,8 +64,6 @@ const hartmannVideos: VideoTutorial[] = [
     title: "MoliCare Premium Form - Application",
     description:
       "Formation vidéo sur l'application des protections anatomiques MoliCare® Premium Form.",
-    thumbnail:
-      "https://www.hartmann.info/-/media/country/website/academy/default/webinar-teaser-background-default-hartmann-cyan-1600x900px.png?h=182&iar=0&mw=324&w=324",
     brand: "Hartmann",
     externalUrl:
       "https://www.hartmann.info/fr-be/apprendre-et-savoir/gestion-de-lincontinence/2024/formation-video-comment-appliquer-les-protections-anatomiques-molicare-premium-form",
@@ -100,8 +98,31 @@ interface VideoTutorialsProps {
   showTitle?: boolean;
 }
 
+/** Visuel local utilisé quand aucune miniature fiable n'est disponible */
+const FallbackVisual = ({
+  label,
+  variant = "training",
+}: {
+  label: string;
+  variant?: "training" | "video" | "document";
+}) => {
+  const Icon = variant === "document" ? FileText : variant === "video" ? Play : GraduationCap;
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-primary/15 via-primary/5 to-secondary/20 px-4 text-center">
+      <div className="w-14 h-14 rounded-full bg-background/80 flex items-center justify-center shadow-sm">
+        <Icon className="w-7 h-7 text-primary" />
+      </div>
+      <span className="text-sm font-medium text-foreground/80">{label}</span>
+    </div>
+  );
+};
+
 const VideoTutorials = ({ showTitle = true }: VideoTutorialsProps) => {
-  const VideoCard = ({ video, index }: { video: VideoTutorial; index: number }) => (
+  const VideoCard = ({ video, index }: { video: VideoTutorial; index: number }) => {
+    const [imageFailed, setImageFailed] = useState(false);
+    const showImage = Boolean(video.thumbnail) && !imageFailed;
+
+    return (
     <motion.a
       href={video.externalUrl}
       target="_blank"
@@ -114,12 +135,20 @@ const VideoTutorials = ({ showTitle = true }: VideoTutorialsProps) => {
     >
       <Card className="overflow-hidden border-border hover:border-primary hover:shadow-lg transition-all h-full">
         <div className="relative aspect-video overflow-hidden bg-muted">
-          <img
-            src={video.thumbnail}
-            alt={video.title}
-            loading="lazy"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
+          {showImage ? (
+            <img
+              src={video.thumbnail}
+              alt={video.title}
+              loading="lazy"
+              onError={() => setImageFailed(true)}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          ) : (
+            <FallbackVisual
+              label={video.requiresAccount ? "Formation en ligne" : "Vidéo tutoriel"}
+              variant={video.requiresAccount ? "training" : "video"}
+            />
+          )}
           <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
             <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center">
               <ExternalLink className="w-6 h-6 text-primary-foreground" />
@@ -157,7 +186,8 @@ const VideoTutorials = ({ showTitle = true }: VideoTutorialsProps) => {
         </CardContent>
       </Card>
     </motion.a>
-  );
+    );
+  };
 
   return (
     <section className="py-12 md:py-16">
