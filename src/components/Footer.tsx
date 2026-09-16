@@ -42,7 +42,7 @@ const Footer = () => {
             
             {/* Contact Info */}
             <div className="space-y-3 mb-6">
-              <p className="text-sm font-medium text-background">Pharmacie Allard</p>
+              <p className="text-sm font-medium text-background">SerenCare by Medikong</p>
               <a href="tel:+32498644130" className="flex items-center gap-3 text-sm text-background/80 hover:text-background transition-colors group">
                 <Phone className="w-4 h-4" />
                +32 498 64 41 30
