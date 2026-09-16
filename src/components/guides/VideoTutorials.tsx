@@ -135,12 +135,20 @@ const VideoTutorials = ({ showTitle = true }: VideoTutorialsProps) => {
     >
       <Card className="overflow-hidden border-border hover:border-primary hover:shadow-lg transition-all h-full">
         <div className="relative aspect-video overflow-hidden bg-muted">
-          <img
-            src={video.thumbnail}
-            alt={video.title}
-            loading="lazy"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
+          {showImage ? (
+            <img
+              src={video.thumbnail}
+              alt={video.title}
+              loading="lazy"
+              onError={() => setImageFailed(true)}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          ) : (
+            <FallbackVisual
+              label={video.requiresAccount ? "Formation en ligne" : "Vidéo tutoriel"}
+              variant={video.requiresAccount ? "training" : "video"}
+            />
+          )}
           <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
             <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center">
               <ExternalLink className="w-6 h-6 text-primary-foreground" />
