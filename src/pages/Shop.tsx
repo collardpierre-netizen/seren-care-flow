@@ -19,7 +19,7 @@ import ProductQuickView from "@/components/shop/ProductQuickView";
 import SearchBar from "@/components/shop/SearchBar";
 import ProductSelector from "@/components/shop/ProductSelector";
 import ShopEntryPaths from "@/components/shop/ShopEntryPaths";
-import { SHOP_GROUPS, CATEGORY_IDS, isNutritionCategory, type ShopGroupId } from "@/lib/shopTaxonomy";
+import { SHOP_GROUPS, CATEGORY_IDS, getSizeFromName, type ShopGroupId } from "@/lib/shopTaxonomy";
 import { Slider } from "@/components/ui/slider";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
