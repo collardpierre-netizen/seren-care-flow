@@ -98,8 +98,31 @@ interface VideoTutorialsProps {
   showTitle?: boolean;
 }
 
+/** Visuel local utilisé quand aucune miniature fiable n'est disponible */
+const FallbackVisual = ({
+  label,
+  variant = "training",
+}: {
+  label: string;
+  variant?: "training" | "video" | "document";
+}) => {
+  const Icon = variant === "document" ? FileText : variant === "video" ? Play : GraduationCap;
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-primary/15 via-primary/5 to-secondary/20 px-4 text-center">
+      <div className="w-14 h-14 rounded-full bg-background/80 flex items-center justify-center shadow-sm">
+        <Icon className="w-7 h-7 text-primary" />
+      </div>
+      <span className="text-sm font-medium text-foreground/80">{label}</span>
+    </div>
+  );
+};
+
 const VideoTutorials = ({ showTitle = true }: VideoTutorialsProps) => {
-  const VideoCard = ({ video, index }: { video: VideoTutorial; index: number }) => (
+  const VideoCard = ({ video, index }: { video: VideoTutorial; index: number }) => {
+    const [imageFailed, setImageFailed] = useState(false);
+    const showImage = Boolean(video.thumbnail) && !imageFailed;
+
+    return (
     <motion.a
       href={video.externalUrl}
       target="_blank"
