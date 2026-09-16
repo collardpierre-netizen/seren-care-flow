@@ -689,7 +689,10 @@ const AdminProducts: React.FC = () => {
     });
   };
 
-  const filteredProducts = products?.filter(p => {
+  const marginPercent = (p: any) =>
+    p.price && p.purchase_price ? ((p.price - p.purchase_price) / p.price) * 100 : null;
+
+  const unsortedProducts = products?.filter(p => {
     // Text search
     if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false;
     // Category
@@ -708,6 +711,22 @@ const AdminProducts: React.FC = () => {
     if (filterAbo === 'no' && p.is_subscription_eligible !== false) return false;
     return true;
   });
+
+  const filteredProducts = unsortedProducts ? [...unsortedProducts].sort((a, b) => {
+    switch (sortBy) {
+      case 'price_desc':
+        return (b.price || 0) - (a.price || 0);
+      case 'price_asc':
+        return (a.price || 0) - (b.price || 0);
+      case 'margin_desc':
+        return (marginPercent(b) ?? -Infinity) - (marginPercent(a) ?? -Infinity);
+      case 'margin_asc':
+        return (marginPercent(a) ?? Infinity) - (marginPercent(b) ?? Infinity);
+      default:
+        return 0;
+    }
+  }) : undefined;
+
 
   // Stats
   const totalProducts = products?.length || 0;
