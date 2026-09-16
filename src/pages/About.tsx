@@ -26,11 +26,11 @@ const aboutImages = [aboutImage1, aboutImage2, aboutImage3, aboutImage4];
 const faqItems = [
   {
     question: "Puis-je annuler à tout moment ?",
-    answer: "Oui, absolument ! Votre abonnement est sans engagement. Vous pouvez l'annuler à tout moment depuis votre espace client ou en contactant notre équipe. Aucun frais d'annulation ne sera appliqué."
+    answer: "Aucune durée minimale n'est prévue. Vous pouvez modifier la fréquence ou mettre la livraison en pause depuis votre espace client. Pour arrêter, contactez notre équipe."
   },
   {
     question: "Que faire si la taille ne convient pas ?",
-    answer: "Pas de panique ! Notre équipe d'experts est là pour vous aider à trouver la bonne taille. Contactez-nous et nous vous enverrons gratuitement un échange. Nous proposons également un Starter Pack à 2,90€ pour tester différentes tailles avant de vous engager."
+    answer: "Vérifiez le guide du fabricant et contactez-nous avant de commander en cas de doute. Les conditions de retour sont indiquées avant la commande."
   },
   {
     question: "Puis-je suspendre pendant les vacances ?",
@@ -42,7 +42,7 @@ const faqItems = [
   },
   {
     question: "Un proche peut-il gérer mon abonnement ?",
-    answer: "Oui, nous avons créé un espace dédié aux aidants familiaux. Votre proche peut gérer votre abonnement avec votre accord, tout en respectant votre autonomie. C'est simple, sécurisé et pensé pour faciliter l'entraide familiale."
+    answer: "Un proche peut commander les produits et utiliser une adresse de livraison différente lors de la commande."
   },
   {
     question: "Quels sont les moyens de paiement acceptés ?",
@@ -50,11 +50,11 @@ const faqItems = [
   },
   {
     question: "Combien coûte la livraison ?",
-    answer: "La livraison est gratuite à partir de 49€ d'achat. En dessous de ce montant, les frais de livraison sont de 4,90€. La livraison s'effectue en 48h partout en Belgique."
+    answer: "Livraison gratuite dès 69 € TTC. En dessous de ce seuil, les frais et le délai estimé sont affichés avant la confirmation de la commande."
   },
   {
-    question: "Que contient le Starter Pack à 2,90€ ?",
-    answer: "Le Starter Pack contient un échantillon de nos différents produits pour vous permettre de tester et trouver la protection qui vous convient le mieux. C'est la solution idéale pour découvrir notre gamme avant de vous engager sur un abonnement."
+    question: "Comment obtenir de l’aide pour choisir ?",
+    answer: "Utilisez le guide de comparaison ou contactez-nous pour comprendre les tailles et caractéristiques indiquées par les fabricants. Pour un avis médical, consultez un professionnel de santé."
   },
 ];
 

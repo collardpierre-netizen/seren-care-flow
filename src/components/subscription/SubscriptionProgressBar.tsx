@@ -56,7 +56,7 @@ const SubscriptionProgressBar: React.FC<SubscriptionProgressBarProps> = ({
         <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
           <Gift className="h-4 w-4 text-amber-600 flex-shrink-0" />
           <p className="text-sm text-amber-800">
-            Plus que <strong>{remaining.toFixed(2)} €</strong> pour activer votre abonnement et profiter de la livraison gratuite chaque mois !
+            Plus que <strong>{remaining.toFixed(2)} €</strong> pour atteindre le minimum de 69 € et bénéficier de la livraison gratuite.
           </p>
         </div>
       )}
@@ -65,7 +65,7 @@ const SubscriptionProgressBar: React.FC<SubscriptionProgressBarProps> = ({
         <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
           <Gift className="h-4 w-4 text-green-600 flex-shrink-0" />
           <p className="text-sm text-green-800">
-            Votre abonnement inclut la <strong>livraison gratuite</strong> chaque mois !
+            Le minimum de 69 € est atteint : <strong>livraison gratuite dès 69 € TTC</strong>.
           </p>
         </div>
       )}

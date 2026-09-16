@@ -649,7 +649,7 @@ const Account = () => {
                 <div className="mt-6 p-4 bg-muted/50 rounded-xl">
                   <p className="text-sm text-muted-foreground text-center">
                     <RefreshCw className="h-4 w-4 inline mr-2" />
-                    Sans engagement. Modifiez, mettez en pause ou annulez votre abonnement à tout moment.
+                    Aucune durée minimale. Modifiez ou mettez en pause depuis votre compte. Pour arrêter, contactez SerenCare.
                   </p>
                 </div>
               </TabsContent>

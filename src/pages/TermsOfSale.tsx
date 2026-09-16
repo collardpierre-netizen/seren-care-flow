@@ -114,8 +114,8 @@ const TermsOfSale = () => {
                   </p>
                   <ul className="list-disc list-inside space-y-2 text-muted-foreground">
                     <li><span className="font-medium text-foreground">Réduction :</span> Les abonnés bénéficient d'une réduction de 10% sur les produits</li>
-                    <li><span className="font-medium text-foreground">Modification :</span> L'abonnement peut être modifié, suspendu ou annulé à tout moment depuis l'espace client</li>
-                    <li><span className="font-medium text-foreground">Sans engagement :</span> Aucune durée minimale d'engagement n'est requise</li>
+                    <li><span className="font-medium text-foreground">Modification :</span> La fréquence et les quantités peuvent être modifiées, et la livraison mise en pause depuis l'espace client. Pour arrêter, contactez SerenCare.</li>
+                    <li><span className="font-medium text-foreground">Durée :</span> Aucune durée minimale d'engagement n'est requise</li>
                     <li><span className="font-medium text-foreground">Facturation :</span> Le prélèvement est effectué automatiquement avant chaque livraison</li>
                   </ul>
                 </section>
@@ -144,15 +144,10 @@ const TermsOfSale = () => {
                     7. Livraison
                   </h2>
                   <p className="text-muted-foreground mb-4">
-                    SerenCare livre en Belgique et dans les pays limitrophes. Les délais de livraison sont indicatifs :
+                    SerenCare livre en Belgique et dans les pays limitrophes. Le délai estimé est affiché avant la confirmation de la commande.
                   </p>
-                  <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                    <li><span className="font-medium text-foreground">Belgique :</span> 24-48h ouvrées</li>
-                    <li><span className="font-medium text-foreground">France, Luxembourg, Pays-Bas :</span> 3-5 jours ouvrés</li>
-                  </ul>
                   <p className="text-muted-foreground mt-4">
-                    <span className="font-medium text-foreground">Livraison gratuite</span> à partir de 49€ d'achat. 
-                    En dessous, les frais de livraison s'élèvent à 4,90€.
+                    <span className="font-medium text-foreground">Livraison gratuite dès 69 € TTC.</span> En dessous, les frais applicables sont affichés avant le paiement.
                   </p>
                   <p className="text-muted-foreground mt-4">
                     <span className="font-medium text-foreground">Emballage discret :</span> Toutes les livraisons sont 

@@ -33,7 +33,7 @@ interface ShippingAddress {
 const Checkout = () => {
   const { items, getSubtotal, getSubscriptionSavings, getPublicPriceSavings, updateItemWithPrices, clearCart } = useCart();
   const { data: settings } = useStoreSettings();
-  const { formattedDate: estimatedDeliveryDate, workingDays } = useEstimatedDelivery();
+  const { formattedDate: estimatedDeliveryDate } = useEstimatedDelivery();
   const { user } = useAuth();
   
   const [referralCode, setReferralCode] = useState('');
@@ -54,8 +54,8 @@ const Checkout = () => {
   
   const subtotal = getSubtotal();
   const savings = getSubscriptionSavings();
-  const freeShippingThreshold = settings?.shipping?.free_shipping_threshold || 49;
-  const shippingFee = settings?.shipping?.standard_shipping_fee || 4.90;
+  const freeShippingThreshold = 69;
+  const shippingFee = settings?.shipping?.standard_shipping_fee || 8.75;
   const minimumOrderAmount = settings?.checkout?.minimum_order_amount || 25;
   const isFreeShipping = subtotal >= freeShippingThreshold;
   const shippingCost = isFreeShipping ? 0 : shippingFee;
@@ -258,7 +258,7 @@ const Checkout = () => {
                         {item.isSubscription && (
                           <div className="flex items-center gap-1 text-sm text-secondary mt-1">
                             <RefreshCw className="h-3 w-3" />
-                            Abonnement mensuel
+                            Livraison régulière · tous les 30 jours
                           </div>
                         )}
                         <p className="text-sm text-muted-foreground mt-1">Qté: {item.quantity}</p>
@@ -270,6 +270,11 @@ const Checkout = () => {
                       </div>
                     </div>
                   ))}
+                  {items.some(item => item.isSubscription) && (
+                    <div className="rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+                      Le prix de chaque livraison est indiqué pour chaque article. Prochaine livraison estimée : {estimatedDeliveryDate}. Aucune durée minimale. Modifiez la fréquence ou mettez en pause depuis votre compte. Pour arrêter, contactez SerenCare.
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -447,7 +452,7 @@ const Checkout = () => {
                       Livraison
                     </span>
                     <span className={cn(isFreeShipping && "text-secondary font-medium")}>
-                      {isFreeShipping ? 'Gratuite' : `${shippingCost.toFixed(2)} €`}
+                       {isFreeShipping ? 'Gratuite dès 69 € TTC' : `${shippingCost.toFixed(2)} €`}
                     </span>
                   </div>
                   
@@ -500,7 +505,7 @@ const Checkout = () => {
                   </Button>
                   
                   <p className="text-xs text-center text-muted-foreground">
-                    Paiement sécurisé par Stripe • Livraison en {workingDays} jours ouvrables
+                     Paiement sécurisé par Stripe. Le délai estimé est affiché avant la confirmation de votre commande.
                   </p>
                 </CardContent>
               </Card>

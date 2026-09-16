@@ -38,10 +38,10 @@ const SubscriptionBadge: React.FC<SubscriptionBadgeProps> = ({
         </div>
         <div className="flex-1">
           <p className="text-sm font-semibold text-foreground">
-            Économisez {discountPercent}% en abonnement
+            {discountPercent}% de réduction en livraison régulière
           </p>
           <p className="text-xs text-muted-foreground">
-            Sans engagement · Modifiable à tout moment
+            Aucune durée minimale · Gestion depuis votre compte
           </p>
         </div>
       </div>
