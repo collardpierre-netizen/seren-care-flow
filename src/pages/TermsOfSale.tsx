@@ -38,7 +38,7 @@ const TermsOfSale = () => {
                   <div className="bg-muted/50 rounded-xl p-6 space-y-2 text-sm mb-4">
                     <p className="font-semibold">SerenCare by Medikong</p>
                     <p>MEDIKONG (société à responsabilité limitée)</p>
-                    <p>Adresse : Rue de la Procession 23, 7822 Ath – Belgique</p>
+                    <p>Adresse : Rue de la Procession 23, 7822 Meslin-l’Évêque – Belgique</p>
                     <p>Numéro d'entreprise : 1005.771.323</p>
                     <p>TVA : BE 1005.771.323</p>
                     <p>Téléphone : <a href="tel:+32498644130" className="text-primary hover:underline">+32 498 64 41 30</a></p>
