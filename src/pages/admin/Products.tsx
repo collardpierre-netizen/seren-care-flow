@@ -974,22 +974,27 @@ const AdminProducts: React.FC = () => {
     toast.success(`${products.length} produits exportés (XLSX)`);
   };
 
-  // Import products from CSV or XLSX
+  // ── Import en deux temps : lecture du fichier, aperçu, puis confirmation ──
+  const parseBool = (v: any) => v != null && String(v).toLowerCase() === 'true';
+  const parseNum = (v: any) => { const n = parseFloat(v); return isNaN(n) ? null : n; };
+  const parseInt2 = (v: any) => { const n = parseInt(v); return isNaN(n) ? null : n; };
+  const str = (v: any) => (v != null && String(v).trim() !== '') ? String(v).trim() : null;
+
   const handleImportCSV = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setIsImporting(true);
     try {
+      const isExcel = file.name.endsWith('.xlsx') || file.name.endsWith('.xls');
       let rows: string[][] = [];
+      let workbook: XLSX.WorkBook | null = null;
 
-      if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+      if (isExcel) {
         const data = await file.arrayBuffer();
-        const workbook = XLSX.read(data);
-        // Read "Produits" sheet or first sheet
+        workbook = XLSX.read(data);
         const sheetName = workbook.SheetNames.includes('Produits') ? 'Produits' : workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const parsed: string[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+        const parsed: string[][] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
         rows = parsed.filter(r => r.some(c => c != null && String(c).trim() !== ''));
       } else {
         const text = await file.text();
@@ -1009,21 +1014,41 @@ const AdminProducts: React.FC = () => {
         return;
       }
 
-      const parseBool = (v: any) => v != null && String(v).toLowerCase() === 'true';
-      const parseNum = (v: any) => { const n = parseFloat(v); return isNaN(n) ? null : n; };
-      const parseInt2 = (v: any) => { const n = parseInt(v); return isNaN(n) ? null : n; };
-      const str = (v: any) => (v != null && String(v).trim() !== '') ? String(v).trim() : null;
+      // Références existantes, pour distinguer création et modification
+      const { data: existingProducts } = await supabase.from('products').select('id, slug, name');
+      const bySlug = new Map<string, { id: string; name: string }>();
+      existingProducts?.forEach((p: any) => bySlug.set(p.slug, { id: p.id, name: p.name }));
 
-      let imported = 0, updated = 0, errors = 0;
+      const productRows: ImportProductRow[] = [];
+      const seenSlugs = new Set<string>();
 
       for (let i = 1; i < rows.length; i++) {
         const v = rows[i];
         const val = (col: string) => idx(col) >= 0 ? v[idx(col)] : undefined;
-        if (!val('name') || !val('slug')) continue;
+        const line = i + 1;
+        const name = str(val('name'));
+        const slug = str(val('slug'));
+
+        if (!name || !slug) {
+          if (v.some(c => c != null && String(c).trim() !== '')) {
+            productRows.push({ line, name: name || '(sans nom)', slug: slug || '', action: 'error', error: 'Nom ou identifiant (slug) manquant' });
+          }
+          continue;
+        }
+        if (seenSlugs.has(slug)) {
+          productRows.push({ line, name, slug, action: 'error', error: 'Identifiant (slug) en double dans le fichier' });
+          continue;
+        }
+        seenSlugs.add(slug);
+
+        const priceValue = parseNum(val('price'));
+        if (priceValue === null || priceValue < 0) {
+          productRows.push({ line, name, slug, action: 'error', error: 'Prix manquant ou invalide' });
+          continue;
+        }
 
         const productData: any = {
-          name: str(val('name')),
-          slug: str(val('slug')),
+          name, slug,
           sku: str(val('sku')),
           short_description: str(val('short_description')),
           description: str(val('description')),
@@ -1034,7 +1059,7 @@ const AdminProducts: React.FC = () => {
           usage_times: str(val('usage_times')) || '',
           gender: str(val('gender')) || '',
           recommended_price: parseNum(val('recommended_price')),
-          price: parseNum(val('price')) ?? 0,
+          price: priceValue,
           subscription_price: parseNum(val('subscription_price')),
           subscription_discount_percent: parseInt2(val('subscription_discount_percent')) ?? 10,
           purchase_price: parseNum(val('purchase_price')),
@@ -1054,89 +1079,62 @@ const AdminProducts: React.FC = () => {
           addon_category: str(val('addon_category')),
         };
 
-        // Match brand by name
+        const warnings: string[] = [];
+
         const brandName = str(val('brand'));
-        if (brandName && brands) {
-          const brand = brands.find(b => b.name.toLowerCase() === brandName.toLowerCase());
+        if (brandName) {
+          const brand = brands?.find(b => b.name.toLowerCase() === brandName.toLowerCase());
           if (brand) productData.brand_id = brand.id;
+          else warnings.push(`Marque inconnue : ${brandName}`);
         }
 
-        // Match category by name
         const categoryName = str(val('category'));
-        if (categoryName && categories) {
-          const category = categories.find(c => c.name.toLowerCase() === categoryName.toLowerCase());
+        if (categoryName) {
+          const category = categories?.find(c => c.name.toLowerCase() === categoryName.toLowerCase());
           if (category) productData.category_id = category.id;
+          else warnings.push(`Catégorie inconnue : ${categoryName}`);
         }
 
-        // Match supplier by name
         const supplierName = str(val('supplier'));
-
-        try {
-          const { data: existing } = await supabase
-            .from('products')
-            .select('id')
-            .eq('slug', productData.slug)
-            .single();
-
-          let productId: string;
-          if (existing) {
-            await supabase.from('products').update(productData).eq('id', existing.id);
-            productId = existing.id;
-            updated++;
-          } else {
-            const { data: newProd } = await supabase.from('products').insert(productData).select('id').single();
-            productId = newProd?.id;
-            imported++;
-          }
-
-          // Link supplier if specified
-          if (supplierName && suppliers && productId) {
-            const supplier = suppliers.find(s => s.name.toLowerCase() === supplierName.toLowerCase());
-            if (supplier) {
-              const { data: existingLink } = await supabase
-                .from('product_suppliers')
-                .select('id')
-                .eq('product_id', productId)
-                .eq('supplier_id', supplier.id)
-                .single();
-              if (!existingLink) {
-                await supabase.from('product_suppliers').insert({
-                  product_id: productId,
-                  supplier_id: supplier.id,
-                  is_preferred: true,
-                  purchase_price: productData.purchase_price,
-                });
-              }
-            }
-          }
-        } catch {
-          errors++;
+        if (supplierName && !suppliers?.find(s => s.name.toLowerCase() === supplierName.toLowerCase())) {
+          warnings.push(`Fournisseur inconnu : ${supplierName}`);
         }
+
+        const existing = bySlug.get(slug);
+        productRows.push({
+          line, name, slug,
+          action: existing ? 'update' : 'create',
+          existingId: existing?.id,
+          data: productData,
+          supplierName: supplierName || undefined,
+          warnings: warnings.length > 0 ? warnings : undefined,
+        });
       }
 
-      // ── Import sizes from "Variantes" sheet if XLSX ──
-      if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
-        const data = await file.arrayBuffer();
-        const workbook = XLSX.read(data);
-        if (workbook.SheetNames.includes('Variantes')) {
-          const sizeSheet = workbook.Sheets['Variantes'];
-          const sizeRows: string[][] = XLSX.utils.sheet_to_json(sizeSheet, { header: 1 });
-          const sHeaders = sizeRows[0]?.map(h => String(h).trim().toLowerCase()) || [];
-          const si = (col: string) => sHeaders.indexOf(col);
-
-          if (si('product_slug') >= 0 && si('size') >= 0) {
-            for (let i = 1; i < sizeRows.length; i++) {
-              const sv = sizeRows[i];
-              const slug = str(sv[si('product_slug')]);
-              const size = str(sv[si('size')]);
-              if (!slug || !size) continue;
-
-              // Get product id by slug
-              const { data: prod } = await supabase.from('products').select('id').eq('slug', slug).single();
-              if (!prod) continue;
-
-              const sizeData: any = {
-                product_id: prod.id,
+      // ── Feuille Variantes ──
+      const sizeRowsPreview: ImportSimpleRow[] = [];
+      if (workbook && workbook.SheetNames.includes('Variantes')) {
+        const parsed: string[][] = XLSX.utils.sheet_to_json(workbook.Sheets['Variantes'], { header: 1 });
+        const sHeaders = parsed[0]?.map(h => String(h).trim().toLowerCase()) || [];
+        const si = (col: string) => sHeaders.indexOf(col);
+        if (si('product_slug') >= 0 && si('size') >= 0) {
+          for (let i = 1; i < parsed.length; i++) {
+            const sv = parsed[i];
+            if (!sv || !sv.some(c => c != null && String(c).trim() !== '')) continue;
+            const slug = str(sv[si('product_slug')]);
+            const size = str(sv[si('size')]);
+            const line = i + 1;
+            if (!slug || !size) {
+              sizeRowsPreview.push({ line, label: `${slug || '?'} / ${size || '?'}`, action: 'error', error: 'Produit ou taille manquant' });
+              continue;
+            }
+            if (!bySlug.has(slug) && !seenSlugs.has(slug)) {
+              sizeRowsPreview.push({ line, label: `${slug} / ${size}`, action: 'error', error: 'Produit introuvable' });
+              continue;
+            }
+            sizeRowsPreview.push({
+              line, label: `${slug} / ${size}`, action: 'apply', slug,
+              data: {
                 size,
                 sku: str(sv[si('sku')]),
                 ean_code: str(sv[si('ean_code')]),
@@ -1147,76 +1145,159 @@ const AdminProducts: React.FC = () => {
                 purchase_price: parseNum(sv[si('purchase_price')]),
                 stock_quantity: parseInt2(sv[si('stock_quantity')]) ?? 0,
                 is_active: si('is_active') >= 0 ? parseBool(sv[si('is_active')]) : true,
-              };
-
-              // Upsert by product_id + size
-              const { data: existingSize } = await supabase
-                .from('product_sizes')
-                .select('id')
-                .eq('product_id', prod.id)
-                .eq('size', size)
-                .single();
-
-              if (existingSize) {
-                await supabase.from('product_sizes').update(sizeData).eq('id', existingSize.id);
-              } else {
-                await supabase.from('product_sizes').insert(sizeData);
-              }
-            }
-          }
-        }
-        // ── Import images from "Images" sheet ──
-        if (workbook.SheetNames.includes('Images')) {
-          const imgSheet = workbook.Sheets['Images'];
-          const imgRows: string[][] = XLSX.utils.sheet_to_json(imgSheet, { header: 1 });
-          const iHeaders = imgRows[0]?.map(h => String(h).trim().toLowerCase()) || [];
-          const ii = (col: string) => iHeaders.indexOf(col);
-
-          if (ii('product_slug') >= 0 && ii('image_url') >= 0) {
-            for (let i = 1; i < imgRows.length; i++) {
-              const iv = imgRows[i];
-              const slug = str(iv[ii('product_slug')]);
-              const imageUrl = str(iv[ii('image_url')]);
-              if (!slug || !imageUrl) continue;
-
-              const { data: prod } = await supabase.from('products').select('id').eq('slug', slug).single();
-              if (!prod) continue;
-
-              const imgData: any = {
-                product_id: prod.id,
-                image_url: imageUrl,
-                alt_text: str(iv[ii('alt_text')]) || null,
-                sort_order: parseInt2(iv[ii('sort_order')]) ?? 0,
-                is_primary: ii('is_primary') >= 0 ? parseBool(iv[ii('is_primary')]) : false,
-              };
-
-              // Check if image already exists for this product + url
-              const { data: existingImg } = await supabase
-                .from('product_images')
-                .select('id')
-                .eq('product_id', prod.id)
-                .eq('image_url', imageUrl)
-                .single();
-
-              if (existingImg) {
-                await supabase.from('product_images').update(imgData).eq('id', existingImg.id);
-              } else {
-                await supabase.from('product_images').insert(imgData);
-              }
-            }
+              },
+            });
           }
         }
       }
 
-      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
-      toast.success(`Import terminé: ${imported} créés, ${updated} mis à jour${errors > 0 ? `, ${errors} erreurs` : ''}`);
+      // ── Feuille Images ──
+      const imageRowsPreview: ImportSimpleRow[] = [];
+      if (workbook && workbook.SheetNames.includes('Images')) {
+        const parsed: string[][] = XLSX.utils.sheet_to_json(workbook.Sheets['Images'], { header: 1 });
+        const iHeaders = parsed[0]?.map(h => String(h).trim().toLowerCase()) || [];
+        const ii = (col: string) => iHeaders.indexOf(col);
+        if (ii('product_slug') >= 0 && ii('image_url') >= 0) {
+          for (let i = 1; i < parsed.length; i++) {
+            const iv = parsed[i];
+            if (!iv || !iv.some(c => c != null && String(c).trim() !== '')) continue;
+            const slug = str(iv[ii('product_slug')]);
+            const url = str(iv[ii('image_url')]);
+            const line = i + 1;
+            if (!slug || !url) {
+              imageRowsPreview.push({ line, label: `${slug || '?'}`, action: 'error', error: 'Produit ou adresse d\'image manquant' });
+              continue;
+            }
+            if (!bySlug.has(slug) && !seenSlugs.has(slug)) {
+              imageRowsPreview.push({ line, label: `${slug}`, action: 'error', error: 'Produit introuvable' });
+              continue;
+            }
+            imageRowsPreview.push({
+              line, label: `${slug}`, action: 'apply', slug,
+              data: {
+                image_url: url,
+                alt_text: str(iv[ii('alt_text')]) || null,
+                sort_order: parseInt2(iv[ii('sort_order')]) ?? 0,
+                is_primary: ii('is_primary') >= 0 ? parseBool(iv[ii('is_primary')]) : false,
+              },
+            });
+          }
+        }
+      }
+
+      setImportPreview({
+        fileName: file.name,
+        products: productRows,
+        sizes: sizeRowsPreview,
+        images: imageRowsPreview,
+      });
     } catch (error) {
-      toast.error('Erreur lors de l\'import du fichier');
+      toast.error('Erreur lors de la lecture du fichier');
     } finally {
       setIsImporting(false);
       if (importInputRef.current) {
         importInputRef.current.value = '';
       }
+    }
+  };
+
+  const handleConfirmImport = async () => {
+    if (!importPreview) return;
+    setIsImporting(true);
+    try {
+      let created = 0, updated = 0, failed = 0;
+      const idBySlug = new Map<string, string>();
+
+      for (const row of importPreview.products) {
+        if (row.action === 'error' || !row.data) continue;
+        try {
+          if (row.action === 'update' && row.existingId) {
+            const { error } = await supabase.from('products').update(row.data).eq('id', row.existingId);
+            if (error) throw error;
+            idBySlug.set(row.slug, row.existingId);
+            updated++;
+          } else {
+            const { data: newProd, error } = await supabase.from('products').insert(row.data).select('id').single();
+            if (error) throw error;
+            if (newProd?.id) idBySlug.set(row.slug, newProd.id);
+            created++;
+          }
+
+          const productId = idBySlug.get(row.slug);
+          if (row.supplierName && productId) {
+            const supplier = suppliers?.find(s => s.name.toLowerCase() === row.supplierName!.toLowerCase());
+            if (supplier) {
+              const { data: existingLink } = await supabase
+                .from('product_suppliers')
+                .select('id')
+                .eq('product_id', productId)
+                .eq('supplier_id', supplier.id)
+                .maybeSingle();
+              if (!existingLink) {
+                await supabase.from('product_suppliers').insert({
+                  product_id: productId,
+                  supplier_id: supplier.id,
+                  is_preferred: true,
+                  purchase_price: row.data.purchase_price,
+                });
+              }
+            }
+          }
+        } catch {
+          failed++;
+        }
+      }
+
+      const resolveId = async (slug: string) => {
+        if (idBySlug.has(slug)) return idBySlug.get(slug)!;
+        const { data } = await supabase.from('products').select('id').eq('slug', slug).maybeSingle();
+        if (data?.id) idBySlug.set(slug, data.id);
+        return data?.id;
+      };
+
+      for (const row of importPreview.sizes) {
+        if (row.action === 'error' || !row.slug || !row.data) continue;
+        const productId = await resolveId(row.slug);
+        if (!productId) { failed++; continue; }
+        const sizeData = { ...row.data, product_id: productId };
+        const { data: existingSize } = await supabase
+          .from('product_sizes')
+          .select('id')
+          .eq('product_id', productId)
+          .eq('size', row.data.size)
+          .maybeSingle();
+        if (existingSize) {
+          await supabase.from('product_sizes').update(sizeData).eq('id', existingSize.id);
+        } else {
+          await supabase.from('product_sizes').insert(sizeData);
+        }
+      }
+
+      for (const row of importPreview.images) {
+        if (row.action === 'error' || !row.slug || !row.data) continue;
+        const productId = await resolveId(row.slug);
+        if (!productId) { failed++; continue; }
+        const imgData = { ...row.data, product_id: productId };
+        const { data: existingImg } = await supabase
+          .from('product_images')
+          .select('id')
+          .eq('product_id', productId)
+          .eq('image_url', row.data.image_url)
+          .maybeSingle();
+        if (existingImg) {
+          await supabase.from('product_images').update(imgData).eq('id', existingImg.id);
+        } else {
+          await supabase.from('product_images').insert(imgData);
+        }
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      toast.success(`Import terminé : ${created} créés, ${updated} modifiés${failed > 0 ? `, ${failed} en échec` : ''}`);
+      setImportPreview(null);
+    } catch {
+      toast.error('Erreur lors de l\'import');
+    } finally {
+      setIsImporting(false);
     }
   };
 
