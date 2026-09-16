@@ -26,8 +26,7 @@ const CTASection = () => {
               </h2>
 
               <p className="text-lg text-muted-foreground mb-6">
-                Laissez-nous vos coordonnées et nous vous rappellerons pour répondre à vos questions 
-                et vous guider vers la solution adaptée. Sans pression, sans engagement.
+                Laissez-nous vos coordonnées pour une question sur le service ou les caractéristiques d’un produit.
               </p>
 
               <div className="flex flex-col sm:flex-row items-start gap-4 mb-6">

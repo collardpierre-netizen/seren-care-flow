@@ -7,19 +7,21 @@ import BenefitsSection from "@/components/home/BenefitsSection";
 import CTASection from "@/components/home/CTASection";
 import SubscriptionBenefits from "@/components/subscription/SubscriptionBenefits";
 import TestimonialsSection from "@/components/home/TestimonialsSection";
+import OrderingPaths from "@/components/home/OrderingPaths";
 
 const Index = () => {
   return (
     <>
       <Helmet>
-        <title>SerenCare - Protections pour seniors livrées automatiquement</title>
+        <title>SerenCare | Protections pour adultes livrées en Belgique</title>
         <meta 
           name="description" 
-          content="SerenCare vous accompagne dans le choix des protections adaptées pour vos proches. Livraison automatique, accompagnement humain, sans engagement." 
+          content="Retrouvez et commandez des protections pour adultes. Achat ponctuel ou livraison régulière, aide au choix et livraison en Belgique." 
         />
       </Helmet>
       <Layout>
         <HeroSection />
+        <OrderingPaths />
         <HowItWorks />
         <TestimonialsSection />
         <SubscriptionBenefits />
